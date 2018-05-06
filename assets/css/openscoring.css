@@ -1,0 +1,13 @@
+body {
+  font-size: 16px;
+}
+
+header {
+}
+
+footer {
+  color: #ffffff;
+  font-family: 'Lobster', "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 20px 0;
+}
