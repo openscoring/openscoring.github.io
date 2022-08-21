@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="jpmml-model">
+  <meta name="author" content="vruusmann">
+
+  <title>JPMML-Model: Configuring JAXB dependency for Java SE versions 8, 9, 10 and 11 - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2019/02/28/jpmml_model_api_configuring_jaxb_dependency/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="JPMML-Model: Configuring JAXB dependency for Java SE versions 8, 9, 10 and 11 - Openscoring" />
+  <meta property="og:url" content="/blog/2019/02/28/jpmml_model_api_configuring_jaxb_dependency/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2019-02-28 00:00:00 +0200" />
+  <meta property="article:published_time" content="2019-02-28 00:00:00 +0200" />
+  <meta property="article:modified_time" content="2019-02-28 00:00:00 +0200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="JPMML-Model: Configuring JAXB dependency for Java SE versions 8, 9, 10 and 11 - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">JPMML-Model: Configuring JAXB dependency for Java SE versions 8, 9, 10 and 11</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>The <a href="https://github.com/jpmml/jpmml-model">JPMML-Model</a> library provides a Java class model for the Predictive Model Markup Language (PMML) standard.
+The core set of JPMML-Model classes have been generated based on the PMML XML Schema Definition (XSD) file using the XJC binding compiler technology. As such, they are heavily dependent on the Java XML Binding (JAXB) runtime.</p>
+
+<p>The JAXB runtime was more or less an integral part of Java SE versions 1.6 thorugh 1.8. However, with the advent of <a href="https://jcp.org/en/jsr/detail?id=376">Java SE 9 module system</a>, the JAXB runtime was isolated to a <code class="language-plaintext highlighter-rouge">java.xml.bind</code> module, and excluded from the core (ie. active by default) module set.</p>
+
+<p>If a Java SE 9 (or newer) application wants to use JAXB runtime functionality, then it can do one of the following:</p>
+
+<ul>
+  <li>Activate the <code class="language-plaintext highlighter-rouge">java.xml.bind</code> module using the <code class="language-plaintext highlighter-rouge">--add-modules java.xml.bind</code> command-line option.</li>
+  <li>Leave the <code class="language-plaintext highlighter-rouge">java.xml.bind</code> module inactive, and add a functionally equivalent set of Java libraries/classes straight to the application classpath.</li>
+</ul>
+
+<p>The second option is seen as cleaner and safer. Meddling with Java/JVM startup options just to please one application is bad style. Furthermore, there remains uncertainty about the JAXB runtime version, and if all transitive dependencies (internal APIs for power users) are available and sufficiently up to date.</p>
+
+<p>The JPMML-Model library declares a compile-time dependency (“provided” Apache Maven scope) on <a href="https://metro.java.net">GlassFish Metro</a> and <a href="https://www.eclipse.org/eclipselink">EclipseLink MOXy</a> runtimes.</p>
+
+<p>If a Java application declares a run-time dependency (“compile” and “runtime” Apache Maven scopes) only on the JPMML-Model library, then it is limited to the first deployment scenario.
+However, if the Java application declares a run-time dependency on the JPMML-Model library <strong>plus</strong> one or more JAXB runtimes, then it can follow either development scenario.</p>
+
+<p>This blog post details the proper configuration of GlassFish Metro runtime. The analysis is based on a <code class="language-plaintext highlighter-rouge">jaxb_demo</code> demo application, which deals with marshalling and unmarshalling an empty PMML class model object.</p>
+
+<p>The project is built and deployed throughout this exercise using the following sequence of commands:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export JAVA_HOME=/path/to/jdk
+$ mvn clean install
+$ $JAVA_HOME/bin/java -cp target/jaxb_demo-executable-1.0-SNAPSHOT.jar jaxb_demo.MarshalDemo &gt; /tmp/jaxb_demo.pmml
+$ $JAVA_HOME/bin/java -cp target/jaxb_demo-executable-1.0-SNAPSHOT.jar jaxb_demo.UnmarshalDemo &lt; /tmp/jaxb_demo.pmml
+</code></pre></div></div>
+
+<h3 id="java-se-180_162">Java SE 1.8(.0_162)</h3>
+
+<p>The project can be built and deployed without any formal GlassFish Metro dependency.</p>
+
+<p>The default JAXB runtime does not collect and propagate SAX Locator information, which means that the <code class="language-plaintext highlighter-rouge">org.dmg.pmml.PMMLObject#locator</code> field is left uninitialized. If the Java application (eg. the unmarshalling demo application) is interested in this information, then it needs to declare the <code class="language-plaintext highlighter-rouge">org.glassfish.jaxb:jaxb-runtime</code> library as a run-time dependency:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>org.glassfish.jaxb<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>jaxb-runtime<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>2.3.2<span class="nt">&lt;/version&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div></div>
+
+<h3 id="java-se-904-and-1002">Java SE 9(.0.4) and 10(.0.2)</h3>
+
+<p>Apache Maven activates all Java EE modules (including the <code class="language-plaintext highlighter-rouge">java.xml.bind</code> module) during compilation, so the project can again be built without any formal GlassFish Metro dependency.</p>
+
+<p>However, now and in the future, the <code class="language-plaintext highlighter-rouge">org.glassfish.jaxb:jaxb-runtime</code> library has become a required run-time dependency. If missing, then any attempt to make use of some JAXB class or interface will result in a <code class="language-plaintext highlighter-rouge">java.lang.ClassNotFoundException</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Exception in thread "main" java.lang.NoClassDefFoundError: javax/xml/bind/JAXBContext
+  at jaxb_demo.MarshalDemo.main(MarshalDemo.java:16)
+Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext
+  at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:582)
+  at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:185)
+  at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:496)
+  ... 1 more
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">org.glassfish.jaxb:jaxb-runtime</code> library currently depends on six other Java libraries:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mvn dependency:tree
+
+[INFO] --- maven-dependency-plugin:2.8:tree (default-cli) @ jaxb_demo ---
+[INFO] jaxb_demo:jaxb_demo:jar:1.0-SNAPSHOT
+[INFO] +- org.jpmml:pmml-model:jar:1.4.8:compile
+[INFO] \- org.glassfish.jaxb:jaxb-runtime:jar:2.3.2:compile
+[INFO]    +- jakarta.xml.bind:jakarta.xml.bind-api:jar:2.3.2:compile
+[INFO]    +- org.glassfish.jaxb:txw2:jar:2.3.2:compile
+[INFO]    +- com.sun.istack:istack-commons-runtime:jar:3.0.8:compile
+[INFO]    +- org.jvnet.staxex:stax-ex:jar:1.8.1:compile
+[INFO]    +- com.sun.xml.fastinfoset:FastInfoset:jar:1.2.16:compile
+[INFO]    \- jakarta.activation:jakarta.activation-api:jar:1.2.1:compile
+</code></pre></div></div>
+
+<p>Library descriptions:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">org.glassfish.jaxb:jaxb-runtime</code> - Glassfish Metro runtime. Provides <code class="language-plaintext highlighter-rouge">com.sun.xml.bind.*</code> classes. Required.</li>
+  <li><code class="language-plaintext highlighter-rouge">com.sun.istack:istack-commons-runtime</code> - Istack Common Utility Code Runtime. Provides <code class="language-plaintext highlighter-rouge">com.sun.istack.*</code> classes. Required.</li>
+  <li><code class="language-plaintext highlighter-rouge">com.sun.xml.fastinfoset:FastInfoset</code> - Fast Infoset Standard for Binary XML. Provides <code class="language-plaintext highlighter-rouge">com.sun.xml.fastinfoset.*</code> and <code class="language-plaintext highlighter-rouge">org.jvnet.fastinfoset.*</code> classes. Required when working with binary XML documents; not required when working with text-based XML documents.</li>
+  <li><code class="language-plaintext highlighter-rouge">jakarta.activation:jakarta.activation-api</code> - JavaBeans Activation Framework API. Provides <code class="language-plaintext highlighter-rouge">javax.activation.*</code> classes. Required.</li>
+  <li><code class="language-plaintext highlighter-rouge">jakarta.xml.bind:jakarta.xml.bind-api</code> - Java XML Binding (JAXB) API. Provides <code class="language-plaintext highlighter-rouge">javax.xml.bind.*</code> classes. Required.</li>
+  <li><code class="language-plaintext highlighter-rouge">org.glassfish.jaxb:txw2</code> - TXW2 Runtime. Provides <code class="language-plaintext highlighter-rouge">com.sun.xml.txw2.*</code> classes. Not required.</li>
+  <li><code class="language-plaintext highlighter-rouge">org.jvnet.staxex:stax-ex</code> - Extensions for StAX API. Provides <code class="language-plaintext highlighter-rouge">org.jvnet.staxex.*</code> classes. Not required.</li>
+</ul>
+
+<p>For example, declaring a minimal GlassFish Metro dependency:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>org.glassfish.jaxb<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>jaxb-runtime<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>2.3.2<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;exclusions&gt;</span>
+    <span class="nt">&lt;exclusion&gt;</span>
+      <span class="nt">&lt;groupId&gt;</span>com.sun.xml.fastinfoset<span class="nt">&lt;/groupId&gt;</span>
+      <span class="nt">&lt;artifactId&gt;</span>FastInfoset<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;/exclusion&gt;</span>
+    <span class="nt">&lt;exclusion&gt;</span>
+      <span class="nt">&lt;groupId&gt;</span>org.glassfish.jaxb<span class="nt">&lt;/groupId&gt;</span>
+      <span class="nt">&lt;artifactId&gt;</span>txw2<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;/exclusion&gt;</span>
+    <span class="nt">&lt;exclusion&gt;</span>
+      <span class="nt">&lt;groupId&gt;</span>org.jvnet.staxex<span class="nt">&lt;/groupId&gt;</span>
+      <span class="nt">&lt;artifactId&gt;</span>stax-ex<span class="nt">&lt;/artifactId&gt;</span>
+    <span class="nt">&lt;/exclusion&gt;</span>
+  <span class="nt">&lt;/exclusions&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div></div>
+
+<p>These three exclusions reduce the size of the <code class="language-plaintext highlighter-rouge">jaxb_demo</code> uber-JAR file a bit over 400 kB.</p>
+
+<h3 id="java-se-1102">Java SE 11(.0.2)</h3>
+
+<p><a href="https://blog.codefx.org/java/java-11-migration-guide/#Removal-Of-Java-EE-Modules">Java SE 11 removed all Java EE modules</a>, including the <code class="language-plaintext highlighter-rouge">java.xml.bind</code> module. Since Apache Maven is unable to provide Java XML Binding classes on its own, the project becomes non-buildable:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ mvn clean install
+
+[ERROR] jaxb_demo/src/main/java/jaxb_demo/MarshalDemo.java:[3,22] package javax.xml.bind does not exist
+[ERROR] jaxb_demo/src/main/java/jaxb_demo/MarshalDemo.java:[4,22] package javax.xml.bind does not exist
+[ERROR] jaxb_demo/src/main/java/jaxb_demo/MarshalDemo.java:[16,17] cannot find symbol
+[ERROR] symbol:   class JAXBContext
+[ERROR] location: class jaxb_demo.MarshalDemo
+[ERROR] jaxb_demo/src/main/java/jaxb_demo/MarshalDemo.java:[16,39] cannot find symbol
+[ERROR] symbol:   variable JAXBContext
+[ERROR] location: class jaxb_demo.MarshalDemo
+[ERROR] jaxb_demo/src/main/java/jaxb_demo/MarshalDemo.java:[18,17] cannot find symbol
+[ERROR] symbol:   class Marshaller
+[ERROR] location: class jaxb_demo.MarshalDemo
+</code></pre></div></div>
+
+<p>After declaring the minimal GlassFish Metro dependency, the project can be built and deployed as before.</p>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>Java application: <a href="https://openscoring.io/resources/2019-02-28/jaxb_demo.zip">“jaxb_demo.zip”</a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

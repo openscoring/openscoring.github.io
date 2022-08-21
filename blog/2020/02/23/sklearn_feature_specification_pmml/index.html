@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn sklearn2pmml feature-domain data-categorical data-temporal data-missing">
+  <meta name="author" content="vruusmann">
+
+  <title>Extending Scikit-Learn with feature specifications - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2020/02/23/sklearn_feature_specification_pmml/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Extending Scikit-Learn with feature specifications - Openscoring" />
+  <meta property="og:url" content="/blog/2020/02/23/sklearn_feature_specification_pmml/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2020-02-23 00:00:00 +0200" />
+  <meta property="article:published_time" content="2020-02-23 00:00:00 +0200" />
+  <meta property="article:modified_time" content="2020-02-23 00:00:00 +0200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Extending Scikit-Learn with feature specifications - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Extending Scikit-Learn with feature specifications</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>Predictive analytics applications must pay attention to “model-data fit”, which means that a model can only be used if it is known to be relevant and applicable.</p>
+
+<p>To illustrate, given a model object, one should be able to confidently answer questions like:</p>
+
+<ul>
+  <li>Which features are needed?</li>
+  <li>What is the domain of individual features? Are missing values supported?</li>
+  <li>Is this combination of feature values typical or not?</li>
+</ul>
+
+<p>Much of this (meta-)information is readily available during model training.
+JPMML family conversion tools and libraries aim to capture, systematize and store it automatically, with minimal intrusion to existing workflows.</p>
+
+<p>This blog post demonstrates how Scikit-Learn users should approach the “model-data fit” problematics.</p>
+
+<h3 id="overview">Overview</h3>
+
+<p>The Predictive Model Markup Language (PMML) defines data structures for representing most common model types.</p>
+
+<p>Every model element holds the description of its data interface:</p>
+
+<ul>
+  <li>Functional description of feature domains - the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html"><code class="language-plaintext highlighter-rouge">MiningSchema</code></a> element.</li>
+  <li>Functional description of the prediction range - <a href="http://dmg.org/pmml/v4-4-1/Targets.html"><code class="language-plaintext highlighter-rouge">Targets</code></a> and <a href="http://dmg.org/pmml/v4-4-1/Output.html"><code class="language-plaintext highlighter-rouge">Output</code></a> elements.</li>
+  <li>Simple statistics about feature domains - the <a href="http://dmg.org/pmml/v4-4-1/Statistics.html"><code class="language-plaintext highlighter-rouge">ModelStats</code></a> element.</li>
+  <li>Complex statistics about feature domains partitioned by the prediction range - the <a href="http://dmg.org/pmml/v4-4-1/ModelExplanation.html"><code class="language-plaintext highlighter-rouge">ModelExplanation</code></a> element.</li>
+</ul>
+
+<p>Value preparation is a two stage process.</p>
+
+<p>In the first stage, the user value is converted to a PMML value according to the <a href="http://dmg.org/pmml/v4-4-1/DataDictionary.html"><code class="language-plaintext highlighter-rouge">DataField</code></a> element.</p>
+
+<p>The user value is cast or parsed into the correct data type, restricted to the correct operational type (one of continuous, categorical or ordinal), and assigned to the value space (one of valid, invalid or missing).
+The resulting PMML value can be regarded as a value in a three-dimensional space <code class="language-plaintext highlighter-rouge">&lt;data type&gt;-&lt;operational type&gt;-&lt;value space type&gt;</code>.</p>
+
+<p>Consider the following <code class="language-plaintext highlighter-rouge">DataField</code> element:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;DataField</span> <span class="na">name=</span><span class="s">"status"</span> <span class="na">dataType=</span><span class="s">"integer"</span> <span class="na">optype=</span><span class="s">"categorical"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"1"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"2"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"3"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"-999"</span> <span class="na">property=</span><span class="s">"missing"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/DataField&gt;</span>
+</code></pre></div></div>
+
+<p>Value conversions:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Java value</th>
+      <th>PMML value</th>
+      <th>Explanation</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">java.lang.String("1")</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer-categorical-valid</code></td>
+      <td>Parseable, listed as valid</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">java.lang.Integer(2)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer-categorical-valid</code></td>
+      <td>As-is, listed as valid</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">java.lang.Double(3.0)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer-categorical-valid</code></td>
+      <td>Castable without loss of precision, listed as valid</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">java.lang.String("one")</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer-categorical-invalid</code></td>
+      <td>Not parseable</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">java.lang.Integer(0)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer-categorical-invalid</code></td>
+      <td>As-is, not listed as valid</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">java.lang.Double(3.14)</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer-categorical-invalid</code></td>
+      <td>Not castable without loss of precision</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">null</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer-categorical-missing</code></td>
+      <td>Missing value</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">java.math.BigDecimal("-999.000")</code></td>
+      <td><code class="language-plaintext highlighter-rouge">integer-categorical-missing</code></td>
+      <td>Castable without loss of precision, listed as missing</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>In the second stage, the PMML value undergoes one or more value space-dependent treatments according to the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html"><code class="language-plaintext highlighter-rouge">MiningField</code></a> element.</p>
+
+<p><strong>Valid values pass by default</strong>.
+The domain of continuous values can be restricted by changing the value of the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_OUTLIER-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">outliers</code></a> attribute from <code class="language-plaintext highlighter-rouge">asIs</code> to <code class="language-plaintext highlighter-rouge">asMissingValues</code> or <code class="language-plaintext highlighter-rouge">asExtremeValues</code>, plus adding <code class="language-plaintext highlighter-rouge">lowValue</code> and <code class="language-plaintext highlighter-rouge">highValue</code> attributes.</p>
+
+<p><strong>Invalid values <em>do not</em> pass by default</strong>, because the default value of the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_INVALID-VALUE-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">invalidValueTreatment</code></a> attribute is <code class="language-plaintext highlighter-rouge">returnInvalid</code>.</p>
+
+<p>The behaviour where the model actively refuses to compute a prediction can be surprising to Scikit-Learn users.
+However, this should be seen as a feature, not a bug, because the objetive is to inform upstream agents about data correctness and/or consistency issues (eg. feature drift) and prevent downstream agents from taking action on dubious results.</p>
+
+<p>The model can be forced to accept invalid values by changing the value of the <code class="language-plaintext highlighter-rouge">invalidValueTreatment</code> attribute to <code class="language-plaintext highlighter-rouge">asIs</code>.
+However, as every invalid value is “broken” in its own way, the computation may succeed or fail arbitrarily.</p>
+
+<p>The recommended approach is to make the computation more controllable.</p>
+
+<p>Invalid values may be replaced with a predefined valid value by changing the value of the <code class="language-plaintext highlighter-rouge">invalidValueTreatment</code> attribute to <code class="language-plaintext highlighter-rouge">asIs</code>, plus adding the <code class="language-plaintext highlighter-rouge">(x-)invalidValueReplacement</code> attribute (the <code class="language-plaintext highlighter-rouge">x-</code> prefix is required in PMML schema versions earlier than 4.4).
+Alternatively, they may be replaced with a missing value by changing the value of the <code class="language-plaintext highlighter-rouge">invalidValueTreatment</code> attribute to <code class="language-plaintext highlighter-rouge">asMissing</code>.</p>
+
+<p><strong>Missing values pass by default</strong>.
+By analogy with invalid value treatment, missing values can be rejected by changing the value of the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_MISSING-VALUE-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">missingValueTreatment</code></a> attribute to <code class="language-plaintext highlighter-rouge">(x-)returnInvalid</code>, or replaced with a predefined valid value by adding the <code class="language-plaintext highlighter-rouge">missingValueReplacement</code> attribute.</p>
+
+<p><strong>Important</strong>: The IEEE 754 constant NaN (“Not a Number”) is assigned to invalid value space (not to missing value space).</p>
+
+<h3 id="sklearn2pmml-domain-decorators">SkLearn2PMML domain decorators</h3>
+
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides several domain decorators for customizing the content of <code class="language-plaintext highlighter-rouge">DataField</code> and <code class="language-plaintext highlighter-rouge">MiningField</code> elements:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Domain(BaseEstimator, TransformerMixin)</code>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">ContinuousDomain</code></li>
+      <li><code class="language-plaintext highlighter-rouge">DicreteDomain</code>
+        <ul>
+          <li><code class="language-plaintext highlighter-rouge">CategoricalDomain</code></li>
+          <li><code class="language-plaintext highlighter-rouge">OrdinalDomain</code></li>
+        </ul>
+      </li>
+      <li><code class="language-plaintext highlighter-rouge">TemporalDomain</code>
+        <ul>
+          <li><code class="language-plaintext highlighter-rouge">DateDomain</code></li>
+          <li><code class="language-plaintext highlighter-rouge">DateTimeDomain</code></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">MultiDomain</code></li>
+</ul>
+
+<p>The PMML data type is derived from the Python data type, but it can be overriden using the <code class="language-plaintext highlighter-rouge">dtype</code> parameter.
+The operational type is derived from the location of the subclass in class hierarchy.</p>
+
+<p>If the training dataset contains masked missing values, then the value of the mask should be declared using the <code class="language-plaintext highlighter-rouge">missing_values</code> parameter.</p>
+
+<p>For example, creating the stub of the above <code class="language-plaintext highlighter-rouge">DataField</code> element:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span>
+
+<span class="n">domain</span> <span class="o">=</span> <span class="n">CategoricalDomain</span><span class="p">(</span><span class="n">dtype</span> <span class="o">=</span> <span class="nb">int</span><span class="p">,</span> <span class="n">missing_values</span> <span class="o">=</span> <span class="o">-</span><span class="mi">999</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The valid value space cannot be set or overriden manually.
+It is collected and stored automatically whenever the <code class="language-plaintext highlighter-rouge">Domain.fit(X, y)</code> method is called.</p>
+
+<p>The outlier treatment, invalid value treatment and missing value treatment are PMML defaults, but they can be overriden using the corresponding parameters.
+Parameter names and values are derived from PMML attribute names and values by changing the format from lower camelcase (“someValue”) to lower underscore case (“some_value”).</p>
+
+<p>For example, making the default configuration explicit:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">ContinuousDomain</span>
+
+<span class="n">domain</span> <span class="o">=</span> <span class="n">ContinuousDomain</span><span class="p">(</span><span class="n">outlier_treatment</span> <span class="o">=</span> <span class="s">"as_is"</span><span class="p">,</span> <span class="n">low_value</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">high_value</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">invalid_value_treatment</span> <span class="o">=</span> <span class="s">"return_invalid"</span><span class="p">,</span> <span class="n">invalid_value_replacement</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">missing_value_treatment</span> <span class="o">=</span> <span class="s">"as_is"</span><span class="p">,</span> <span class="n">missing_value_replacement</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">Domain.transform(X)</code> method uses all this information to prepare the dataset exactly the same way as any standards-compliant PMML engine would do.</p>
+
+<h3 id="scikit-learn-examples">Scikit-Learn examples</h3>
+
+<p>Domain decorators bring most value when working with heterogeneous datasets.</p>
+
+<p>The simplest way to go about such workflows is to assemble a two-step pipeline, where the first step is either a <code class="language-plaintext highlighter-rouge">sklearn_pandas.DataFrameMapper</code> or <code class="language-plaintext highlighter-rouge">sklearn.compose.ColumnTransformer</code> meta-transformer for performing column-oriented feature engineering work, and the second step is an estimator:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"audit.csv"</span><span class="p">)</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">([</span>
+  <span class="p">([</span><span class="s">"Income"</span><span class="p">],</span> <span class="bp">None</span><span class="p">),</span>
+  <span class="p">([</span><span class="s">"Employment"</span><span class="p">],</span> <span class="n">OneHotEncoder</span><span class="p">())</span>
+<span class="p">])</span>
+
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">()</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">classifier</span><span class="p">)</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"pipeline.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Some guiding principles to follow when introducing domain decorators:</p>
+
+<ul>
+  <li>A domain decorator must be in the first position in the transformers list, because it can only be applied to input fields (<code class="language-plaintext highlighter-rouge">DataField</code> elements) and not to already encoded or transformed fields (<code class="language-plaintext highlighter-rouge">DerivedField</code> elements).</li>
+  <li>A column should only be decorated once. If the same column is used multiple times, then the first occurrence should be decorated, and all the other occurrences should be left undecorated.</li>
+  <li>It never hurts to be more specific and explicit. Default parameter values can be surprising at times.</li>
+  <li>Domain decorators are supposed to help with assessing the “model-data fit” during model deployment. Are there any known differences (eg. encoding of missing values) between the training dataset and the deployment dataset(s)?</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span><span class="p">,</span> <span class="n">ContinuousDomain</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">([</span>
+  <span class="p">([</span><span class="s">"Income"</span><span class="p">],</span> <span class="n">ContinuousDomain</span><span class="p">()),</span>
+  <span class="p">([</span><span class="s">"Employment"</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">OneHotEncoder</span><span class="p">()])</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>Avoiding duplicate decorations:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">Alias</span><span class="p">,</span> <span class="n">MultiDomain</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">ExpressionTransformer</span><span class="p">,</span> <span class="n">LookupTransformer</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">employment_sector</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s">"Consultant"</span> <span class="p">:</span> <span class="s">"Private"</span><span class="p">,</span>
+  <span class="s">"PSFederal"</span> <span class="p">:</span> <span class="s">"Public"</span><span class="p">,</span>
+  <span class="s">"PSLocal"</span> <span class="p">:</span> <span class="s">"Public"</span><span class="p">,</span>
+  <span class="s">"PSState"</span> <span class="p">:</span> <span class="s">"Public"</span><span class="p">,</span>
+  <span class="s">"Private"</span> <span class="p">:</span> <span class="s">"Private"</span><span class="p">,</span>
+  <span class="s">"SelfEmp"</span> <span class="p">:</span> <span class="s">"Private"</span>
+<span class="p">}</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">([</span>
+  <span class="p">([</span><span class="s">"Income"</span><span class="p">],</span> <span class="n">ContinuousDomain</span><span class="p">()),</span>
+  <span class="p">([</span><span class="s">"Income"</span><span class="p">,</span> <span class="s">"Hours"</span><span class="p">],</span> <span class="p">[</span><span class="n">MultiDomain</span><span class="p">([</span><span class="bp">None</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">()]),</span> <span class="n">Alias</span><span class="p">(</span><span class="n">ExpressionTransformer</span><span class="p">(</span><span class="s">"X[0] / (X[1] * 52)"</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">float</span><span class="p">),</span> <span class="s">"Hourly_Income"</span><span class="p">,</span> <span class="n">prefit</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)]),</span>
+  <span class="p">([</span><span class="s">"Employment"</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">OneHotEncoder</span><span class="p">()]),</span>
+  <span class="p">([</span><span class="s">"Employment"</span><span class="p">],</span> <span class="p">[</span><span class="n">Alias</span><span class="p">(</span><span class="n">LookupTransformer</span><span class="p">(</span><span class="n">employment_sector</span><span class="p">,</span> <span class="n">default_value</span> <span class="o">=</span> <span class="s">"Other"</span><span class="p">),</span> <span class="s">"Employment_Sector"</span><span class="p">,</span> <span class="n">prefit</span> <span class="o">=</span> <span class="bp">True</span><span class="p">),</span> <span class="n">OneHotEncoder</span><span class="p">()])</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>In the above Python code, transformations have been grouped by input columns, whereas simple transformations (“Income”, “Employment”) have been moved in front of complex tranformations (“Hourly_Income”, “Employment_Sector”).
+The “Hours” column does not make a standalone appearance.
+It is decorated using the <code class="language-plaintext highlighter-rouge">MultiDomain</code> meta-decorator when the data enters the “Hourly_Income” transformers list.</p>
+
+<p>Restricing the range of valid values:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">([</span>
+  <span class="p">([</span><span class="s">"Income"</span><span class="p">],</span> <span class="n">ContinuousDomain</span><span class="p">(</span><span class="n">outlier_treatment</span> <span class="o">=</span> <span class="s">"as_extreme_values"</span><span class="p">,</span> <span class="n">low_value</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">high_value</span> <span class="o">=</span> <span class="mi">400000</span><span class="p">)),</span>
+  <span class="p">([</span><span class="s">"Income"</span><span class="p">,</span> <span class="s">"Hours"</span><span class="p">],</span> <span class="n">MultiDomain</span><span class="p">([</span><span class="bp">None</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">(</span><span class="n">outlier_treatment</span> <span class="o">=</span> <span class="s">"as_missing_values"</span><span class="p">,</span> <span class="n">low_value</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">high_value</span> <span class="o">=</span> <span class="mi">168</span><span class="p">,</span> <span class="n">missing_value_treatment</span> <span class="o">=</span> <span class="s">"return_invalid"</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">float</span><span class="p">)]),</span> <span class="p">...])</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>The “Income” column is restricted to <code class="language-plaintext highlighter-rouge">[2000, 400000]</code>.
+The “Hours” column is restricted to <code class="language-plaintext highlighter-rouge">[0, 168]</code>, which represents the bounds of physical reality (number of hours in a week).
+Any value outside that range is replaced with a missing value in order to trigger its rejection using the <code class="language-plaintext highlighter-rouge">returnInvalid</code> missing value treatment.</p>
+
+<p>Customizing the treatment of invalid and missing values:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">([</span>
+  <span class="p">([</span><span class="s">"Income"</span><span class="p">],</span> <span class="n">ContinuousDomain</span><span class="p">(</span><span class="n">invalid_value_treatment</span> <span class="o">=</span> <span class="s">"as_is"</span><span class="p">)),</span>
+  <span class="p">([</span><span class="s">"Employment"</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(</span><span class="n">invalid_value_treatment</span> <span class="o">=</span> <span class="s">"as_missing_value"</span><span class="p">,</span> <span class="n">missing_value_replacement</span> <span class="o">=</span> <span class="s">"Private"</span><span class="p">),</span> <span class="n">OneHotEncoder</span><span class="p">()])</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>Decision trees are quite robust towards input values that were not present in the training dataset.
+For example, continuous splits send the data record to the left or to the right by comparing the input value against the split threshold value.
+These decisions do not carry any weight (eg. “weak left” vs. “strong right”) that would depend on the distance between them.</p>
+
+<p>Invalid and missing value spaces are often merged for convenience reasons.
+No matter if the “Employment” column contains an invalid value or a missing value, it will be replaced with “Private” (the most frequent value in the training dataset).</p>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="r scikit-learn apache-spark pyspark r2pmml sklearn2pmml pyspark2pmml">
+  <meta name="author" content="vruusmann">
+
+  <title>Converting logistic regression models to PMML documents - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2020/01/19/converting_logistic_regression_pmml/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Converting logistic regression models to PMML documents - Openscoring" />
+  <meta property="og:url" content="/blog/2020/01/19/converting_logistic_regression_pmml/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2020-01-19 00:00:00 +0200" />
+  <meta property="article:published_time" content="2020-01-19 00:00:00 +0200" />
+  <meta property="article:modified_time" content="2020-01-19 00:00:00 +0200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Converting logistic regression models to PMML documents - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Converting logistic regression models to PMML documents</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>Logistic regression is often the go-to algorithm for binary classification problems.</p>
+
+<p>This blog post demonstrates how to perform feature engineering and train a logistic regression model in a way that allows for quick productionization using the Predective Model Markup Language (PMML) standard.
+The same workflow is implemented using R, Scikit-Learn and Apache Spark frameworks to demostrate their particularities.</p>
+
+<p>Summary of the workflow:</p>
+
+<ul>
+  <li>Ingesting the raw dataset.</li>
+  <li>Feature engineering:
+    <ul>
+      <li>Capturing and refining feature information.</li>
+      <li>Applying transformations to individual continuous and categorical features.</li>
+      <li>Interacting categorical features.</li>
+    </ul>
+  </li>
+  <li>Training a model using the transformed dataset.</li>
+  <li>Enhancing the model with verification data.</li>
+  <li>Converting the model to a PMML document using JPMML family conversion tools and libraries.</li>
+</ul>
+
+<h3 id="r">R</h3>
+
+<p>R follows functional programming paradigm.
+The built-in <code class="language-plaintext highlighter-rouge">stats</code> package provides a <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/glm"><code class="language-plaintext highlighter-rouge">glm()</code></a> function for training generalized linear models.
+The logistic regression mode is activated by setting the <code class="language-plaintext highlighter-rouge">family</code> argument to binomial value (either as a string literal or a <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/family"><code class="language-plaintext highlighter-rouge">family</code></a> object).</p>
+
+<p>If the goal is to perform feature engineering in a PMML compatible manner, then the <code class="language-plaintext highlighter-rouge">glm()</code> function must be called using “formula interface”.
+Simple formulas can be specified inline (eg. <code class="language-plaintext highlighter-rouge">glm(Adjusted ~ ., family = "binomial", data = audit.df)</code>).
+Complex formulas should be assembled step by step from stringified terms, and then compiled into a standalone <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula"><code class="language-plaintext highlighter-rouge">formula</code></a> object:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">audit.terms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"Adjusted ~ ."</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Feature engineering</span><span class="w">
+</span><span class="n">audit.terms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">audit.terms</span><span class="p">,</span><span class="w"> </span><span class="n">...</span><span class="p">)</span><span class="w">
+
+</span><span class="n">audit.formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">as.formula</span><span class="p">(</span><span class="n">paste</span><span class="p">(</span><span class="n">audit.terms</span><span class="p">,</span><span class="w"> </span><span class="n">collapse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">" "</span><span class="p">))</span><span class="w">
+
+</span><span class="n">audit.glm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="p">(</span><span class="n">formula</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">audit.formula</span><span class="p">,</span><span class="w"> </span><span class="n">family</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">binomial</span><span class="p">(</span><span class="n">link</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"logit"</span><span class="p">),</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">audit.df</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Feature engineering is possible by embedding R function calls into model formulae.
+The portability of model formulae can be improved by using fully-qualified function names (ie. <code class="language-plaintext highlighter-rouge">&lt;namespace&gt;::&lt;name&gt;()</code> instead of <code class="language-plaintext highlighter-rouge">&lt;name&gt;()</code>).</p>
+
+<p>If the model will be used only in R environment, then it is possible to use any R language operator or function.
+However, if the model needs to be converted to the PMML representation, then it is possible to use only those constructs that are recognized and supported by the conversion tool.</p>
+
+<p>Continuous features can be manipulated using arithmetic operators and functions:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># ?I</span><span class="w">
+</span><span class="n">audit.terms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">audit.terms</span><span class="p">,</span><span class="w"> </span><span class="s2">"+ I(log(Income)) - Income"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Most R’s algorithms detect column data types, and treat continuous (eg. <code class="language-plaintext highlighter-rouge">numeric</code> and <code class="language-plaintext highlighter-rouge">integer</code>) and categorical (eg. <code class="language-plaintext highlighter-rouge">logical</code>, <code class="language-plaintext highlighter-rouge">factor</code>) features using different subroutines.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">glm()</code> function automatically drops the first category level of each categorical feature to fight collinearity.
+For example, a boolean feature gives rise to exactly one categorical predictor term (typically the <code class="language-plaintext highlighter-rouge">true</code> category, because <code class="language-plaintext highlighter-rouge">factor</code> levels follow the natural ordering by default).</p>
+
+<p>Categorical features can be regrouped using <code class="language-plaintext highlighter-rouge">plyr::revalue()</code> or <code class="language-plaintext highlighter-rouge">plyr::mapvalues()</code> functions.
+All arguments to the function call must be formatted as strings so that they could become an integral part of the <code class="language-plaintext highlighter-rouge">formula</code> object:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Declare the replacement table as a named vector</span><span class="w">
+</span><span class="n">employment.newlevels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="w">
+  </span><span class="s2">"Consultant"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Private"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"Private"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Private"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"PSFederal"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Public"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"PSLocal"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Public"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"PSState"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Public"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"SelfEmp"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Private"</span><span class="p">,</span><span class="w">
+  </span><span class="s2">"Volunteer"</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"Other"</span><span class="w">
+</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Format the named vector as a string</span><span class="w">
+</span><span class="c1"># Escape both names and values using the `shQuote()` function</span><span class="w">
+</span><span class="n">employment.newlevels.str</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="s2">"c("</span><span class="p">,</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="n">lapply</span><span class="p">(</span><span class="nf">names</span><span class="p">(</span><span class="n">employment.newlevels</span><span class="p">),</span><span class="w"> </span><span class="k">function</span><span class="p">(</span><span class="n">x</span><span class="p">){</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="n">shQuote</span><span class="p">(</span><span class="n">x</span><span class="p">),</span><span class="w"> </span><span class="s2">"="</span><span class="p">,</span><span class="w"> </span><span class="n">shQuote</span><span class="p">(</span><span class="n">employment.newlevels</span><span class="p">[[</span><span class="n">x</span><span class="p">]]))</span><span class="w"> </span><span class="p">}),</span><span class="w"> </span><span class="n">collapse</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">", "</span><span class="p">),</span><span class="w"> </span><span class="s2">")"</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span><span class="p">)</span><span class="w">
+</span><span class="n">print</span><span class="p">(</span><span class="n">employment.newlevels.str</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># ?plyr::revalue</span><span class="w">
+</span><span class="n">audit.terms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">audit.terms</span><span class="p">,</span><span class="w"> </span><span class="n">paste</span><span class="p">(</span><span class="s2">"+ plyr::revalue(Employment, replace = "</span><span class="p">,</span><span class="w"> </span><span class="n">employment.newlevels.str</span><span class="p">,</span><span class="w"> </span><span class="s2">") - Employment"</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">""</span><span class="p">))</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Feature interactions (between all feature types) can declared using the <code class="language-plaintext highlighter-rouge">:</code> operator:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># ?interaction()</span><span class="w">
+</span><span class="n">audit.terms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="n">audit.terms</span><span class="p">,</span><span class="w"> </span><span class="s2">"+ Gender:Marital"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The logistic regression model together with the embedded formula is converted to the PMML representation using the <a href="https://github.com/jpmml/r2pmml"><code class="language-plaintext highlighter-rouge">r2pmml</code></a> package.
+The legacy <code class="language-plaintext highlighter-rouge">pmml</code> package supports model formulae only partially, and should be avoided.</p>
+
+<p>Right before the conversion, the logistic regression model object is enhanced with verification data using the <code class="language-plaintext highlighter-rouge">r2pmml::verify.glm()</code> function.
+The <code class="language-plaintext highlighter-rouge">audit.glm</code> variable is re-assigned, because this function returns a modified copy of the input (rather than modifying the input in place).</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="s2">"dplyr"</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="s2">"r2pmml"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">audit.glm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r2pmml</span><span class="o">::</span><span class="n">verify</span><span class="p">(</span><span class="n">audit.glm</span><span class="p">,</span><span class="w"> </span><span class="n">newdata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dplyr</span><span class="o">::</span><span class="n">sample_n</span><span class="p">(</span><span class="n">audit.df</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">))</span><span class="w">
+
+</span><span class="n">r2pmml</span><span class="o">::</span><span class="n">r2pmml</span><span class="p">(</span><span class="n">audit.glm</span><span class="p">,</span><span class="w"> </span><span class="s2">"RExpAudit.pmml"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<h3 id="scikit-learn">Scikit-Learn</h3>
+
+<p>Scikit-Learn follows object-oriented programming (OOP) paradigm.
+The <a href="https://scikit-learn.org/stable/modules/classes.html#module-sklearn.linear_model">Linear Models</a> module provides a <code class="language-plaintext highlighter-rouge">LinearModel</code> base class, which is subclassed and mixed with <code class="language-plaintext highlighter-rouge">RegressorMixin</code> and <code class="language-plaintext highlighter-rouge">ClassifierMixin</code> traits to provide algorithm-specific model base classes.
+The logistic regression algorithm is available as the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html"><code class="language-plaintext highlighter-rouge">LogisticRegression</code></a> model.</p>
+
+<p>Scikit-Learn estimators are trained by calling the <code class="language-plaintext highlighter-rouge">fit(X, y, **fit_params)</code> method.
+However, real-life datasets require serious data pre-processing before they can be passed to this method.
+The main requirement is transforming features from the mixed high-level representation to the unified (floating point) low-level representation so that they would become “understandable” to numerical algorithms.</p>
+
+<p>Scikit-Learn provides a decent selection of transformers that help with importing data into the pipeline. Unfortunately, the situation is rather bleak when it comes to manipulating or modifying data inside the pipeline (eg. concatenating two string columns into a new string column).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package does its best to address this deficiency in a PMML compatible manner.
+The <a href="https://github.com/jpmml/sklearn2pmml/tree/master/sklearn2pmml/decoration">Decoration</a> and <a href="https://github.com/jpmml/sklearn2pmml/tree/master/sklearn2pmml/preprocessing">Preprocessing</a> modules provide transformers for performing common data science operations.
+They operate on the high-level representation of data, and typically precede any Scikit-Learn transformers in the pipeline.</p>
+
+<p>Transforming the “audit” dataset to a 2-D Numpy array:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span><span class="p">,</span> <span class="n">PolynomialFeatures</span><span class="p">,</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span><span class="p">,</span> <span class="n">ContinuousDomain</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">ExpressionTransformer</span><span class="p">,</span> <span class="n">LookupTransformer</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">employment_mapping</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s">"Consultant"</span> <span class="p">:</span> <span class="s">"Private"</span><span class="p">,</span>
+  <span class="s">"Private"</span> <span class="p">:</span> <span class="s">"Private"</span><span class="p">,</span>
+  <span class="s">"PSFederal"</span> <span class="p">:</span> <span class="s">"Public"</span><span class="p">,</span>
+  <span class="s">"PSLocal"</span> <span class="p">:</span> <span class="s">"Public"</span><span class="p">,</span>
+  <span class="s">"PSState"</span> <span class="p">:</span> <span class="s">"Public"</span><span class="p">,</span>
+  <span class="s">"SelfEmp"</span> <span class="p">:</span> <span class="s">"Private"</span><span class="p">,</span>
+  <span class="s">"Volunteer"</span> <span class="p">:</span> <span class="s">"Other"</span>
+<span class="p">}</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">([</span>
+  <span class="p">([</span><span class="s">"Income"</span><span class="p">],</span> <span class="p">[</span><span class="n">ContinuousDomain</span><span class="p">(),</span> <span class="n">ExpressionTransformer</span><span class="p">(</span><span class="s">"numpy.log(X[0])"</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">float64</span><span class="p">)]),</span>
+  <span class="p">([</span><span class="s">"Employment"</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">LookupTransformer</span><span class="p">(</span><span class="n">employment_mapping</span><span class="p">,</span> <span class="n">default_value</span> <span class="o">=</span> <span class="bp">None</span><span class="p">),</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="s">"first"</span><span class="p">)]),</span>
+  <span class="p">([</span><span class="s">"Gender"</span><span class="p">,</span> <span class="s">"Marital"</span><span class="p">],</span> <span class="p">[</span><span class="n">MultiDomain</span><span class="p">([</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">CategoricalDomain</span><span class="p">()]),</span> <span class="n">OneHotEncoder</span><span class="p">(),</span> <span class="n">PolynomialFeatures</span><span class="p">(</span><span class="n">degree</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">interaction_only</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">include_bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)]),</span>
+  <span class="p">([</span><span class="s">"Age"</span><span class="p">,</span> <span class="s">"Hours"</span><span class="p">],</span> <span class="p">[</span><span class="n">ContinuousDomain</span><span class="p">(),</span> <span class="n">StandardScaler</span><span class="p">()]),</span> 
+  <span class="p">(</span><span class="s">"Education"</span><span class="p">,</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="s">"first"</span><span class="p">)]),</span>
+  <span class="p">(</span><span class="s">"Occupation"</span><span class="p">,</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">drop</span> <span class="o">=</span> <span class="s">"first"</span><span class="p">)])</span>
+<span class="p">])</span>
+
+<span class="n">df_Xt</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df_X</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>There are several options for converting strings to bit vectors:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Transformer</th>
+      <th>Scikit-Learn version</th>
+      <th>Input arity</th>
+      <th>Quick drop category?</th>
+      <th>Output</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">LabelBinarizer</code></td>
+      <td>All</td>
+      <td>1</td>
+      <td>No</td>
+      <td>Dense array</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">[LabelEncoder(), OneHotEncoder()]</code></td>
+      <td>&lt; 0.20</td>
+      <td>1</td>
+      <td>No</td>
+      <td>Sparse matrix</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">OneHotEncoder()</code></td>
+      <td>&gt;= 0.20</td>
+      <td>1 or more</td>
+      <td>Yes</td>
+      <td>Sparse matrix</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html"><code class="language-plaintext highlighter-rouge">OneHotEncoder</code></a> transformer was heavily refactored in Scikit-Learn version 0.20, giving it the ability to fit and transform multiple columns together, and drop category levels.</p>
+
+<p>These two abilities enable vastly cleaner and conciser workflows.</p>
+
+<p>The interaction between “Gender” and “Marital” string columns can be expressed as a one-liner.
+The list selector syntax (<code class="language-plaintext highlighter-rouge">["Gender", "Marital"]</code>) yields a two-column string array, which is first one-hot-encoded to an eight-column integer array, and then polynomially combined into a 36-column integer array.
+The first eight elements correspond to raw category levels (ie. <code class="language-plaintext highlighter-rouge">Gender=Male, Gender=Female, Marital=Absent, ..</code>), and the remaining twenty eight ((8 * (8 - 1)) / 2) elements to interactions between them (ie. <code class="language-plaintext highlighter-rouge">Gender=Male * Gender=Female, Gender=Male * Marital=Absent, ..</code>).</p>
+
+<p>Using the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html"><code class="language-plaintext highlighter-rouge">PolynomialFeatures</code></a> transformer for feature interactions does the job, but is far from elegance and efficiency.
+The main complaint is that it lacks the concept of feature boundaries (“treat the leading n elements as belonging to feature A, and the following m elements as belonging to feature B”), which could be used to prevent the generation of meaningless or undesirable interaction terms.
+For example, interaction terms which combine different category levels of the same feature (eg. <code class="language-plaintext highlighter-rouge">Gender=Male * Gender=Female</code>) are non-sensical from the real-life perspective, and risk blowing up numerical algorithms due to high collinearity with other terms.</p>
+
+<p>Fighting collinearity is a major issue when training unregularized (logistic-) regression models.
+A common source of highly correlated features is the binarization or one-hot-encoding of string columns.
+The <code class="language-plaintext highlighter-rouge">OneHotEncoder</code> transformer fixes this by allowing one category level to be excluded from the one-hot-encoding process.
+Most data scientist habitually drop the first category level.</p>
+
+<p>The logistic regression model is associated with transformations by constructing a two-step pipeline.
+The <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object is enhanced with verification data and converted to the PMML representation using the <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">multi_class</span> <span class="o">=</span> <span class="s">"ovr"</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">))</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_X</span><span class="p">,</span> <span class="n">df_y</span><span class="p">)</span>
+
+<span class="n">pipeline</span><span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">df_X</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"SkLearnAudit.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="apache-spark">Apache Spark</h3>
+
+<p>Apache Spark allows the end user to choose between programming paradigms.
+The prevailing DataFrame-based machine learning API called Apache Spark ML is built around transformers and models that are almost identical to their Scikit-Learn namesakes.
+In fact, it is possible to translate pipelines between these two ML frameworks with not much effort.</p>
+
+<p>However, solving data science problems at Apache Spark ML layer involves lot of typing, and sooner or later hits various API limits.
+For example, the label column of classification models must be explicitly converted from the high-level string representation to low-level bit vector representation, and back, using a pair of <code class="language-plaintext highlighter-rouge">StringIndexer(Model)</code> and <code class="language-plaintext highlighter-rouge">IndexToString</code> transformers.
+The initialization of each pipeline stage typically requires writing three to five lines of boilerplate code, which adds to the burden.</p>
+
+<p>It is possible to “compress” rather complex workflows into small and expressive scripts by leveraging different API layers.
+For example, performing all data extraction, transformation and loading (ETL) work in the Apache Spark SQL layer, and assembling the pipeline using R-like model formulae in the Apache Spark ML layer:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pyspark.ml</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">pyspark.ml.classification</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span> <span class="nn">pyspark.ml.feature</span> <span class="kn">import</span> <span class="n">RFormula</span><span class="p">,</span> <span class="n">SQLTransformer</span>
+
+<span class="n">sqlTransformer</span> <span class="o">=</span> <span class="n">SQLTransformer</span><span class="p">(</span><span class="n">statement</span> <span class="o">=</span> <span class="s">"SELECT * FROM __THIS__"</span><span class="p">)</span>
+<span class="n">rFormula</span> <span class="o">=</span> <span class="n">RFormula</span><span class="p">(</span><span class="n">formula</span> <span class="o">=</span> <span class="s">"Adjusted ~ ."</span><span class="p">)</span>
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">stages</span> <span class="o">=</span> <span class="p">[</span><span class="n">sqlTransformer</span><span class="p">,</span> <span class="n">rFormula</span><span class="p">,</span> <span class="n">classifier</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>Apache Spark SQL supports most standard SQL constructs and functions.
+SQL and PMML are are conceptually rather close in their underlying data models (strongly typed, scalar values).
+The <a href="https://github.com/jpmml/jpmml-sparkml">JPMML-SparkML</a> library provides an <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.ExpressionTranslator</code> component for translating Catalyst expressions to PMML expressions.
+This component currently supports around 45 expression types.
+If some expression is not supported, then it is often possible to work around it by re-expressing it in terms of other supported functions.</p>
+
+<p>Even though Scikit-Learn and Apache Spark both call their workflow unit a “pipeline”, they are very different by design and implementation.</p>
+
+<p>Scikit-Learn pipelines are linear sequences of steps (aka stages).
+The dataset is a contiguous array or matrix that is automatically passed from one step to the next step. There can be no back-references to earlier steps or earlier states of the dataset (eg. “get the second column of the dataset three steps back from here”).</p>
+
+<p>In contrast, Apache Spark pipelines are directed acyclic graphs of stages, optimized for lazy and distributed evaluation.
+The dataset is a loose collection of columns. Each stage pulls in a subset of existing columns (<code class="language-plaintext highlighter-rouge">HasInputCol</code> and <code class="language-plaintext highlighter-rouge">HasInputCols</code> traits) and pushes out new columns (<code class="language-plaintext highlighter-rouge">HasOutputCol</code> and <code class="language-plaintext highlighter-rouge">HasOutputCols</code> traits).
+Created columns stay in place until replaced or removed.</p>
+
+<p>Logistic regression models can be represented using two different PMML model elements.
+The <a href="http://dmg.org/pmml/v4-4-1/GeneralRegression.html"><code class="language-plaintext highlighter-rouge">GeneralRegressionModel</code></a> element is more flexible (eg. contrast matrices, parameterizable link functions), but is encoded in a matrix-oriented way that is rather difficult to parse and follow for humans.
+The <a href="http://dmg.org/pmml/v4-4-1/Regression.html"><code class="language-plaintext highlighter-rouge">RegressionModel</code></a> elements loses in functionality but makes it up in human-friendliness.</p>
+
+<p>The JPMML-SparkML library allows the end user to choose between them by setting the value of the <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.model.HasRegressionTableOptions#OPTION_REPRESENTATION</code> conversion option to <code class="language-plaintext highlighter-rouge">GeneralRegressionModel</code> or <code class="language-plaintext highlighter-rouge">RegressionModel</code> string literals, respectively.</p>
+
+<p>The pipeline model is enhanced with verification data and converted to the PMML representation using the <a href="https://github.com/jpmml/pyspark2pmml"><code class="language-plaintext highlighter-rouge">pyspark2pmml</code></a> package:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pyspark2pmml</span> <span class="kn">import</span> <span class="n">PMMLBuilder</span>
+
+<span class="n">pipelineModel</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="n">pmmlBuilder</span> <span class="o">=</span> <span class="n">PMMLBuilder</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">pipelineModel</span><span class="p">)</span> \
+  <span class="p">.</span><span class="n">putOption</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="s">"representation"</span><span class="p">,</span> <span class="s">"RegressionModel"</span><span class="p">)</span> \
+  <span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">))</span>
+
+<span class="n">pmmlBuilder</span><span class="p">.</span><span class="n">buildFile</span><span class="p">(</span><span class="s">"PySparkAudit.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>
+  <li>R script: <a href="https://openscoring.io/resources/2020-01-19/train.R"><code class="language-plaintext highlighter-rouge">train.R</code></a></li>
+  <li>Python scripts: <a href="https://openscoring.io/resources/2020-01-19/train-sklearn.py"><code class="language-plaintext highlighter-rouge">train-sklearn.py</code></a> and <a href="https://openscoring.io/resources/2020-01-19/train-pyspark.py"><code class="language-plaintext highlighter-rouge">train-pyspark.py</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn sklearn2pmml tf-idf">
+  <meta name="author" content="vruusmann">
+
+  <title>Converting Scikit-Learn based TF(-IDF) pipelines to PMML documents - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2021/01/17/converting_sklearn_tf_tfidf_pipeline_pmml/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Converting Scikit-Learn based TF(-IDF) pipelines to PMML documents - Openscoring" />
+  <meta property="og:url" content="/blog/2021/01/17/converting_sklearn_tf_tfidf_pipeline_pmml/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2021-01-17 00:00:00 +0200" />
+  <meta property="article:published_time" content="2021-01-17 00:00:00 +0200" />
+  <meta property="article:modified_time" content="2021-01-17 00:00:00 +0200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Converting Scikit-Learn based TF(-IDF) pipelines to PMML documents - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Converting Scikit-Learn based TF(-IDF) pipelines to PMML documents</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>The outline of a TF(-IDF) workflow:</p>
+
+<ol>
+  <li>Text tokenization.</li>
+  <li>Token normalization (case conversion, stemming, lemmatization).</li>
+  <li>Token filtering (removing stop words and low-importance words).</li>
+  <li>Token aggregation into terms (n-gram generation).</li>
+  <li>Term score estimation.</li>
+</ol>
+
+<h3 id="scikit-learn">Scikit-Learn</h3>
+
+<p>Typical implementation:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.feature_extraction.text</span> <span class="kn">import</span> <span class="n">CountVectorizer</span><span class="p">,</span> <span class="n">TfidfVectorizer</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"sentiment.csv"</span><span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"tfidfvectorizer"</span><span class="p">,</span> <span class="n">TfidfVectorizer</span><span class="p">(</span><span class="n">stop_words</span> <span class="o">=</span> <span class="s">"english"</span><span class="p">,</span> <span class="n">max_features</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span> <span class="n">ngram_range</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">norm</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">"estimator"</span><span class="p">,</span> <span class="p">...)</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">"Sentence"</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s">"Score"</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>Scikit-Learn packs TF(-IDF) workflow operations 1 through 4 into a single transformer - <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html"><code class="language-plaintext highlighter-rouge">CountVectorizer</code></a> for TF, and <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html"><code class="language-plaintext highlighter-rouge">TfidfVectorizer</code></a> for TF-IDF:</p>
+
+<ol>
+  <li>Text tokenization is controlled using one of <code class="language-plaintext highlighter-rouge">tokenizer</code> or <code class="language-plaintext highlighter-rouge">token_pattern</code> attributes.</li>
+  <li>Token normalization is controlled using <code class="language-plaintext highlighter-rouge">lowercase</code> and <code class="language-plaintext highlighter-rouge">strip_accents</code> attributes.</li>
+  <li>Token filtering is controlled using <code class="language-plaintext highlighter-rouge">stop_words</code>, <code class="language-plaintext highlighter-rouge">min_df</code>, <code class="language-plaintext highlighter-rouge">max_df</code> and <code class="language-plaintext highlighter-rouge">max_features</code> attributes.</li>
+  <li>Token aggregation is controlled using the <code class="language-plaintext highlighter-rouge">ngram_range</code> attribute.</li>
+</ol>
+
+<p>Term scores are estimated using the final estimator step.</p>
+
+<p>Linear models estimate a score for each and every term.
+The sentence score is the sum of its constituent term scores.
+For better interpretability, it is advisable to keep sentences short and uniform (ie. sentences should parse into structurally similar token sets), and constrain the number of features.</p>
+
+<p>Decision tree models estimate a score for combinations of terms.
+The sentence score is the value associated with a decision path like “sentence contains term A, and does not contain terms B and C”.
+Decision trees can be ensembled either via bagging (random forest) or boosting (XGBoost, LightGBM), which gives them scoring properties that are more similar to linear models.</p>
+
+<h3 id="pmml">PMML</h3>
+
+<p>The Predictive Model Markup Language (PMML) provides a <a href="http://dmg.org/pmml/v4-4-1/Transformations.html#xsdElement_TextIndex"><code class="language-plaintext highlighter-rouge">TextIndex</code></a> element for representing TF(-IDF) operations.
+In brief, this tranformation takes a string input value, normalizes it, and then counts the occurrences of the specified term.
+Term matching can be strict or fuzzy.</p>
+
+<p>Text tokenization rules must be expressed in the form of regular expressions (REs).</p>
+
+<p>The default behaviour for PMML (and Apache Spark ML) is <em>text splitting</em> using a <em>word separator RE</em>:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;TextIndex</span> <span class="na">textField=</span><span class="s">"input"</span> <span class="na">wordSeparatorCharacterRE=</span><span class="s">"\s+"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;Constant&gt;</span>term<span class="nt">&lt;/Constant&gt;</span>
+<span class="nt">&lt;/TextIndex&gt;</span>
+</code></pre></div></div>
+
+<p>Splitting yields “dirty” tokens. They are automatically cleansed by trimming all the leading and trailing punctuation characters.</p>
+
+<p>A splitting tokenizer is available as the <code class="language-plaintext highlighter-rouge">sklearn2pmml.feature_extraction.text.Splitter</code> callable type:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.feature_extraction.text</span> <span class="kn">import</span> <span class="n">Splitter</span>
+
+<span class="n">countvectorizer</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">(</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">Splitter</span><span class="p">(</span><span class="n">word_separator_re</span> <span class="o">=</span> <span class="s">"\s+"</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>The default behaviour for Scikit-Learn is <em>token matching</em> (aka token extraction) using a <em>word RE</em>.
+Unfortunately, this behaviour cannot be supported by the standard <code class="language-plaintext highlighter-rouge">wordSeparatorCharacterRE</code> attribute, because there is no straightforward way of translating between word and word separator REs.</p>
+
+<p>The JPMML ecosystem extends the <code class="language-plaintext highlighter-rouge">TextIndex</code> element with the <code class="language-plaintext highlighter-rouge">x-wordRE</code> attribute as proposed in <a href="http://mantis.dmg.org/view.php?id=271">http://mantis.dmg.org/view.php?id=271</a>:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;TextIndex</span> <span class="na">textField=</span><span class="s">"input"</span> <span class="na">x-wordRE=</span><span class="s">"\w+"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;Constant&gt;</span>term<span class="nt">&lt;/Constant&gt;</span>
+<span class="nt">&lt;/TextIndex&gt;</span>
+</code></pre></div></div>
+
+<p>Matching is assumed to yield “clean” tokens.
+A data scientist shall be free to craft a word RE that extracts and retains significant punctuation or whitespace characters.</p>
+
+<p>A matching tokenizer is available as the <code class="language-plaintext highlighter-rouge">sklearn2pmml.feature_extraction.text.Matcher</code> callable type:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.feature_extraction.text</span> <span class="kn">import</span> <span class="n">Matcher</span>
+
+<span class="n">countvectorizer</span> <span class="o">=</span> <span class="n">CountVectorizer</span><span class="p">(</span><span class="n">tokenizer</span> <span class="o">=</span> <span class="n">Matcher</span><span class="p">(</span><span class="n">word_re</span> <span class="o">=</span> <span class="s">"\w+"</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Another difference between TF(-IDF) workflows is that PMML performs text normalization (precedes tokenization) whereas Scikit-Learn performs token normalization (follows tokenization).</p>
+
+<p>Text normalization is activated by adding one or more <a href="http://dmg.org/pmml/v4-4-1/Transformations.html#xsdElement_TextIndexNormalization"><code class="language-plaintext highlighter-rouge">TextIndexNormalization</code></a> child elements to the <code class="language-plaintext highlighter-rouge">TextIndex</code> element.
+Again, the rules must be expressed in the form of regular expressions.</p>
+
+<p>The JPMML-SkLearn library currently uses a single <code class="language-plaintext highlighter-rouge">TextIndexNormalization</code> element for encoding the removal of stop words.
+Future versions may use more to encode stemming, lemmatization and other string manipulations.</p>
+
+<p>Alternatively, stemming and lemmatization can be emulated by manually specifying the <code class="language-plaintext highlighter-rouge">maxLevenshteinDistance</code> attribute.
+<a href="https://en.wikipedia.org/wiki/Levenshtein_distance">Levenshtein distance</a> is metric that reflects the distance between two character sequences in terms of the minimum number of one-character edits (additions, replacements or removals).</p>
+
+<p>For example, in the English language, the Levenshtein distance between the singular and plural forms of a regular noun is 1 (ie. the “s” suffix). Knowing this, it is trivial to make one <code class="language-plaintext highlighter-rouge">TextIndex</code> element match both forms:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;TextIndex</span> <span class="na">textField=</span><span class="s">"input"</span> <span class="na">maxLevenshteinDistance=</span><span class="s">"1"</span> <span class="na">x-wordRE=</span><span class="s">"\w+"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;Constant&gt;</span>term<span class="nt">&lt;/Constant&gt;</span>
+<span class="nt">&lt;/TextIndex&gt;</span>
+</code></pre></div></div>
+
+<p>Token filtering by importance and token aggregation do not require any PMML integration, because they are solely training-time phenomena.</p>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

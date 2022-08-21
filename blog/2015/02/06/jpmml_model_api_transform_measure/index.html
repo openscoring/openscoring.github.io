@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="jpmml-model optimization">
+  <meta name="author" content="vruusmann">
+
+  <title>JPMML-Model: Transforming and measuring the memory consumption of class model objects using the Java agent technology - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2015/02/06/jpmml_model_api_transform_measure/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="JPMML-Model: Transforming and measuring the memory consumption of class model objects using the Java agent technology - Openscoring" />
+  <meta property="og:url" content="/blog/2015/02/06/jpmml_model_api_transform_measure/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2015-02-06 00:00:00 +0200" />
+  <meta property="article:published_time" content="2015-02-06 00:00:00 +0200" />
+  <meta property="article:modified_time" content="2015-02-06 00:00:00 +0200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="JPMML-Model: Transforming and measuring the memory consumption of class model objects using the Java agent technology - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">JPMML-Model: Transforming and measuring the memory consumption of class model objects using the Java agent technology</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>Java (programming language-) agent is a JVM service that is based on the <a href="https://docs.oracle.com/javase/7/docs/api/java/lang/instrument/package-summary.html">Java Instrumentation API</a>. Java agents are loaded into the JVM and activated before any application code is loaded. Therefore, Java agents have the unique ability to monitor and/or control the complete life-cycle of Java applications. This is typically achieved by modifying the definitions of Java class files.</p>
+
+<h3 id="sax-locator-information">SAX Locator information</h3>
+
+<p>The <a href="https://github.com/jpmml/jpmml-model">JPMML-Model</a> library provides a class model that is rooted at the <code class="language-plaintext highlighter-rouge">org.dmg.pmml.PMMLObject</code> class. This class declares a sole <code class="language-plaintext highlighter-rouge">locator</code> field, whose responsibility is to hold SAX Locator information. Different JAXB runtimes are able to discover and initialize this field in a completely automated fashion, because it is marked with appropriate proprietary annotations (eg. <code class="language-plaintext highlighter-rouge">com.sun.xml.bind.annotation.XmlLocation</code> for <a href="https://jaxb.java.net/">GlassFish Metro implementation</a>, <code class="language-plaintext highlighter-rouge">org.eclipse.persistence.oxm.annotations.XmlLocation</code> for <a href="https://eclipse.org/eclipselink/moxy.php">EclipseLink MOXy implementation</a>).</p>
+
+<p>Application developers can access SAX Locator information using the <code class="language-plaintext highlighter-rouge">org.dmg.pmml.HasLocator</code> interface.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="nc">Locator</span> <span class="nf">getLocator</span><span class="o">(</span><span class="nc">Object</span> <span class="n">object</span><span class="o">){</span>
+
+  <span class="k">if</span><span class="o">(</span><span class="n">object</span> <span class="k">instanceof</span> <span class="nc">HasLocator</span><span class="o">){</span>
+    <span class="nc">HasLocator</span> <span class="n">hasLocator</span> <span class="o">=</span> <span class="o">(</span><span class="nc">HasLocator</span><span class="o">)</span><span class="n">object</span><span class="o">;</span>
+
+    <span class="k">return</span> <span class="n">hasLocator</span><span class="o">.</span><span class="na">getLocator</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">HasLocator#getLocator()</code> method returns an <code class="language-plaintext highlighter-rouge">org.xml.sax.Locator</code> object when the PMML document was unmarshalled from a SAX source or a SAX-backed DOM source. It returns a <code class="language-plaintext highlighter-rouge">null</code> reference when the PMML document was unmarshalled from other types of sources, or created manually.</p>
+
+<p>SAX Locator information is relevant for PMML engines, especially in model development and model testing stages. For example, the <a href="https://github.com/jpmml/jpmml-evaluator">JPMML-Evaluator</a> library uses it to point out the exact location of the problematic class model object in the source PMML document when throwing a subclass of <code class="language-plaintext highlighter-rouge">org.jpmml.manager.PMMLException</code>. However, if the quality assurance process is up to the challenge, then there should be no place for such debugging work in the final model deployment stage.</p>
+
+<p>Conversely, SAX Locator information is absolutely irrelevant for PMML converters. For example, it cannot be used to order the JAXB runtime to format the PMML document in a specific way when marshalling.</p>
+
+<p>This leads to the conclusion that, more often than not, it would be desirable to get rid of the <code class="language-plaintext highlighter-rouge">locator</code> field in a safe and easy manner. The main benefit of doing so is that it reduces the memory consumption by 25-30%. Given that RAM is cheap and plentiful nowadays, this optimization becomes reasonable to pursue when the application needs to deploy a large number of ensemble models (eg. Random Forest models) in parallel. The added benefit is that the unmarshalling time is reduced in the same proportion.</p>
+
+<h3 id="activating-the-jpmml-agent">Activating the JPMML agent</h3>
+
+<p>JPMML agent is part of the JPMML-Model library project. JPMML agent depends on the <a href="https://www.javassist.org">Javassist</a> library for its Java class file transformation functionality. Both the JPMML agent JAR file and the Javassist JAR file can be downloaded from the Maven Central repository:</p>
+
+<ul>
+  <li><a href="https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.jpmml%22%20AND%20a%3A%22pmml-agent%22">Search for a JPMML agent JAR file</a>.</li>
+  <li><a href="https://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.javassist%22%20AND%20a%3A%22javassist%22">Search for a Javassist JAR file</a>.</li>
+</ul>
+
+<p>The following example assumes that the Java application is packaged into an executable JAR file <code class="language-plaintext highlighter-rouge">myapplication.jar</code> and the name of the main class is <code class="language-plaintext highlighter-rouge">com.mycompany.myapplication.Main</code>.</p>
+
+<p>Executing the application:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -jar myapplication.jar
+</code></pre></div></div>
+
+<p>JPMML agent is loaded into the JVM using the <code class="language-plaintext highlighter-rouge">-javaagent</code> option. It takes an optional boolean argument <code class="language-plaintext highlighter-rouge">transform</code>, which indicates if the <code class="language-plaintext highlighter-rouge">locator</code> field should be deleted (true) or not (false):</p>
+
+<p>Executing the application with the JPMML agent in “non-transforming mode”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -javaagent:pmml-agent-1.1.14.jar -jar myapplication.jar
+</code></pre></div></div>
+
+<p>Executing the application with the JPMML agent in “transforming mode”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -javaagent:pmml-agent-1.1.14.jar=transform=true -cp javassist-3.19.0-GA.jar:myapplication.jar com.mycompany.myapplication.Main
+</code></pre></div></div>
+
+<p>If the JAR file <code class="language-plaintext highlighter-rouge">myapplication.jar</code> does not contain Javassist classes, then they need to be added to the application classpath by other means. The JVM ignores the <code class="language-plaintext highlighter-rouge">-cp</code> option when the <code class="language-plaintext highlighter-rouge">-jar</code> option is set. Therefore, in the last command, the application classpath is crafted manually by prepending the Javassist JAR file to the application JAR file, and the name of the main class is spelled out in full.</p>
+
+<h3 id="transformation">Transformation</h3>
+
+<p>Transformation is performed by the <code class="language-plaintext highlighter-rouge">org.jpmml.agent.PMMLObjectTransformer</code> class. The current implementation is naive, because the SAX Locator information is omitted simply by deleting the <code class="language-plaintext highlighter-rouge">locator</code> field. A more sophisticated implementation could perform a series of “push down” refactorings, so that this field is preserved for subclasses that are associated with more error-prone PMML content.</p>
+
+<p>Java source code representation of the <code class="language-plaintext highlighter-rouge">PMMLObject</code> class before transformation:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">org.dmg.pmml</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.io.Serializable</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">javax.xml.bind.annotation.XmlTransient</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.xml.sax.Locator</span><span class="o">;</span>
+
+<span class="kd">abstract</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">PMMLObject</span> <span class="kd">implements</span> <span class="nc">HasLocator</span><span class="o">,</span> <span class="nc">Serializable</span> <span class="o">{</span>
+
+  <span class="nd">@XmlTransient</span>
+  <span class="nd">@com</span><span class="o">.</span><span class="na">sun</span><span class="o">.</span><span class="na">xml</span><span class="o">.</span><span class="na">bind</span><span class="o">.</span><span class="na">annotation</span><span class="o">.</span><span class="na">XmlLocation</span>
+  <span class="nd">@org</span><span class="o">.</span><span class="na">eclipse</span><span class="o">.</span><span class="na">persistence</span><span class="o">.</span><span class="na">oxm</span><span class="o">.</span><span class="na">annotations</span><span class="o">.</span><span class="na">XmlLocation</span>
+  <span class="kd">private</span> <span class="nc">Locator</span> <span class="n">locator</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+
+  <span class="kd">public</span> <span class="nc">Locator</span> <span class="nf">getLocator</span><span class="o">(){</span>
+    <span class="k">return</span> <span class="k">this</span><span class="o">.</span><span class="na">locator</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setLocator</span><span class="o">(</span><span class="nc">Locator</span> <span class="n">locator</span><span class="o">){</span>
+    <span class="k">this</span><span class="o">.</span><span class="na">locator</span> <span class="o">=</span> <span class="n">locator</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The same after transformation:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">org.dmg.pmml</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.io.Serializable</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.xml.sax.Locator</span><span class="o">;</span>
+
+<span class="kd">abstract</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">PMMLObject</span> <span class="kd">implements</span> <span class="nc">HasLocator</span><span class="o">,</span> <span class="nc">Serializable</span> <span class="o">{</span>
+
+  <span class="kd">public</span> <span class="nc">Locator</span> <span class="nf">getLocator</span><span class="o">(){</span>
+    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setLocator</span><span class="o">(</span><span class="nc">Locator</span> <span class="n">locator</span><span class="o">){</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>This transformation should be completely safe and undetectable from the Java application perspective.</p>
+
+<h3 id="memory-measurement">Memory measurement</h3>
+
+<p>Memory measurement is performed by the <code class="language-plaintext highlighter-rouge">org.jpmml.model.visitors.MemoryMeasurer</code> class that traverses a class model object first by JPMML-Model Visitor API and then by Java Reflection API. This Visitor maintains a set of distinct objects that are reachable from the specified “root” object. The size of individual objects is approximated using the <code class="language-plaintext highlighter-rouge">java.lang.instrument.Instrumentation#getObjectSize(Object)</code> method. The total size of the class model object is calculated by summing the sizes of set members.</p>
+
+<p>The decision to implement yet another memory measurement tool (as opposed to reusing some existing tool, eg. <a href="https://github.com/jbellis/jamm">Java Agent for Memory Measurements</a>) is supported by specific traits of the JPMML-Model class model:</p>
+
+<ul>
+  <li>The traversal by JPMML-Model Visitor API is much faster than by Java Reflection API. Speed becomes critical when working with extremely large (several GB in size) ensemble models.</li>
+  <li>Proper handling of PMML class model-specific data types. For example, <code class="language-plaintext highlighter-rouge">org.dmg.pmml.FieldName</code> objects are treated as <code class="language-plaintext highlighter-rouge">enum</code> constants when they are interned, and as regular objects when they are not interned.</li>
+  <li>Conservative definition of “reachability”. For example, interned <code class="language-plaintext highlighter-rouge">java.lang.String</code> objects and shared Java primitive value wrapper objects are added to the set of distinct objects.</li>
+</ul>
+
+<p>Java source code of a simple application that outputs basic information about a class model object:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Main</span> <span class="o">{</span>
+
+  <span class="kd">static</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+    <span class="no">PMML</span> <span class="n">pmml</span><span class="o">;</span>
+
+    <span class="nc">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">FileInputStream</span><span class="o">(</span><span class="n">args</span><span class="o">[</span><span class="mi">0</span><span class="o">]);</span>
+
+    <span class="k">try</span> <span class="o">{</span>
+      <span class="n">pmml</span> <span class="o">=</span> <span class="nc">JAXBUtil</span><span class="o">.</span><span class="na">unmarshalPMML</span><span class="o">(</span><span class="k">new</span> <span class="nc">StreamSource</span><span class="o">(</span><span class="n">is</span><span class="o">));</span>
+    <span class="o">}</span> <span class="k">finally</span> <span class="o">{</span>
+      <span class="n">is</span><span class="o">.</span><span class="na">close</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nc">MemoryMeasurer</span> <span class="n">measurer</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">MemoryMeasurer</span><span class="o">();</span>
+    <span class="n">measurer</span><span class="o">.</span><span class="na">applyTo</span><span class="o">(</span><span class="n">pmml</span><span class="o">);</span>
+
+    <span class="nc">Set</span><span class="o">&lt;</span><span class="nc">Object</span><span class="o">&gt;</span> <span class="n">objects</span> <span class="o">=</span> <span class="n">measurer</span><span class="o">.</span><span class="na">getObjects</span><span class="o">();</span>
+    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"The number of distinct objects in the object graph: "</span> <span class="o">+</span> <span class="n">objects</span><span class="o">.</span><span class="na">size</span><span class="o">());</span>
+
+    <span class="kt">long</span> <span class="n">size</span> <span class="o">=</span> <span class="n">measurer</span><span class="o">.</span><span class="na">getSize</span><span class="o">();</span>
+    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"The size of the object graph: "</span> <span class="o">+</span> <span class="n">size</span> <span class="o">+</span> <span class="s">" bytes"</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Memory measurements are performed on the already familiar PMML document <a href="https://openscoring.io/resources/2014-04-10/RandomForestIris.pmml"><code class="language-plaintext highlighter-rouge">RandomForestIris.pmml</code></a>.</p>
+
+<p>The results in “non-transforming mode”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -version
+java version "1.8.0_31"
+Java(TM) SE Runtime Environment (build 1.8.0_31-b13)
+Java HotSpot(TM) 64-Bit Server VM (build 25.31-b07, mixed mode)
+
+$ java -javaagent:pmml-model-1.1.14.jar -cp javassist-3.19.0-GA.jar:example.jar Main RandomForestIris.pmml
+The number of distinct objects in the object graph: 373
+The size of the object graph: 13680 bytes
+</code></pre></div></div>
+
+<p>The results in “transforming mode”:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ java -javaagent:pmml-model-1.1.14.jar=transform=true -cp javassist-3.19.0-GA.jar:example.jar Main RandomForestIris.pmml
+The number of distinct objects in the object graph: 271
+The size of the object graph: 9920 bytes
+</code></pre></div></div>
+
+<p>All the differences between these two object graphs are solely attributable to the omission of SAX Locator information. It can be seen that <code class="language-plaintext highlighter-rouge">org.xml.sax.Locator</code> objects make up (373 - 271) / 373 = 27.3% of distinct objects and (13680 - 9920) / 13680 = 27.5% of memory consumption.</p>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

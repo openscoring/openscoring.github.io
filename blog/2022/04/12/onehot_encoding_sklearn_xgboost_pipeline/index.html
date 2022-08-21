@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn xgboost sklearn2pmml data-categorical data-missing">
+  <meta name="author" content="vruusmann">
+
+  <title>One-hot-encoding (OHE) categorical features in Scikit-Learn based XGBoost pipelines - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2022/04/12/onehot_encoding_sklearn_xgboost_pipeline/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="One-hot-encoding (OHE) categorical features in Scikit-Learn based XGBoost pipelines - Openscoring" />
+  <meta property="og:url" content="/blog/2022/04/12/onehot_encoding_sklearn_xgboost_pipeline/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2022-04-12 00:00:00 +0300" />
+  <meta property="article:published_time" content="2022-04-12 00:00:00 +0300" />
+  <meta property="article:modified_time" content="2022-04-12 00:00:00 +0300" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="One-hot-encoding (OHE) categorical features in Scikit-Learn based XGBoost pipelines - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">One-hot-encoding (OHE) categorical features in Scikit-Learn based XGBoost pipelines</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>Creating a Scikit-Learn pipeline that feeds categorical data into XGBoost estimator is surprisingly tricky, because there are rather significant mismatches in their conceptual and technical designs.</p>
+
+<p>On one hand, Scikit-Learn aims to be the simplest and most generic ML framework that can integrate reasonably well with any Python AI/ML library.
+This simplicity has been achieved via major trade-offs.
+For example, Scikit-Learn is currently not very comfortable dealing with rich dataset schemas.
+The majority of its algorithms operate on dense numeric arrays.
+There are efforts being made towards retrofitting existing transformers to pass through missing and non-numeric values as-is, but the overall experience is still far from coherent and consistent.</p>
+
+<p>On the other hand, XGBoost aims to be the most powerful and flexible gradient boosting algorithm.
+No one and no thing is perfect, though.
+Historically, the biggest pain point for XGBoost has been its sub-par support for categorical features.
+The team is well aware of this, and has committed to solving it step by step.
+All the necessary groundwork, and the first categorical encoding algorithm based on a popular one-hot-encoding scheme has been recently completed as documented in <a href="https://github.com/dmlc/xgboost/issues/6503">dmlc/xgboost-6503</a>.
+More sophisticated encoding schemes are expected to follow.</p>
+
+<p>Nevertheless, a Scikit-Learn based XGBoost pipeline is composable for any version combination of the two, for any dataset.</p>
+
+<p>This blog post details the technical background, and provides quick and resource-efficient recipes for the following combinations:</p>
+
+<ul>
+  <li>External OHE for XGBoost versions 0.60 – 1.3, for dense datasets.</li>
+  <li>External OHE for XGBoost versions 0.60 – 1.3, for sparse datasets.</li>
+  <li>Model-internal OHE for XGBoost version 1.4 and newer</li>
+</ul>
+
+<h3 id="categorical-data-in-xgboost">Categorical data in XGBoost</h3>
+
+<p>The results of optimization work depend on the correct identification of limiting steps (“bottlenecks”), and finding ways to overcome or bypass them.</p>
+
+<p>Software engineering is about finding solutions in the software-controlled part of the stack.
+If the solution appears to reside in the hardware or meatware parts of the stack, then it should be delegated to more appropriate engineering teams.</p>
+
+<p>The standard XGBoost-via-Python software stack stands as follows:</p>
+
+<ol>
+  <li><a href="https://xgboost.readthedocs.io/en/stable/dev/files.html">XGBoost API</a>. The core library, plus device-specific (CPU, GPU) acceleration libraries. Defines C++ language data structures and algorithms.</li>
+  <li><a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#module-xgboost.training">Python Learning API</a>. Python language wrappers for the XGBoost API. Data conversion and transfer from Python environment to C++ environment.</li>
+  <li><a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#module-xgboost.sklearn">Scikit-Learn API</a>. Scikit-Learn compatible Python language wrappers for the Python Learning API. Embedding XGBoost estimators into Scikit-Learn workflows.</li>
+</ol>
+
+<p>XGBoost C++ algorithms operate with a specialized <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> data structure only.</p>
+
+<p>In Python environment, the training data exists in Python-specifc data structures such as Numpy arrays or Pandas’ data frames.
+When the Python Learning API layer passes data to the XGBoost API layer, then Python data structures get left behind into the Python environment, and a new and detached <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> object is created in the C++ environment.</p>
+
+<p>Typical data flow:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">xgboost</span> <span class="kn">import</span> <span class="n">DMatrix</span>
+
+<span class="kn">import</span> <span class="nn">xgboost</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(...)</span>
+
+<span class="c1"># X is pandas.DataFrame
+</span><span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="n">feature_col1</span><span class="p">,</span> <span class="n">feature_col2</span><span class="p">,</span> <span class="p">..,</span> <span class="n">feature_coln</span><span class="p">]]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">label_col</span><span class="p">]</span>
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">make_transformer</span><span class="p">()</span>
+
+<span class="c1"># Xt is numpy.ndarray or pandas.DataFrame
+</span><span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="c1"># dmat is xgboost.DMatrix
+</span><span class="n">dmat</span> <span class="o">=</span> <span class="n">DMatrix</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">Xt</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># In this point in the program execution flow,
+# there are three "data stores" in memory: X, Xt and dmat
+</span><span class="n">booster</span> <span class="o">=</span> <span class="n">xgboost</span><span class="p">.</span><span class="n">train</span><span class="p">(</span><span class="n">dtrain</span> <span class="o">=</span> <span class="n">dmat</span><span class="p">,</span> <span class="p">...)</span>
+</code></pre></div></div>
+
+<p>The total memory requirement of a Scikit-Learn pipeline can be estimated by summing the sizes of <code class="language-plaintext highlighter-rouge">X</code>, <code class="language-plaintext highlighter-rouge">Xt</code> and <code class="language-plaintext highlighter-rouge">dmat</code> datasets</p>
+
+<p>The “deep copying” from <code class="language-plaintext highlighter-rouge">Xt</code> dataset to <code class="language-plaintext highlighter-rouge">dmat</code> dataset effectively doubles the memory requirements of XGBoost pipelines in comparison with standard Scikit-Learn pipelines.</p>
+
+<p>The situation is manageable when the training dataset consists of continuous features.
+However, the situation can easily get out of hand when there are categorical features present, especially when they are high-cardinality ones.</p>
+
+<p>The crux of the matter is encoding categorical features into (pseudo-)numeric features using Scikit-Learn transformers in order to make them acceptable for the final XGBoost estimator.</p>
+
+<p>The most common and robust approach is <a href="https://en.wikipedia.org/wiki/One-hot">one-hot-encoding (OHE)</a>, which transforms a single categorical feature into a list of binary indicator features.
+In the above example, when the <code class="language-plaintext highlighter-rouge">X</code> dataset contains categorical features, then the number of columns in <code class="language-plaintext highlighter-rouge">Xt</code> and <code class="language-plaintext highlighter-rouge">dmat</code> datasets would increase considerably (one binary indicator column per category level).</p>
+
+<p>Starting from XGBoost version 1.3 it is possible to replace external OHE with model-internal OHE.
+This functionality can be activated by changing the data type of relevant feature columns to <a href="https://pandas.pydata.org/docs/reference/api/pandas.CategoricalDtype.html"><code class="language-plaintext highlighter-rouge">pandas.CategoricalDtype</code></a> (aka <code class="language-plaintext highlighter-rouge">category</code>).
+The Scikit-Learn API layer should pass through <code class="language-plaintext highlighter-rouge">category</code> dtype columns unchanged.
+They will be automatically detected in the Python Learning API layer, and their intrinsic integer-encoded values will be transferred to the XGBoost API layer.
+In the above example, all <code class="language-plaintext highlighter-rouge">X</code>, <code class="language-plaintext highlighter-rouge">Xt</code> and <code class="language-plaintext highlighter-rouge">dmat</code> datasets would contain the same number of categorical feature columns.</p>
+
+<p>By eliminating a high-cost but low-value data transformation in the Python environment, it will be possible to run existing experiments much faster, or start running new and much bigger experiments.</p>
+
+<h3 id="legacy-workflow-external-ohe">Legacy workflow: external OHE</h3>
+
+<p>The legacy workflow implements OHE in the Scikit-Learn API layer, and therefore supports all XGBoost versions, including all the pre-1.0 ones.</p>
+
+<p>However, dense and sparse datasets require different external OHE approaches.</p>
+
+<p>The canonical representation of a one-hot-encoded categorical value is an n-element bit vector, where n is the cardinality of the categorical feature.
+For a non-missing value, this bit vector contains a single <code class="language-plaintext highlighter-rouge">1</code>-valued element (the “on” bit) and n-1 <code class="language-plaintext highlighter-rouge">0</code>-valued elements (“off” bits). For a missing value, this bit vector contains n <code class="language-plaintext highlighter-rouge">NaN</code>-valued elements.</p>
+
+<p>Transformation results for a sparse color list <code class="language-plaintext highlighter-rouge">["red", "green", None, "blue"]</code>:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>input value</th>
+      <th>“blue” bit</th>
+      <th>“green” bit</th>
+      <th>“red” bit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>“red”</td>
+      <td><code class="language-plaintext highlighter-rouge">0.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">0.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">1.0</code></td>
+    </tr>
+    <tr>
+      <td>“green”</td>
+      <td><code class="language-plaintext highlighter-rouge">0.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">1.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">0.0</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">None</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+    </tr>
+    <tr>
+      <td>“blue”</td>
+      <td><code class="language-plaintext highlighter-rouge">1.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">0.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">0.0</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>Any other representation is prone to mis-interpretation by XGBoost C++ algorithms</strong>.</p>
+
+<p>For example, many Scikit-Learn transformers produce bit vectors where the “off” bits are denoted by <code class="language-plaintext highlighter-rouge">NaN</code>-valued elements (rather than the canonical <code class="language-plaintext highlighter-rouge">0</code>-valued elements):</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>input value</th>
+      <th>“blue” bit</th>
+      <th>“green” bit</th>
+      <th>“red” bit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>“red”</td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">1.0</code></td>
+    </tr>
+    <tr>
+      <td>“green”</td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">1.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">None</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+    </tr>
+    <tr>
+      <td>“blue”</td>
+      <td><code class="language-plaintext highlighter-rouge">1.0</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+      <td><code class="language-plaintext highlighter-rouge">NaN</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>This representation is acceptable for Scikit-Learn estimators, which only track the location of the <code class="language-plaintext highlighter-rouge">1</code>-valued “on” bit.
+However, this is unacceptable for LightGBM, XGBoost or any other missing-value aware estimator, which additionally tracks the locations of <code class="language-plaintext highlighter-rouge">0</code>-valued “off” bits and <code class="language-plaintext highlighter-rouge">NaN</code>-valued “info not available” bits.</p>
+
+<p>The correctness of a custom encoding can be verified by comparing its predictions against the ones of the most simplistic, known-good encoding.
+The best reference is canonical OHE results stored in a dense array.</p>
+
+<p>For example, the predictions of an XGBoost estimator must come out identical (ie. numerically equivalent) when first applied to a custom-encoded sparse dataset, and then to its “densified” copy:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">make_custom_sparse_transformer</span><span class="p">()</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">make_xgboost_estimator</span><span class="p">()</span>
+
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">estimator</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">yt_sparse</span> <span class="o">=</span> <span class="n">estimator</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
+<span class="n">yt_dense</span> <span class="o">=</span> <span class="n">estimator</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">Xt</span><span class="p">.</span><span class="n">todense</span><span class="p">())</span>
+
+<span class="c1"># Must not raise an AssertionError
+</span><span class="n">numpy</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">yt_sparse</span><span class="p">,</span> <span class="n">yt_dense</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h5 id="dense-datasets">Dense datasets</h5>
+
+<p>Standard Scikit-Learn transformers such as <code class="language-plaintext highlighter-rouge">sklearn.preprocessing.LabelBinarizer</code> and <code class="language-plaintext highlighter-rouge">sklearn.preprocessing.OneHotEncoder</code> are suitable for working with dense datasets only, because their output is inherently two-state (ie. binary).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">OneHotEncoder</code> might be preferable due to its multi-column support and high configurability.
+First and foremost, <code class="language-plaintext highlighter-rouge">OneHotEncoder</code> must be configured to produce dense arrays (ie. <code class="language-plaintext highlighter-rouge">sparse = False</code>).
+Optionally, <code class="language-plaintext highlighter-rouge">OneHotEncoder</code> could be configured to change the array data type to the most economical 1-byte integer data type (ie. <code class="language-plaintext highlighter-rouge">dtype = numpy.uint8</code>) in order to keep the size of the <code class="language-plaintext highlighter-rouge">Xt</code> dataset as small as possible.</p>
+
+<p>Suggested transformer:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span>
+
+<span class="k">def</span> <span class="nf">make_dense_legacy_transformer</span><span class="p">(</span><span class="n">cat_cols</span><span class="p">,</span> <span class="n">cont_cols</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">ColumnTransformer</span><span class="p">([</span>
+    <span class="p">(</span><span class="s">"cont"</span><span class="p">,</span> <span class="s">"passthrough"</span><span class="p">,</span> <span class="n">cont_cols</span><span class="p">),</span>
+    <span class="p">(</span><span class="s">"cat"</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">sparse</span> <span class="o">=</span> <span class="bp">False</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">uint8</span><span class="p">),</span> <span class="n">cat_cols</span><span class="p">)</span>
+  <span class="p">],</span> <span class="n">sparse_threshold</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Memory usage with <code class="language-plaintext highlighter-rouge">make_dense_legacy_transformer</code> function:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>dtype</th>
+      <th><code class="language-plaintext highlighter-rouge">X</code> bytesize</th>
+      <th><code class="language-plaintext highlighter-rouge">Xt</code> bytesize</th>
+      <th><code class="language-plaintext highlighter-rouge">dmat</code> bytesize</th>
+      <th>total bytesize</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">numpy.uint8</code></td>
+      <td>121536</td>
+      <td><strong>89253</strong></td>
+      <td>737314</td>
+      <td>948’103</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">numpy.float32</code></td>
+      <td>121536</td>
+      <td>357012</td>
+      <td>737314</td>
+      <td>1’215’862</td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">numpy.float64</code></td>
+      <td>121536</td>
+      <td><strong>714144</strong></td>
+      <td>737314</td>
+      <td>1’572’994</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The memory usage of <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> objects cannot be measured directly in Python environment, because its payload is held opaquely in the C++ environment.
+Therefore, the measurement is performed in a roundabout way, by dumping the <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> object into a binary file in local filesystem, and then querying the file size.</p>
+
+<p>The results show that by changing the <code class="language-plaintext highlighter-rouge">OneHotEncoder.dtype</code> attribute from the default <code class="language-plaintext highlighter-rouge">numpy.float64</code> dtype to <code class="language-plaintext highlighter-rouge">numpy.uint8</code> dtype it is possible to achieve an eight times reduction of <code class="language-plaintext highlighter-rouge">Xt</code> dataset size.</p>
+
+<p>The size of the <code class="language-plaintext highlighter-rouge">dmat</code> dataset stays constant.
+An <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> object that is constructed based on a dense Python array appears to transfer data into a dense C++ array, where the cells are dimensioned for 64-bit floating point values.</p>
+
+<p>Data scientists who work with large datasets often try to “compress” <code class="language-plaintext highlighter-rouge">Xt</code> and <code class="language-plaintext highlighter-rouge">dmat</code> datasets by various means.
+The fact that the XGBoost API layer accepts anything that comes from higher layers without warnings or errors does not offer any validation that the “compression” was indeed implemented correctly.</p>
+
+<p><strong>One common mistake</strong> is using <code class="language-plaintext highlighter-rouge">OneHotEncoder</code> in its default <code class="language-plaintext highlighter-rouge">sparse = True</code> configuration.
+The resulting sparse matrix contains only <code class="language-plaintext highlighter-rouge">1</code>- and <code class="language-plaintext highlighter-rouge">NaN</code>-valued elements (and not a single <code class="language-plaintext highlighter-rouge">0</code>-valued element), which leads XGBoost C++ algorithms to think that it is dealing with massive amounts of missing values.</p>
+
+<p><strong>Another common mistake</strong> is producing a dense <code class="language-plaintext highlighter-rouge">Xt</code> dataset, and then converting it to a sparse <code class="language-plaintext highlighter-rouge">dmat</code> dataset by specifying <code class="language-plaintext highlighter-rouge">missing = 0</code> either in the <code class="language-plaintext highlighter-rouge">xgboost.DMatrix</code> constructor or any of <code class="language-plaintext highlighter-rouge">XGBModel.fit(X, y)</code> methods:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">transformer</span> <span class="o">=</span> <span class="n">make_dense_legacy_transformer</span><span class="p">()</span>
+
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="c1"># Incorrect compression!
+</span><span class="n">dmat</span> <span class="o">=</span> <span class="n">DMatrix</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">Xt</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">missing</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h5 id="sparse-datasets">Sparse datasets</h5>
+
+<p>There are no standard Scikit-Learn transformers suitable for working with sparse datasets as-is.
+The prevailing workaround is filling in missing values via imputation.
+However, while appropriate with Scikit-Learn estimators, it should be generally avoided with XGBoost estimators, which can handle missing values natively, and in fact can learn and reveal interesting relationships around them.</p>
+
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides a <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.PMMLLabelBinarizer</code> transformer that can produce both two-state dense arrays (<code class="language-plaintext highlighter-rouge">sparse_output = False</code>) or tri-state sparse matrices (<code class="language-plaintext highlighter-rouge">sparse_output = True</code>).</p>
+
+<p>Suggested transformer:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">PMMLLabelBinarizer</span>
+
+<span class="k">def</span> <span class="nf">make_sparse_legacy_transformer</span><span class="p">(</span><span class="n">cat_cols</span><span class="p">,</span> <span class="n">cont_cols</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">ColumnTransformer</span><span class="p">(</span>
+    <span class="p">[(</span><span class="n">cont_col</span><span class="p">,</span> <span class="s">"passthrough"</span><span class="p">,</span> <span class="p">[</span><span class="n">cont_col</span><span class="p">])</span> <span class="k">for</span> <span class="n">cont_col</span> <span class="ow">in</span> <span class="n">cont_cols</span><span class="p">]</span> <span class="o">+</span>
+    <span class="p">[(</span><span class="n">cat_col</span><span class="p">,</span> <span class="n">PMMLLabelBinarizer</span><span class="p">(</span><span class="n">sparse_output</span> <span class="o">=</span> <span class="bp">True</span><span class="p">),</span> <span class="p">[</span><span class="n">cat_col</span><span class="p">])</span> <span class="k">for</span> <span class="n">cat_col</span> <span class="ow">in</span> <span class="n">cat_cols</span><span class="p">]</span>
+  <span class="p">,</span> <span class="n">sparse_threshold</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Memory usage with <code class="language-plaintext highlighter-rouge">make_sparse_legacy_transformer</code> function:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>dtype</th>
+      <th><code class="language-plaintext highlighter-rouge">X</code> bytesize</th>
+      <th><code class="language-plaintext highlighter-rouge">Xt</code> bytesize</th>
+      <th><code class="language-plaintext highlighter-rouge">dmat</code> bytesize</th>
+      <th>total bytesize</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">numpy.float64</code></td>
+      <td>121536</td>
+      <td><strong>138748</strong></td>
+      <td>103146</td>
+      <td>363’430</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The sparsity of the <code class="language-plaintext highlighter-rouge">X</code> dataset is around 28.2 percent (4’286 cells out of 8 * 1’899 = 15’192 cells).
+The sparsity of the <code class="language-plaintext highlighter-rouge">Xt</code> dataset is around 87.8 percent (78’347 cells out of 47 * 1’899 = 89’253 cells), which gives it excellent compressibility properties.</p>
+
+<p>An <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> object that is constructed based on a sparse Python matrix appears to transfer data into a sparse C++ matrix as well.
+Interestingly enough, XGBoost is able to find a data layout that reduces memory usage significantly.</p>
+
+<h3 id="modern-workflow-model-internal-ohe">Modern workflow: model-internal OHE</h3>
+
+<p>XGBoost version 1.3 and newer support model-internal OHE.</p>
+
+<p>If a dataset contains categorical features that are suitable for OHE then, from now on, this transformation should be moved out of high-level Python API layers (eg. <code class="language-plaintext highlighter-rouge">OneHotEncoder.transform(X)</code> or <code class="language-plaintext highlighter-rouge">pandas.get_dummies(X)</code>) into the low-level XGBoost API layer.
+Doing things closer to the core opens up new and vastly superior capabilities such as GPU-accelerated histogram generation.</p>
+
+<p>Typical data flow:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">xgboost</span> <span class="kn">import</span> <span class="n">DMatrix</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(...)</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="n">feature_col1</span><span class="p">,</span> <span class="n">feature_col2</span><span class="p">,</span> <span class="p">..,</span> <span class="n">feature_coln</span><span class="p">]]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">label_col</span><span class="p">]</span>
+
+<span class="c1"># Cast categorical features into "category" data type
+</span><span class="k">for</span> <span class="n">cat_col</span> <span class="ow">in</span> <span class="n">cat_cols</span><span class="p">:</span>
+  <span class="n">X</span><span class="p">[</span><span class="n">cat_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">cat_col</span><span class="p">].</span><span class="n">astype</span><span class="p">(</span><span class="s">"category"</span><span class="p">)</span>
+
+<span class="n">dmat</span> <span class="o">=</span> <span class="n">DMatrix</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">Xt</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">enable_categorical</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">booster_params</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s">"tree_method"</span> <span class="p">:</span> <span class="s">"gpu_hist"</span>
+<span class="p">}</span>
+
+<span class="c1"># In this point in the program execution flow,
+# there are two "data stores" in memory: X, and dmat
+</span><span class="n">booster</span> <span class="o">=</span> <span class="n">xgboost</span><span class="p">.</span><span class="n">train</span><span class="p">(</span><span class="n">params</span> <span class="o">=</span> <span class="n">booster_params</span><span class="p">,</span> <span class="n">dtrain</span> <span class="o">=</span> <span class="n">dmat</span><span class="p">,</span> <span class="p">...)</span>
+</code></pre></div></div>
+
+<p>The cast to <code class="language-plaintext highlighter-rouge">pandas.CategoricalDtype</code> data type (aka <code class="language-plaintext highlighter-rouge">category</code>) is missing value-aware.
+Therefore, the same Scikit-Learn pipeline can be used both with dense and sparse datasets.</p>
+
+<p>Memory usage:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Experiment</th>
+      <th><code class="language-plaintext highlighter-rouge">X</code> bytesize</th>
+      <th><code class="language-plaintext highlighter-rouge">dmat</code> bytesize</th>
+      <th>total bytesize</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>dense</td>
+      <td>121536</td>
+      <td><strong>129807</strong></td>
+      <td>251’343</td>
+    </tr>
+    <tr>
+      <td>sparse</td>
+      <td>121536</td>
+      <td><strong>103323</strong></td>
+      <td>224’859</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>
+  <li>“Audit-NA” dataset: <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>
+  <li>Python scripts: <a href="https://openscoring.io/resources/2022-04-12/measure.py"><code class="language-plaintext highlighter-rouge">measure.py</code></a>, <a href="https://openscoring.io/resources/2022-04-12/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a> and <a href="https://openscoring.io/resources/2022-04-12/util.py"><code class="language-plaintext highlighter-rouge">util.py</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

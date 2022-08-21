@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="jpmml-evaluator testing">
+  <meta name="author" content="vruusmann">
+
+  <title>Testing PMML applications - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2014/05/12/testing_pmml_applications/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Testing PMML applications - Openscoring" />
+  <meta property="og:url" content="/blog/2014/05/12/testing_pmml_applications/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2014-05-12 00:00:00 +0300" />
+  <meta property="article:published_time" content="2014-05-12 00:00:00 +0300" />
+  <meta property="article:modified_time" content="2014-05-12 00:00:00 +0300" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Testing PMML applications - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Testing PMML applications</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>The <a href="https://github.com/jpmml/jpmml-evaluator">JPMML-Evaluator</a> library aims to provide high quality service to its users. The main module contains unit tests that ensure compliance with the PMML specification. Additionally, there are several support modules that contain integration tests that ensure interoperability with popular third-party PMML converters such as <a href="https://rattle.togaware.com/">R/Rattle</a>, <a href="https://knime.com/">KNIME</a> and <a href="https://rapidminer.com/">RapidMiner</a>.</p>
+
+<p>However, there can never be too much testing. Application developers are encouraged to create and maintain custom integration test modules that replicate models and datasets from their production environments. Such integration tests lower the risk of change. They make it more secure to update and upgrade the ML framework and the PMML layer on top of it.</p>
+
+<p>This blog post details a batch evaluation method for integration testing purposes. The heavy-lifting is handled by the <code class="language-plaintext highlighter-rouge">org.jpmml.evaluator.BatchUtil#difference(Batch, double, double)</code> method. A test case, which is represented by the <code class="language-plaintext highlighter-rouge">org.jpmml.evaluator.Batch</code> interface, is a triplet of streaming resources:</p>
+
+<ul>
+  <li>PMML.</li>
+  <li>Input CSV. Contains active and group field(s) as specified by the <code class="language-plaintext highlighter-rouge">MiningSchema</code> element.</li>
+  <li>Output CSV. Contains target and output field(s) as specified by the <code class="language-plaintext highlighter-rouge">MiningSchema</code> and <code class="language-plaintext highlighter-rouge">Output</code> elements.</li>
+</ul>
+
+<p>The JPMML-Evaluator library packages and distributes test classes as a separate JAR file. It can be included into Apache Maven builds using the following dependency declaration:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;dependency&gt;</span>
+  <span class="nt">&lt;groupId&gt;</span>org.jpmml<span class="nt">&lt;/groupId&gt;</span>
+  <span class="nt">&lt;artifactId&gt;</span>pmml-evaluator<span class="nt">&lt;/artifactId&gt;</span>
+  <span class="nt">&lt;version&gt;</span>${jpmml.version}<span class="nt">&lt;/version&gt;</span>
+  <span class="nt">&lt;type&gt;</span>test-jar<span class="nt">&lt;/type&gt;</span>
+  <span class="nt">&lt;scope&gt;</span>test<span class="nt">&lt;/scope&gt;</span>
+<span class="nt">&lt;/dependency&gt;</span>
+</code></pre></div></div>
+
+<p>Under the hood, the batch utility class loads data records from the input CSV resource, evaluates them using the PMML resource and compares the resulting “actual output” data records against the “expected output” data records that were loaded from the output CSV resource. The method returns a list of differences between actual and expected output data records. A test is considered to be successful when the list of differences is empty.</p>
+
+<p>CSV resources must have column identifiers (i.e. the header row), because the mapping between PMML fields and CSV data table columns is by name. In contrast, CSV resources must not have row identifiers, because the mapping between input and output CSV data table rows is by position. The field delimiter character is the comma. Missing field values are indicated by string constants “NA” or “N/A” (without quotes).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">org.jpmml.evaluator.ArchiveBatch</code> class loads resources from the current Java Archive (JAR) file. A batch job is defined by a model identifier and a dataset identifier. These identifiers determine the locations of associated resources (“conventions over configuration”):</p>
+
+<ul>
+  <li>PMML. <code class="language-plaintext highlighter-rouge">/pmml/&lt;model identifier&gt;&lt;dataset identifier&gt;.pmml</code></li>
+  <li>Input CSV. <code class="language-plaintext highlighter-rouge">/csv/&lt;dataset identifier&gt;.csv</code></li>
+  <li>Output CSV. <code class="language-plaintext highlighter-rouge">/csv/&lt;model identifier&gt;&lt;dataset identifier&gt;.csv</code></li>
+</ul>
+
+<p>The following R script creates a decision tree model for the “iris” dataset. The model identifier is “DecisionTree” and the dataset identifier is “Iris”. All file paths are prefixed with <code class="language-plaintext highlighter-rouge">src/test/resources</code>, which is the root directory for test resources in Apache Maven builds.</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="s2">"pmml"</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="s2">"rpart"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">data</span><span class="p">(</span><span class="s2">"iris"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Generate input CSV</span><span class="w">
+</span><span class="c1"># The data table must contain four columns for active fields "Sepal.Length", "Sepal.Width", "Petal.Length" and "Petal.Width"</span><span class="w">
+</span><span class="n">irisInput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iris</span><span class="p">[,</span><span class="w"> </span><span class="m">1</span><span class="o">:</span><span class="m">4</span><span class="p">]</span><span class="w">
+</span><span class="n">write.table</span><span class="p">(</span><span class="n">irisInput</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"src/test/resources/csv/Iris.csv"</span><span class="p">,</span><span class="w"> </span><span class="n">col.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">","</span><span class="p">,</span><span class="w"> </span><span class="n">quote</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+
+</span><span class="n">iris.rpart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rpart</span><span class="p">(</span><span class="n">Species</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">iris</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Generate PMML</span><span class="w">
+</span><span class="n">saveXML</span><span class="p">(</span><span class="n">pmml</span><span class="p">(</span><span class="n">iris.rpart</span><span class="p">),</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"src/test/resources/pmml/DecisionTreeIris.pmml"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">iris.class</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">predict</span><span class="p">(</span><span class="n">iris.rpart</span><span class="p">,</span><span class="w"> </span><span class="n">newdata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iris</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"class"</span><span class="p">)</span><span class="w">
+</span><span class="n">iris.prob</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">predict</span><span class="p">(</span><span class="n">iris.rpart</span><span class="p">,</span><span class="w"> </span><span class="n">newdata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iris</span><span class="p">,</span><span class="w"> </span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"prob"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Generate output CSV</span><span class="w">
+</span><span class="c1"># The data table must contain one column for the target field "Species" and four columns for output fields "Predicted_Species", "Probability_setosa", "Probability_versicolor" and "Probability_virginica"</span><span class="w">
+</span><span class="n">irisOutput</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data.frame</span><span class="p">(</span><span class="n">iris.class</span><span class="p">,</span><span class="w"> </span><span class="n">iris.class</span><span class="p">,</span><span class="w"> </span><span class="n">iris.prob</span><span class="p">)</span><span class="w">
+</span><span class="nf">names</span><span class="p">(</span><span class="n">irisOutput</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="s2">"Species"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Predicted_Species"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Probability_setosa"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Probability_versicolor"</span><span class="p">,</span><span class="w"> </span><span class="s2">"Probability_virginica"</span><span class="p">)</span><span class="w">
+</span><span class="n">write.table</span><span class="p">(</span><span class="n">irisOutput</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"src/test/resources/csv/DecisionTreeIris.csv"</span><span class="p">,</span><span class="w"> </span><span class="n">col.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">","</span><span class="p">,</span><span class="w"> </span><span class="n">quote</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The generated decision tree model <code class="language-plaintext highlighter-rouge">DecisionTreeIris.pmml</code> contains a single target field and four output fields. The first output field “Predicted_Species” is simply a copy of the target field, whereas the remaining three output fields “Probability_setosa”, “Probability_versicolor” and “Probability_virginica” give the probabilities for each target category. A thorough test handler will want to check all five fields (a not so thorough test handler could comment out or remove the <code class="language-plaintext highlighter-rouge">Output</code> element and check only the target field). The <code class="language-plaintext highlighter-rouge">predict.rpart</code> function of the <a href="https://cran.r-project.org/package=rpart"><code class="language-plaintext highlighter-rouge">rpart</code></a> package is executed twice in order to compile the necessary data table. The first execution (<code class="language-plaintext highlighter-rouge">type = "class"</code>) predicts class labels. The second execution (<code class="language-plaintext highlighter-rouge">type = "prob"</code>) computes the associated probabilities.</p>
+
+<p>The following Java source code runs this batch job using the <a href="https://junit.org/">JUnit framework</a>:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">package</span> <span class="nn">org.jpmml.example</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.util.List</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">com.google.common.collect.MapDifference</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.dmg.pmml.FieldName</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.jpmml.evaluator.ArchiveBatch</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.jpmml.evaluator.Batch</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.jpmml.evaluator.BatchUtil</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">org.junit.Assert</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.junit.Test</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ClassificationTest</span> <span class="o">{</span>
+
+  <span class="nd">@Test</span>
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">evaluateDecisionTreeIris</span><span class="o">()</span> <span class="kd">throws</span> <span class="nc">Exception</span> <span class="o">{</span>
+    <span class="c1">// The ArchiveBatch class is abstract, and needs to be instantiated as an anonymous inner class</span>
+    <span class="nc">Batch</span> <span class="n">batch</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">ArchiveBatch</span><span class="o">(</span><span class="s">"DecisionTree"</span><span class="o">,</span> <span class="s">"Iris"</span><span class="o">){};</span>
+
+    <span class="nc">List</span><span class="o">&lt;</span><span class="nc">MapDifference</span><span class="o">&lt;</span><span class="nc">FieldName</span><span class="o">,</span> <span class="o">?&gt;&gt;</span> <span class="n">differences</span> <span class="o">=</span> <span class="nc">BatchUtil</span><span class="o">.</span><span class="na">difference</span><span class="o">(</span><span class="n">batch</span><span class="o">,</span> <span class="mi">1</span><span class="o">.</span><span class="na">e</span><span class="o">-</span><span class="mi">6</span><span class="o">,</span> <span class="mi">1</span><span class="o">.</span><span class="na">e</span><span class="o">-</span><span class="mi">6</span><span class="o">);</span>
+    <span class="k">if</span><span class="o">(!</span><span class="n">differences</span><span class="o">.</span><span class="na">isEmpty</span><span class="o">()){</span>
+      <span class="nc">System</span><span class="o">.</span><span class="na">err</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">differences</span><span class="o">);</span>
+
+      <span class="nc">Assert</span><span class="o">.</span><span class="na">fail</span><span class="o">();</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>The batch utility class performs value comparisons according to the <a href="http://www.dmg.org/v4-3/ModelVerification.html">model verification</a> principles. In brief, categorical and ordinal field values must match exactly, whereas continuous field values must fall within the acceptable range. The range checking algorithm is implemented in the <code class="language-plaintext highlighter-rouge">org.jpmml.evaluator.VerificationUtil</code> utility class. It is controlled by two parameters <code class="language-plaintext highlighter-rouge">precision</code> and <code class="language-plaintext highlighter-rouge">zeroThreshold</code>. The acceptable range is defined relative to the expected value. The actual value is acceptable if it satisfies the condition: <code class="language-plaintext highlighter-rouge">(expected value * (1 - precision)) &lt;= actual value &lt;= (expected value * (1 + precision))</code>. This approach becomes numerically unstable when the expected value is zero or very close to it. In such case the acceptable range is defined in absolute terms. The condition becomes: <code class="language-plaintext highlighter-rouge">-1 * zeroThreshold &lt;= actual value &lt;= zeroThreshold</code>.</p>
+
+<p>The above Java source code specifies both parameters as 1.e-6 (that is, one part per million or 0.000001, respectively). This batch job can be broken for demonstration purposes by changing the value of the “Probability_setosa” field of the first expected output record from “1” to “0.9999989”. The failure message is the following:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[not equal: value differences={Probability_setosa=(0.9999989, 1.0)}]
+</code></pre></div></div>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>Demo Apache Maven project: <a href="https://openscoring.io/resources/2014-05-12/DecisionTreeIris.zip"><code class="language-plaintext highlighter-rouge">DecisionTreeIris.zip</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

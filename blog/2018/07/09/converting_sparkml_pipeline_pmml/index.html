@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="apache-spark pyspark jpmml-sparkml pyspark2pmml sparklyr sparklyr2pmml">
+  <meta name="author" content="vruusmann">
+
+  <title>Converting Apache Spark ML pipeline models to PMML documents - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2018/07/09/converting_sparkml_pipeline_pmml/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Converting Apache Spark ML pipeline models to PMML documents - Openscoring" />
+  <meta property="og:url" content="/blog/2018/07/09/converting_sparkml_pipeline_pmml/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2018-07-09 00:00:00 +0300" />
+  <meta property="article:published_time" content="2018-07-09 00:00:00 +0300" />
+  <meta property="article:modified_time" content="2018-07-09 00:00:00 +0300" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Converting Apache Spark ML pipeline models to PMML documents - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Converting Apache Spark ML pipeline models to PMML documents</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>The <a href="https://github.com/jpmml/jpmml-sparkml">JPMML-SparkML</a> library converts Apache Spark ML pipeline models to the standardized Predictive Model Markup Language (PMML) representation.</p>
+
+<p>The project has been around for more than two years by now.
+The first iteration defined public API entry point in the form of a <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.ConverterUtil</code> utility class. Subsequent iterations have been mostly about adding support for more transformer and model types, and expanding Apache Spark version coverage.
+However, recent iterations have been gradually introducing new public API building blocks, and the last iteration (26 June, 2018) made them official.</p>
+
+<p>This blog post details this breaking API change, and all the new features and functionality that it entails.</p>
+
+<h3 id="api-overview">API overview</h3>
+
+<p>The old API was designed after Apache Spark MLlib’s <a href="https://spark.apache.org/docs/latest/api/java/org/apache/spark/mllib/pmml/PMMLExportable.html"><code class="language-plaintext highlighter-rouge">org.apache.spark.mllib.pmml.PMMLExportable</code></a> trait.
+The <code class="language-plaintext highlighter-rouge">ConverterUtil#toPMML(StructType, PipelineModel)</code> utility method was simply doing its best to emulates the non-existing <code class="language-plaintext highlighter-rouge">org.apache.spark.ml.PipelineModel#toPMML(StructType)</code> method.</p>
+
+<p>The new API is designed after the <a href="https://en.wikipedia.org/wiki/Builder_pattern">builder pattern</a>.
+The primary (ie. essential) state of the <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.PMMLBuilder</code> class includes the dataset schema and the fitted pipeline. The initial values are supplied via the the two-argument <code class="language-plaintext highlighter-rouge">PMMLBuilder(StructType, PipelineModel)</code> constructor, and can be updated any time via the <code class="language-plaintext highlighter-rouge">#setSchema(StructType)</code> and <code class="language-plaintext highlighter-rouge">#setPipelineModel(PipelineModel)</code> mutator methods.</p>
+
+<p>Schema mutations may involve renaming columns or clarifying their data types.
+Apache Spark ML pays little attention to the data type of categorical features, because after string indexing, vector indexing, vector slicing and dicing, they all end up as <code class="language-plaintext highlighter-rouge">double</code> arrays anyway.
+In contrast, JPMML-SparkML carefully collects and maintains (meta-)information about each and every feature, with the aim of using it to generate more precise and nuanced PMML documents. For example, JPMML-SparkML (just like all other JPMML conversion libraries) eagerly takes note if the data type of a column is indicated as <code class="language-plaintext highlighter-rouge">boolean</code>, and generates simplified, binary logic PMML language constructs wherever possible.</p>
+
+<p>Pipeline mutation may involve inserting new transformers and models, or removing existing ones. For example, generating a “full pipeline” PMML document, then removing all transformers and generating a “model-only” PMML document.</p>
+
+<p>The secondary (ie. non-essential) state of the <code class="language-plaintext highlighter-rouge">PMMLBuilder</code> class includes conversion options and verification data.</p>
+
+<p>Application code should treat <code class="language-plaintext highlighter-rouge">PMMLBuilder</code> objects as local throwaway objects.
+Due to the tight coupling to the Apache Spark environment, they are not suitable for persistence, or exchanging between applications and environments.</p>
+
+<h3 id="choosing-the-right-jpmml-sparkml-flavour-and-version">Choosing the right JPMML-SparkML flavour and version</h3>
+
+<p>JPMML-SparkML exists in two flavours:</p>
+
+<ul>
+  <li>Library JAR file <code class="language-plaintext highlighter-rouge">jpmml-sparkml-${version}.jar</code>. Contains <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.*</code> classes. Distributed via the Maven Central repository.</li>
+  <li>Executable uber-JAR file <code class="language-plaintext highlighter-rouge">jpmml-sparkml-executable-${version}.jar</code>. Contains all library JAR file classes, plus all transitive dependency (JPMML-Converter, JPMML-Model, Google Guava, etc.) classes. Distributed via the <a href="https://github.com/jpmml/jpmml-sparkml/releases">GitHub releases</a> page.</li>
+</ul>
+
+<p>The “business logic” of Apache Spark ML transformers and models is version dependent. Major releases (eg. <code class="language-plaintext highlighter-rouge">2.&lt;major&gt;</code>) introduce new algorithms and parameterization schemes, whereas minor versions (eg. <code class="language-plaintext highlighter-rouge">2.&lt;major&gt;.&lt;minor&gt;</code>) address their stability and optimization issues.</p>
+
+<p>JPMML-SparkML is versioned after Apache Spark major versions. There is an active JPMML-SparkML development branch for every supported Apache Spark major version. The conversion logic for some transformer or model is implemented in the earliest development branch, and then merged forward to later development branches (all while accumulating customizations and changes)</p>
+
+<p>At the time of writing this (July 2018; updated in January 2019), JPMML-SparkML supports all current Apache Spark 2.X versions:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Apache Spark version</th>
+      <th>JPMML-SparkML development branch</th>
+      <th>JPMML-SparkML latest release version</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2.0.X</td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/tree/1.1.X"><code class="language-plaintext highlighter-rouge">1.1.X</code></a></td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/releases/tag/1.1.23"><code class="language-plaintext highlighter-rouge">1.1.23</code></a></td>
+    </tr>
+    <tr>
+      <td>2.1.X</td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/tree/1.2.X"><code class="language-plaintext highlighter-rouge">1.2.X</code></a></td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/releases/tag/1.2.15"><code class="language-plaintext highlighter-rouge">1.2.15</code></a></td>
+    </tr>
+    <tr>
+      <td>2.2.X</td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/tree/1.3.X"><code class="language-plaintext highlighter-rouge">1.3.X</code></a></td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/releases/tag/1.3.15"><code class="language-plaintext highlighter-rouge">1.3.15</code></a></td>
+    </tr>
+    <tr>
+      <td>2.3.X</td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/tree/1.4.X"><code class="language-plaintext highlighter-rouge">1.4.X</code></a></td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/releases/tag/1.4.14"><code class="language-plaintext highlighter-rouge">1.4.14</code></a></td>
+    </tr>
+    <tr>
+      <td>2.4.X</td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/tree/master"><code class="language-plaintext highlighter-rouge">master</code></a></td>
+      <td><a href="https://github.com/jpmml/jpmml-sparkml/releases/tag/1.5.7"><code class="language-plaintext highlighter-rouge">1.5.7</code></a></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>JPMML-SparkML checks the version of Apache Spark runtime environment before doing any conversion work.
+For example, the following exception is thrown when JPMML-SparkML version 1.4(.14) discovers that it has been improperly paired with Apache Spark version 2.2:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.IllegalArgumentException: Expected Apache Spark ML version 2.3, got version 2.2 (2.2.0)
+  at org.jpmml.sparkml.ConverterFactory.checkVersion(ConverterFactory.java:102)
+  at org.jpmml.sparkml.PMMLBuilder.&lt;init&gt;(PMMLBuilder.java:81)
+  ... 48 elided
+</code></pre></div></div>
+
+<h5 id="library-jar">Library JAR</h5>
+
+<p>The library JAR file can be imported into Apache Spark version 2.3.0 (and newer) using the <code class="language-plaintext highlighter-rouge">--packages</code> command-line option. Package coordinates must follow Apache Maven conventions <code class="language-plaintext highlighter-rouge">${groupId}:${artifactId}:${version}</code>, where the groupId and artifactId are fixed as <code class="language-plaintext highlighter-rouge">org.jpmml</code> and <code class="language-plaintext highlighter-rouge">jpmml-sparkml</code>, respectively.</p>
+
+<p>For example, starting Spark shell with the JPMML-SparkML library JAR:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export SPARK_HOME=/opt/spark-2.3.0/
+$ $SPARK_HOME/bin/spark-shell --packages org.jpmml:jpmml-sparkml:${version}
+</code></pre></div></div>
+
+<p><strong>Important</strong>: this library JAR file is not directly usable with Apache Spark versions 2.0 through 2.2 due to the <a href="https://issues.apache.org/jira/browse/SPARK-15526">SPARK-15526</a> classpath conflict.</p>
+
+<p>This classpath conflict typically manifests itself during the conversion work, in the form of some obscure <code class="language-plaintext highlighter-rouge">java.lang.NoSuchFieldError</code> or <code class="language-plaintext highlighter-rouge">java.lang.NoSuchMethodError</code>:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.NoSuchMethodError: org.dmg.pmml.Field.setOpType(Lorg/dmg/pmml/OpType;)Lorg/dmg/pmml/PMMLObject;
+  at org.jpmml.converter.PMMLEncoder.toCategorical(PMMLEncoder.java:215)
+  at org.jpmml.sparkml.feature.StringIndexerModelConverter.encodeFeatures(StringIndexerModelConverter.java:74)
+  at org.jpmml.sparkml.FeatureConverter.registerFeatures(FeatureConverter.java:47)
+  at org.jpmml.sparkml.feature.RFormulaModelConverter.registerFeatures(RFormulaModelConverter.java:65)
+  at org.jpmml.sparkml.PMMLBuilder.build(PMMLBuilder.java:114)
+  at org.jpmml.sparkml.PMMLBuilder.buildByteArray(PMMLBuilder.java:278)
+  at org.jpmml.sparkml.PMMLBuilder.buildByteArray(PMMLBuilder.java:274)
+  ... 48 elided
+</code></pre></div></div>
+
+<h5 id="executable-uber-jar">Executable uber-JAR</h5>
+
+<p>The executable uber-JAR file can be imported into any Apache Spark version using the <code class="language-plaintext highlighter-rouge">--jars</code> command-line option.</p>
+
+<p>For example, starting PySpark with the JPMML-SparkML executable uber-JAR:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ export SPARK_HOME=/opt/spark-2.2.0/
+$ $SPARK_HOME/bin/pyspark --jars /path/to/jpmml-sparkml-executable-${version}.jar
+</code></pre></div></div>
+
+<h3 id="updating-application-code">Updating application code</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.ConverterUtil</code> utility class is still part of JPMML-SparkML, but it has been marked as deprecated, and rendered dysfunctional - both <code class="language-plaintext highlighter-rouge">#toPMML(StructType, PipelineModel)</code> and <code class="language-plaintext highlighter-rouge">#toPMMLByteArray(StructType, PipelineModel)</code> utility methods throw an <code class="language-plaintext highlighter-rouge">java.lang.UnsupportedOperationException</code> when invoked:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.UnsupportedOperationException: Replace "org.jpmml.sparkml.ConverterUtil.toPMMLByteArray(schema, pipelineModel)" with "new org.jpmml.sparkml.PMMLBuilder(schema, pipelineModel).buildByteArray()"
+  at org.jpmml.sparkml.ConverterUtil.toPMMLByteArray(ConverterUtil.java:51)
+  at org.jpmml.sparkml.ConverterUtil.toPMMLByteArray(ConverterUtil.java:46)
+  ... 48 elided
+</code></pre></div></div>
+
+<p>The exception message provides adequate instructions for updating the application code.</p>
+
+<p>Old API:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">StructType</span> <span class="n">schema</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="na">schema</span><span class="o">();</span>
+<span class="nc">PipelineModel</span> <span class="n">pipelineModel</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="na">fit</span><span class="o">(</span><span class="n">df</span><span class="o">);</span>
+
+<span class="kt">byte</span><span class="o">[]</span> <span class="n">pmmlBytes</span> <span class="o">=</span> <span class="nc">ConverterUtil</span><span class="o">.</span><span class="na">toPMMLByteArray</span><span class="o">(</span><span class="n">schema</span><span class="o">,</span> <span class="n">pipelineModel</span><span class="o">);</span>
+</code></pre></div></div>
+
+<p>New API:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">StructType</span> <span class="n">schema</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="na">schema</span><span class="o">();</span>
+<span class="nc">PipelineModel</span> <span class="n">pipelineModel</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="na">fit</span><span class="o">(</span><span class="n">df</span><span class="o">);</span>
+
+<span class="kt">byte</span><span class="o">[]</span> <span class="n">pmmlBytes</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">PMMLBuilder</span><span class="o">(</span><span class="n">schema</span><span class="o">,</span> <span class="n">pipelineModel</span><span class="o">).</span><span class="na">buildByteArray</span><span class="o">();</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.PMMLBuilder</code> class currently exposes three builder methods:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">#build()</code> - Returns the PMML document as a live <code class="language-plaintext highlighter-rouge">org.dmg.pmml.PMML</code> object.</li>
+  <li><code class="language-plaintext highlighter-rouge">#buildByteArray()</code> - Returns the PMML document as a byte array.</li>
+  <li><code class="language-plaintext highlighter-rouge">#buildFile(java.io.File)</code> - Writes the PMML document to the specified file in local filesystem. Upon success, returns the argument <code class="language-plaintext highlighter-rouge">java.io.File</code> object unchanged.</li>
+</ul>
+
+<p>The first option is aimed at PMML-savvy applications that wish to perform extra processing on the PMML document (eg. adding or removing feature transformations).
+However, most applications should be content with the JPMML-SparkML generated PMML document, and will be processing it as a generic blob.
+The choice between the last two options depends on the approximate size/complexity of the PMML document (eg. elementary models vs. ensemble models) and overall application architecture.</p>
+
+<h3 id="new-api-features-and-functionality">New API features and functionality</h3>
+
+<h5 id="conversion-options">Conversion options</h5>
+
+<p>The “business logic” of some Apache Spark ML transformer or model can often be converted to the PMML representation in more than one way. Some representations are easier to approach for humans (eg. interpretation and manual modification), whereas some other representations are more compact or faster to execute for machines.</p>
+
+<p>The purpose of conversion options is to activate the most optimal representation for the intended application scenario. Granted, the content of PMML documents is well structured and is fairly easy to manipulate using <a href="https://github.com/jpmml/jpmml-model">JPMML-Model</a> and <a href="https://github.com/jpmml/jpmml-converter">JPMML-Converter</a> libraries at any later time. However, achieving the desired outcome by toggling high-level controls is much more productive than writing low-level application code.</p>
+
+<p>There is no easy recipe for deciding which conversion options to tweak, and in which way. It could very well be the case that the defaults work fine for everything except for one specific feature/operation/algorithmic detail.
+The recommended way of going about this problematics is generating a grid of PMML documents by systematically varying the values of small number of key conversion options, and capturing and analyzing relevant metrics during evaluation.</p>
+
+<p>Conversion options are systematized as Java marker interfaces, which inherit from the <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.HasOptions</code> base marker interface.
+A similar convention is being enforced across all JPMML conversion libraries. For example, in the <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library, which deals with the conversion of Scikit-Learn pipelines to the PMML representation, the class hierarchy is rooted at the <code class="language-plaintext highlighter-rouge">org.jpmml.sklearn.HasOptions</code> base marker interface.</p>
+
+<p>Unfortunately, the documentation is severely lacking in this area.
+To discover and learn which conversion options are available (in a particular JPMML-SparkML version), simply order the Java IDE to display the class hierarchy starting from the <code class="language-plaintext highlighter-rouge">HasOptions</code> base marker interface, and browse through it.</p>
+
+<p>Notable conversion options:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.model.HasRegressionOptions#OPTION_LOOKUP_THRESHOLD</code>. Controls the encoding of categorical features in regression models - table scan vs. table lookup.</li>
+  <li><code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.model.HasTreeOptions#OPTION_COMPACT</code>. Controls the encoding of the tree data structure in decision tree models and their ensembles - Apache Spark-style binary splits vs. PMML-style multi-splits. Can reduce the size of PMML documents anywhere between 25 to 50%.</li>
+</ul>
+
+<p>For maximum future-proofness, all conversion option names and values should be given as Java class constants. For example, the name of the decision tree compaction option should be given as <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.model.HasTreeOptions#OPTION_COMPACT</code> (instead of a Java string literal <code class="language-plaintext highlighter-rouge">"compact"</code>). If this conversion options should be renamed, relocated, or removed in some future JPMML-SparkML version, then the Java IDE/compiler would automatically issue a notification about it.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">PMMLBuilder</code> class exposes the following mutator methods:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">#putOption(String, Object)</code> - Sets the conversion option for all pipeline stages.</li>
+  <li><code class="language-plaintext highlighter-rouge">#putOption(PipelineStage, String, Object)</code> - Sets the conversion option for the specified pipeline stage only.</li>
+</ul>
+
+<h5 id="verification">Verification</h5>
+
+<p>Every conversion operation raises concern, whether the JPMML-SparkML library was doing a good job or not. Say, the conversion operation appears to have succeeded (ie. there were no exceptions thrown, and no warning- or error-level log messages emitted), but how to be sure that the PMML representation of the fitted pipeline shall be making exactly the same predictions as the Apache Spark representation did?</p>
+
+<p>The PMML specification addresses this condundrum with the <a href="http://dmg.org/pmml/v4-4-1/ModelVerification.html">model verification</a> mechanism.
+In brief, it is possible to embed a verification data into models. The verification dataset has two column groups - the inputs, and the predictions that the original ML framework made when those inputs were fed into it.
+PMML engines are expected to perform self-checks using the verification data before commissioning the model. If the live predictions made by the PMML engine agree with the stored predictions of the original ML framework (within the defined acceptability criteria), then that is a strong indication that everything is going favourably.
+Next to most common cases, the verification dataset should aim to include all sorts of fringe cases (eg. missing, outlier, invalid values) in order to increase the confidence.</p>
+
+<p>The <a href="https://github.com/jpmml/jpmml-evaluator">JPMML-Evaluator</a> library can be ordered to perform self-checks on the <code class="language-plaintext highlighter-rouge">org.jpmml.evaluator.Evaluator</code> object by invoking its <code class="language-plaintext highlighter-rouge">#verify()</code> method.
+JPMML-SparkML integration tests indicate that the JPMML ecosystem (ie. JPMML-SparkML converter plus JPMML-Evaluator scorer) is consistently able to reproduce Apache Spark predictions (eg. regression targets, classification probabilities) with an abolute/relative error of 1e-14 or less.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">PMMLBuilder</code> class exposes the following mutator methods:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">#verify(Dataset&lt;Row&gt;)</code> - Embeds the verification dataset.</li>
+  <li><code class="language-plaintext highlighter-rouge">#verify(Dataset&lt;Row&gt;, double, double)</code> - Embeds the verification dataset with custom acceptance criteria (precision and zero threshold).</li>
+</ul>
+
+<h3 id="jpmml-sparkml-wrappers">JPMML-SparkML wrappers</h3>
+
+<p>The JPMML-SparkML library is written in Java. It is very easy to integrate into any Java or Scala application to give it Apache Spark ingestion capabilities.</p>
+
+<p>However, there is an even more important audience of data scientists that would like to access this functionality from within their Python (PySpark) and R (SparkR and Sparklyr) scripts.</p>
+
+<p>The JPMML ecosystem now includes Python and R wrapper libraries for the JPMML-SparkML library. The wrappers are kept as minimal and shallow as possible. Essentially, they provide a language-specific class that communicates with the underlying <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.PMMLBuilder</code> Java class, and handle the conversion of objects between the two environments (eg. converting Python and R strings to Java strings, and vice versa).</p>
+
+<h5 id="pyspark">PySpark</h5>
+
+<p>The <a href="https://github.com/jpmml/pyspark2pmml"><code class="language-plaintext highlighter-rouge">pyspark2pmml</code></a> package works with the official <a href="https://spark.apache.org/docs/latest/api/python/pyspark.html">PySpark</a> interface.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">pyspark2pmml.PMMLBuilder</code> Python class is effectively an API clone (in terms of the assortment and signatures of its methods) of the <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.PMMLBuilder</code> Java class.</p>
+
+<p>The only noteworthy difference is that it has a three-argument constructor (instead of a two-argument one):</p>
+
+<ol>
+  <li>Apache Spark connection in the form of a <a href="https://spark.apache.org/docs/latest/api/python/pyspark.html#pyspark.SparkContext"><code class="language-plaintext highlighter-rouge">pyspark.SparkContext</code></a> object.</li>
+  <li>Training dataset in the form of a <a href="https://spark.apache.org/docs/latest/api/python/pyspark.sql.html#pyspark.sql.DataFrame"><code class="language-plaintext highlighter-rouge">pyspark.sql.DataFrame</code></a> object.</li>
+  <li>Fitted pipeline in the form of a <a href="https://spark.apache.org/docs/latest/api/python/pyspark.ml.html#pyspark.ml.PipelineModel"><code class="language-plaintext highlighter-rouge">pyspark.ml.PipelineModel</code></a> object.</li>
+</ol>
+
+<p>The Apache Spark connection is typically available in PySpark session as the <code class="language-plaintext highlighter-rouge">sc</code> variable. The <code class="language-plaintext highlighter-rouge">SparkContext</code> class has an <code class="language-plaintext highlighter-rouge">_jvm</code> attribute, which gives Python (power-)users direct access to JPMML-SparkML functionality via the Py4J gateway.</p>
+
+<p>Sample usage:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pyspark.ml</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="p">...</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">stages</span> <span class="o">=</span> <span class="p">[...])</span>
+
+<span class="n">pipelineModel</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">pyspark2pmml</span> <span class="kn">import</span> <span class="n">PMMLBuilder</span>
+
+<span class="n">pmmlBuilder</span> <span class="o">=</span> <span class="n">PMMLBuilder</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">pipelineModel</span><span class="p">)</span> \
+  <span class="p">.</span><span class="n">putOption</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">sc</span><span class="p">.</span><span class="n">_jvm</span><span class="p">.</span><span class="n">org</span><span class="p">.</span><span class="n">jpmml</span><span class="p">.</span><span class="n">sparkml</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">HasTreeOptions</span><span class="p">.</span><span class="n">OPTION_COMPACT</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span> \
+  <span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">False</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">))</span>
+
+<span class="n">pmmlBuilder</span><span class="p">.</span><span class="n">buildFile</span><span class="p">(</span><span class="s">"pipeline.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h5 id="sparklyr">Sparklyr</h5>
+
+<p>There is no package for the official <a href="https://spark.apache.org/docs/latest/sparkr.html">SparkR</a> interface.
+However, the <a href="https://github.com/jpmml/sparklyr2pmml"><code class="language-plaintext highlighter-rouge">sparklyr2pmml</code></a> package works with RStudio’s <a href="https://spark.rstudio.com/">Sparklyr</a> interface.</p>
+
+<p>Contrary to Java, Scala and Python, object-oriented design and programming is a bit challenging in R.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">sparklyr2pmml::PMMLBuilder</code> S4 class can only capture the state. It defines two slots <code class="language-plaintext highlighter-rouge">sc</code> and <code class="language-plaintext highlighter-rouge">java_pmml_builder</code>, which can be initialized via the two-argument constructor. However, most R users are advised to regard this constructor as private, and heed the three-argument <code class="language-plaintext highlighter-rouge">sparklyr2pmml::PMMLBuilder</code> S4 helper function instead. This function takes care of initializing a proper <code class="language-plaintext highlighter-rouge">java_pmml_builder</code> object based on the <code class="language-plaintext highlighter-rouge">sparklyr::tbl_spark</code> training dataset and <code class="language-plaintext highlighter-rouge">sparklyr::ml_pipeline_model</code> fitted pipeline objects.</p>
+
+<p>All mutator and builder methods have been outsourced to standalone S4 generic functions, which take the <code class="language-plaintext highlighter-rouge">sparklyr2pmml::PMMLBuilder</code> object as the first argument:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">putOption(PMMLBuilder, ml_pipeline_stage, character, object)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">verify(PMMLBuilder, tbl_spark)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">build(PMMLBuilder)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">buildByteArray(PMMLBuilder)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">buildFile(PMMLBuilder, character)</code></li>
+</ul>
+
+<p>Sample usage:</p>
+
+<div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="s2">"dplyr"</span><span class="p">)</span><span class="w">
+</span><span class="n">library</span><span class="p">(</span><span class="s2">"sparklyr"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">...</span><span class="w">
+</span><span class="n">pipeline</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ml_pipeline</span><span class="p">(</span><span class="n">sc</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">...</span><span class="w">
+
+</span><span class="n">pipeline_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ml_fit</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span><span class="w"> </span><span class="n">df</span><span class="p">)</span><span class="w">
+
+</span><span class="n">library</span><span class="p">(</span><span class="s2">"sparklyr2pmml"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Use `magrittr`-style %&gt;% operators for chaining the constructor helper function and subsequent mutator functions together</span><span class="w">
+</span><span class="n">pmml_builder</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PMMLBuilder</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span><span class="w"> </span><span class="n">df</span><span class="p">,</span><span class="w"> </span><span class="n">pipeline_model</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">putOption</span><span class="p">(</span><span class="kc">NULL</span><span class="p">,</span><span class="w"> </span><span class="n">invoke_static</span><span class="p">(</span><span class="n">sc</span><span class="p">,</span><span class="w"> </span><span class="s2">"org.jpmml.sparkml.model.HasTreeOptions"</span><span class="p">,</span><span class="w"> </span><span class="s2">"OPTION_COMPACT"</span><span class="p">),</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span><span class="w">
+  </span><span class="n">verify</span><span class="p">(</span><span class="n">sdf_sample</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="w"> </span><span class="m">0.01</span><span class="p">,</span><span class="w"> </span><span class="n">replacement</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">FALSE</span><span class="p">))</span><span class="w">
+
+</span><span class="n">buildFile</span><span class="p">(</span><span class="n">pmml_builder</span><span class="p">,</span><span class="w"> </span><span class="s2">"pipeline.pmml"</span><span class="p">)</span><span class="w">
+</span></code></pre></div></div>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

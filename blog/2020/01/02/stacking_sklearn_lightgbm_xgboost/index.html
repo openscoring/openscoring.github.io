@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn lightgbm xgboost sklearn2pmml data-categorical data-missing">
+  <meta name="author" content="vruusmann">
+
+  <title>Stacking Scikit-Learn, LightGBM and XGBoost models - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2020/01/02/stacking_sklearn_lightgbm_xgboost/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Stacking Scikit-Learn, LightGBM and XGBoost models - Openscoring" />
+  <meta property="og:url" content="/blog/2020/01/02/stacking_sklearn_lightgbm_xgboost/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2020-01-02 00:00:00 +0200" />
+  <meta property="article:published_time" content="2020-01-02 00:00:00 +0200" />
+  <meta property="article:modified_time" content="2020-01-02 00:00:00 +0200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Stacking Scikit-Learn, LightGBM and XGBoost models - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Stacking Scikit-Learn, LightGBM and XGBoost models</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>Latest Scikit-Learn releases have made significant advances in the area of ensemble methods.</p>
+
+<p><a href="https://scikit-learn.org/stable/whats_new/v0.21.html">Scikit-Learn version 0.21</a> introduced <code class="language-plaintext highlighter-rouge">HistGradientBoostingClassifier</code> and <code class="language-plaintext highlighter-rouge">HistGradientBoostingRegressor</code> classes, which implement histogram-based decision tree ensembles.
+They are based on a completely new <code class="language-plaintext highlighter-rouge">TreePredictor</code> decision tree representation.
+The claimed benefits over the traditional <code class="language-plaintext highlighter-rouge">Tree</code> decision tree representation include support for missing values and the ability to process bigger datasets faster.</p>
+
+<p><a href="https://scikit-learn.org/stable/whats_new/v0.22.html">Scikit-Learn version 0.22</a> introduced <code class="language-plaintext highlighter-rouge">StackingClassifier</code> and <code class="language-plaintext highlighter-rouge">StackingRegressor</code> classes, which aggregate multiple child estimators into an integral whole using a parent (aka final) estimator.
+Stacking is closely related to voting.
+The main difference is about how the weights for individual child estimators are obtained.
+Namely, stacking estimators are “active” as they learn optimal weights autonomously during training, whereas voting estimators are “passive” as they expect optimal weights to be supplied.</p>
+
+<p>Scikit-Learn implements two stacking modes.
+In the default non-passthrough mode, the parent estimator is limited to seeing only the predictions of child estimators (<code class="language-plaintext highlighter-rouge">predict_proba</code> for classifiers and <code class="language-plaintext highlighter-rouge">predict</code> for regressors).
+In the passthrough mode, the parent estimator also sees the input dataset.</p>
+
+<h3 id="stacking-homogeneous-estimators">Stacking homogeneous estimators</h3>
+
+<p>The pipeline is very simple and straightforward when dealing with homogeneous estimators.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">StackingRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.neural_network</span> <span class="kn">import</span> <span class="n">MLPRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span><span class="p">,</span> <span class="n">StandardScaler</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeRegressor</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span><span class="p">,</span> <span class="n">ContinuousDomain</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"auto.csv"</span><span class="p">)</span>
+
+<span class="n">cat_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"cylinders"</span><span class="p">,</span> <span class="s">"model_year"</span><span class="p">,</span> <span class="s">"origin"</span><span class="p">]</span>
+<span class="n">cont_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"acceleration"</span><span class="p">,</span> <span class="s">"displacement"</span><span class="p">,</span> <span class="s">"horsepower"</span><span class="p">,</span> <span class="s">"weight"</span><span class="p">]</span>
+
+<span class="n">df_X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cat_columns</span> <span class="o">+</span> <span class="n">cont_columns</span><span class="p">]</span>
+<span class="n">df_y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"mpg"</span><span class="p">]</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+  <span class="p">[([</span><span class="n">cat_column</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">OneHotEncoder</span><span class="p">()])</span> <span class="k">for</span> <span class="n">cat_column</span> <span class="ow">in</span> <span class="n">cat_columns</span><span class="p">]</span> <span class="o">+</span>
+  <span class="p">[([</span><span class="n">cont_column</span><span class="p">],</span> <span class="p">[</span><span class="n">ContinuousDomain</span><span class="p">(),</span> <span class="n">StandardScaler</span><span class="p">()])</span> <span class="k">for</span> <span class="n">cont_column</span> <span class="ow">in</span> <span class="n">cont_columns</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">StackingRegressor</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"dt"</span><span class="p">,</span> <span class="n">DecisionTreeRegressor</span><span class="p">(</span><span class="n">max_depth</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">"mlp"</span><span class="p">,</span> <span class="n">MLPRegressor</span><span class="p">(</span><span class="n">hidden_layer_sizes</span> <span class="o">=</span> <span class="p">(</span><span class="mi">7</span><span class="p">),</span> <span class="n">solver</span> <span class="o">=</span> <span class="s">"lbfgs"</span><span class="p">,</span> <span class="n">max_iter</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">))</span>
+<span class="p">],</span> <span class="n">final_estimator</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(),</span> <span class="n">passthrough</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"estimator"</span><span class="p">,</span> <span class="n">estimator</span><span class="p">)</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>The qualifier “homogeneous” means that all child estimators have the same data pre-processing requirements.
+The opposite of “homogeneous” is “heterogeneous”, which means that different child estimators have different data pre-processing requirements.</p>
+
+<p>Consider, for example, the preparation of continuous features.
+Linear models assume that the magnitude of continuous values is roughly the same.
+Decision tree models do not make such an assumption, because they can identify an optimal split threshold value for a continuous feature irrespective of its transformation status (original scale vs. transformed scale).
+Owing to this discrepany, linear models and decision tree models (and ensembles thereof) are incompatible with each other by default.</p>
+
+<p>It is often possible to simplify a “heterogeneous” collection of estimators to a “homogeneous” one by performing data pre-processing following the strictest requirements.
+Linear models and decision tree models become compatible with each other after all continuous features have been scaled (ie. a requirement of linear models, which does not make any difference for decision tree models).</p>
+
+<h3 id="stacking-heterogeneous-estimators">Stacking heterogeneous estimators</h3>
+
+<p>The pipeline needs considerable redesign when dealing with heterogeneous estimators.</p>
+
+<p>Stacking LightGBM and XGBoost estimators is challenging due to their different categorical data pre-processing requirements.</p>
+
+<p>LightGBM performs the histogram-based binning of categorical values internally, and therefore expects categorical features to be kept as-is, or at most be encoded into categorical integer features using the <code class="language-plaintext highlighter-rouge">LabelEncoder</code> transformer.
+XGBoost does not have such capabilities, and therefore expects categorical features to be binarized using either <code class="language-plaintext highlighter-rouge">LabelBinarizer</code> or <code class="language-plaintext highlighter-rouge">OneHotEncoder</code> transformers.</p>
+
+<p>The “homogenisation” of LightGBM and XGBoost estimators is possible by enforcing the binarization of categorical features.
+However, this reduces the predictive performance of LightGBM.
+For more information, please refer to the blog post about <a href="https://openscoring.io//blog/2019/04/07/converting_sklearn_lightgbm_pipeline_pmml/">converting Scikit-Learn based LightGBM pipelines to PMML documents</a>.</p>
+
+<p>The solution is to perform feature engineering for each child estimator (and in the passthrough mode, also for the parent estimator) separately:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">StackingClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">(..)</span>
+
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">StackingClassifier</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"first"</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">(..)),</span>
+  <span class="p">(</span><span class="s">"second"</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">(..)),</span>
+  <span class="p">(</span><span class="s">"third"</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">(..))</span>
+<span class="p">],</span> <span class="n">final_estimator</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(..))</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"estimator"</span><span class="p">,</span> <span class="n">estimator</span><span class="p">)</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>If all child pipelines perform common feature engineering work, then it should be extracted into the first step of the pipeline.
+In this exercise, it is limited to capturing domain of features using <code class="language-plaintext highlighter-rouge">CategoricalDomain</code> and <code class="language-plaintext highlighter-rouge">ContinuousDomain</code> decorators.</p>
+
+<p>The initial column transformer changes the representation of the dataset from <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> to 2-D Numpy array, which is lacking adequate column-level metadata (eg. names, data types) for setting up subsequent column transformers.
+A suitable array descriptor is created manually, by copying the value of the <code class="language-plaintext highlighter-rouge">DataFrame.dtypes</code> attribute, and changing its index from column names to column positions:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"audit-NA.csv"</span><span class="p">,</span> <span class="n">na_values</span> <span class="o">=</span> <span class="p">[</span><span class="s">"N/A"</span><span class="p">,</span> <span class="s">"NA"</span><span class="p">])</span>
+
+<span class="n">cat_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"Education"</span><span class="p">,</span> <span class="s">"Employment"</span><span class="p">,</span> <span class="s">"Marital"</span><span class="p">,</span> <span class="s">"Occupation"</span><span class="p">]</span>
+<span class="n">cont_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"Age"</span><span class="p">,</span> <span class="s">"Hours"</span><span class="p">,</span> <span class="s">"Income"</span><span class="p">]</span>
+
+<span class="n">df_X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">cat_columns</span> <span class="o">+</span> <span class="n">cont_columns</span><span class="p">]</span>
+<span class="n">df_y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">]</span>
+
+<span class="n">dtypes</span> <span class="o">=</span> <span class="n">df_X</span><span class="p">.</span><span class="n">dtypes</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">ColumnTransformer</span><span class="p">(</span>
+  <span class="p">[(</span><span class="n">cat_column</span><span class="p">,</span> <span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="p">[</span><span class="n">cat_column</span><span class="p">])</span> <span class="k">for</span> <span class="n">cat_column</span> <span class="ow">in</span> <span class="n">cat_columns</span><span class="p">]</span> <span class="o">+</span>
+  <span class="p">[(</span><span class="n">cont_column</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">(),</span> <span class="p">[</span><span class="n">cont_column</span><span class="p">])</span> <span class="k">for</span> <span class="n">cont_column</span> <span class="ow">in</span> <span class="n">cont_columns</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="n">dtypes</span> <span class="o">=</span> <span class="n">Series</span><span class="p">(</span><span class="n">dtypes</span><span class="p">.</span><span class="n">values</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>Column transformers for LightGBM and XGBoost child pipelines can be constructed using <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.lightgbm.make_lightgbm_column_transformer</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.xgboost.make_xgboost_column_transformer</code> utility functions, respectively.</p>
+
+<p>LightGBM estimators are able to detect categorical features based on their data type.
+However, when dealing with more complex datasets, then it is advisable to overrule this functionality by supplying the indices of categorical features manually.
+This is typically done by specifying a <code class="language-plaintext highlighter-rouge">categorical_feature</code> (prefixed with one or more levels of step identifiers) parameter to the <code class="language-plaintext highlighter-rouge">(PMML)Pipeline.fit(X, y, **fit_params)</code> method.
+Unfortunately, this route is currently blocked, because the fit methods of <code class="language-plaintext highlighter-rouge">StackingClassifier</code> and <code class="language-plaintext highlighter-rouge">StackingRegressor</code> classes do not support the propagation of fit parameters.
+The workaround is to pass the <code class="language-plaintext highlighter-rouge">categorical_feature</code> parameter directly to the constructor.</p>
+
+<p>Constructing the LightGBM child pipeline:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">lightgbm</span> <span class="kn">import</span> <span class="n">LGBMClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing.lightgbm</span> <span class="kn">import</span> <span class="n">make_lightgbm_column_transformer</span>
+
+<span class="n">lightgbm_mapper</span><span class="p">,</span> <span class="n">lightgbm_categorical_feature</span> <span class="o">=</span> <span class="n">make_lightgbm_column_transformer</span><span class="p">(</span><span class="n">dtypes</span><span class="p">,</span> <span class="n">missing_value_aware</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">lightgbm_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">lightgbm_mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">LGBMClassifier</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">31</span><span class="p">,</span> <span class="n">max_depth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">,</span> <span class="n">categorical_feature</span> <span class="o">=</span> <span class="n">lightgbm_categorical_feature</span><span class="p">))</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>Constructing the XGBoost child pipeline:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing.xgboost</span> <span class="kn">import</span> <span class="n">make_xgboost_column_transformer</span>
+<span class="kn">from</span> <span class="nn">xgboost</span> <span class="kn">import</span> <span class="n">XGBClassifier</span>
+
+<span class="n">xgboost_mapper</span> <span class="o">=</span> <span class="n">make_xgboost_column_transformer</span><span class="p">(</span><span class="n">dtypes</span><span class="p">,</span> <span class="n">missing_value_aware</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">xgboost_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">xgboost_mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">XGBClassifier</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">31</span><span class="p">,</span> <span class="n">max_depth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">))</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>The Scikit-Learn child pipeline has exactly the same data pre-processing requirements as the XGBoost one (ie. continuous features should be kept as-is, whereas categorical features should be binarized).
+Currently, the corresponding column transformer needs to be set up manually.
+In future Scikit-Learn releases, when the fit methods of <code class="language-plaintext highlighter-rouge">HistGradientBoostingClassifier</code> and <code class="language-plaintext highlighter-rouge">HistGradientBoostingRegressor</code> classes add support for sparse datasets, then it should be possible to reuse the <code class="language-plaintext highlighter-rouge">make_xgboost_column_transformer</code> utility function here.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.experimental</span> <span class="kn">import</span> <span class="n">enable_hist_gradient_boosting</span> <span class="c1"># noqa
+</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">HistGradientBoostingClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">PMMLLabelBinarizer</span>
+
+<span class="n">sklearn_mapper</span> <span class="o">=</span> <span class="n">ColumnTransformer</span><span class="p">(</span>
+  <span class="p">[(</span><span class="nb">str</span><span class="p">(</span><span class="n">cat_index</span><span class="p">),</span> <span class="n">PMMLLabelBinarizer</span><span class="p">(</span><span class="n">sparse_output</span> <span class="o">=</span> <span class="bp">False</span><span class="p">),</span> <span class="p">[</span><span class="n">cat_index</span><span class="p">])</span> <span class="k">for</span> <span class="n">cat_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cat_columns</span><span class="p">))]</span> <span class="o">+</span>
+  <span class="p">[(</span><span class="nb">str</span><span class="p">(</span><span class="n">cont_index</span><span class="p">),</span> <span class="s">"passthrough"</span><span class="p">,</span> <span class="p">[</span><span class="n">cont_index</span><span class="p">])</span> <span class="k">for</span> <span class="n">cont_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cat_columns</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">cat_columns</span> <span class="o">+</span> <span class="n">cont_columns</span><span class="p">))]</span>
+<span class="p">,</span> <span class="n">remainder</span> <span class="o">=</span> <span class="s">"drop"</span><span class="p">)</span>
+<span class="n">sklearn_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">sklearn_mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">HistGradientBoostingClassifier</span><span class="p">(</span><span class="n">max_iter</span> <span class="o">=</span> <span class="mi">31</span><span class="p">,</span> <span class="n">max_depth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">))</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>Stacking provides an interesting opportunity to rank LightGBM, XGBoost and Scikit-Learn estimators based on their predictive performance.
+The idea is to grow all child decision tree ensemble models under similar structural constraints, and use a linear model as the parent estimator (<code class="language-plaintext highlighter-rouge">LogisticRegression</code> for classifiers and <code class="language-plaintext highlighter-rouge">LinearRegression</code> for regressors).
+The importance of child estimators is then proportional to their estimated coefficient values.</p>
+
+<p>To further boost signal over noise, the stacking is performed in non-passthrough mode and its cross-validation functionality is disabled by supplying a no-op cross-validation generator:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="c1"># See https://stackoverflow.com/a/55326439
+</span><span class="k">class</span> <span class="nc">DisabledCV</span><span class="p">:</span>
+
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">n_splits</span> <span class="o">=</span> <span class="mi">1</span>
+
+  <span class="k">def</span> <span class="nf">split</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+    <span class="k">yield</span> <span class="p">(</span><span class="n">numpy</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)),</span> <span class="n">numpy</span><span class="p">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)))</span>
+
+  <span class="k">def</span> <span class="nf">get_n_splits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">n_splits</span>
+
+<span class="n">final_estimator</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">multi_class</span> <span class="o">=</span> <span class="s">"ovr"</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"ensemble"</span><span class="p">,</span> <span class="n">StackingClassifier</span><span class="p">([</span>
+    <span class="p">(</span><span class="s">"lightgbm"</span><span class="p">,</span> <span class="n">lightgbm_pipeline</span><span class="p">),</span>
+    <span class="p">(</span><span class="s">"xgboost"</span><span class="p">,</span> <span class="n">xgboost_pipeline</span><span class="p">),</span>
+    <span class="p">(</span><span class="s">"sklearn"</span><span class="p">,</span> <span class="n">sklearn_pipeline</span><span class="p">)</span>
+  <span class="p">],</span> <span class="n">final_estimator</span> <span class="o">=</span> <span class="n">final_estimator</span><span class="p">,</span> <span class="n">cv</span> <span class="o">=</span> <span class="n">DisabledCV</span><span class="p">(),</span> <span class="n">passthrough</span> <span class="o">=</span> <span class="bp">False</span><span class="p">))</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>A fitted <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object can be converted to a PMML XML file using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml</code> utility function.
+However, it is highly advisable to first enhance it with verification data (for automated quality-assurance purposes) by calling the <code class="language-plaintext highlighter-rouge">PMMLPipeline.verify(X)</code> method with a representative sample of the input dataset:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">(..)</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df_X</span><span class="p">,</span> <span class="n">df_y</span><span class="p">)</span>
+
+<span class="n">pipeline</span><span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">df_X</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">n</span> <span class="o">=</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"StackingEnsemble.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>“Auto” dataset: <a href="https://openscoring.io/resources/data/auto.csv"><code class="language-plaintext highlighter-rouge">auto.csv</code></a></li>
+  <li>“Audit-NA” dataset: <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>
+  <li>Python scripts: <a href="https://openscoring.io/resources/2020-01-02/train-regression.py"><code class="language-plaintext highlighter-rouge">train-regression.py</code></a> and <a href="https://openscoring.io/resources/2020-01-02/train-classification.py"><code class="language-plaintext highlighter-rouge">train-classification.py</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

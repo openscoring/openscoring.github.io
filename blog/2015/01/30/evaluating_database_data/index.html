@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="openscoring">
+  <meta name="author" content="vruusmann">
+
+  <title>Applying machine learning models to database data: the REST web service approach - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2015/01/30/evaluating_database_data/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Applying machine learning models to database data: the REST web service approach - Openscoring" />
+  <meta property="og:url" content="/blog/2015/01/30/evaluating_database_data/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2015-01-30 00:00:00 +0200" />
+  <meta property="article:published_time" content="2015-01-30 00:00:00 +0200" />
+  <meta property="article:modified_time" content="2015-01-30 00:00:00 +0200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Applying machine learning models to database data: the REST web service approach - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Applying machine learning models to database data: the REST web service approach</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>There are three major approaches to applying machine learning models to database data:</p>
+
+<ol>
+  <li>Direct SQL execution. This is attained by converting the model from its native representation to the SQL representation. For example, there are tools like <a href="http://www.pmml2sql.com/">pmml2sql</a> and <a href="https://www.knime.com/">KNIME</a> (version 2.11.1 and newer) that claim to have the ability to convert most common model types from PMML to SQL. Naturally, the quality of conversion work varies considerably between different SQL dialects.</li>
+  <li>Intermediated SQL execution. The model stays in its native representation. The evaluation is handled by a dedicated model evaluation engine that is tightly integrated into the database backend. For example, PostgreSQL database supports the execution of arbitrary R and Python application code via <a href="https://www.joeconway.com/plr/">PL/R</a> and <a href="http://python.projects.postgresql.org/">PL/Py</a> procedural languages, respectively. This approach is technically quite demanding, because it crosses SQL and application programming domains. The life of SQL end users can be made somewhat easier by (automatically-) generating an appropriate SQL wrapper function for every model.</li>
+  <li>External execution. The model is deployed to a dedicated model evaluation engine that is separate from the database backend. Such model evaluation engine could be shared between several applications and services, which leads to the concept of “organization’s predictive analytics hub”.</li>
+</ol>
+
+<p>The choice between these three approaches depends on various technical and organizational considerations. Fundamentally, direct and intermediated SQL execution approaches are about <strong>moving the model to where data are located</strong>, whereas the external execution approach is about <strong>moving data to where the model is located</strong>. SQL execution approaches can operate in real-time on any amount of data. The external execution approach is penalized by the REST web service overhead and network round-trip times. This penalty scales sublinearly. Therefore, it becomes less of an issue if the evaluation operations are less frequent (real-time vs. batch queries) and deal with larger amounts of data (single data record vs. collection of data records). The main advantage of the external execution approach is that is easily applicable to any database backend.</p>
+
+<h3 id="overview">Overview</h3>
+
+<p>This blog post demonstrates how to use the <a href="https://github.com/openscoring/openscoring">Openscoring REST web service</a> from within PostgreSQL database.</p>
+
+<p>The exercise starts with installing and running the Openscoring web service at localhost:8080 and deploying the example model <code class="language-plaintext highlighter-rouge">DecisionTreeIris.pmml</code> as described in the README file of the project.</p>
+
+<p>Every deployed model should be verified by accessing its summary REST API endpoint. For example, the summary of the newly deployed <code class="language-plaintext highlighter-rouge">DecisionTreeIris</code> model can be downloaded as a JSON object by performing an HTTP GET request on <a href="http://localhost:8080/openscoring/model/DecisionTreeIris">http://localhost:8080/openscoring/model/DecisionTreeIris</a>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">schema</code> attribute of this summary object contains the description of the model schema. The <code class="language-plaintext highlighter-rouge">activeFields</code> and <code class="language-plaintext highlighter-rouge">groupFields</code> attributes of the schema object represent model arguments, whereas the <code class="language-plaintext highlighter-rouge">targetFields</code> and <code class="language-plaintext highlighter-rouge">outputFields</code> attributes represent model results. It is easy to see that the <code class="language-plaintext highlighter-rouge">DecisionTreeIris</code> model expects four arguments “Sepal_Length”, “Sepal_Width”, “Petal_Length” and “Petal_Width”, and produces six results “Species”, “Predicted_Species”, “Probability_setosa”, “Probability_versicolor”, “Probability_virginica” and “Node_Id”.</p>
+
+<p>The external execution workflow contains three steps:</p>
+
+<ol>
+  <li>Exporting data from database to a CSV document <code class="language-plaintext highlighter-rouge">/tmp/iris_request.csv</code>.</li>
+  <li>Performing the model evaluation by calling the CSV prediction REST API endpoint.</li>
+  <li>Importing data from a CSV document <code class="language-plaintext highlighter-rouge">/tmp/iris_response.csv</code> back to database.</li>
+</ol>
+
+<h3 id="data-schema">Data schema</h3>
+
+<p>The data about iris flowers is separated into two tables based on their origin. First, the table <code class="language-plaintext highlighter-rouge">iris</code> contains experimentally determined data. It is populated with 150 data records from the example file <code class="language-plaintext highlighter-rouge">/tmp/input.csv</code>. Second, the table <code class="language-plaintext highlighter-rouge">iris_decisiontree</code> contains predicted data:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">iris</span> <span class="p">(</span>
+  <span class="n">Id</span> <span class="nb">serial</span> <span class="k">PRIMARY</span> <span class="k">KEY</span><span class="p">,</span>
+  <span class="n">Sepal_Length</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Sepal_Width</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Petal_Length</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Petal_Width</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Species</span> <span class="nb">varchar</span>
+<span class="p">);</span>
+
+<span class="k">COPY</span> <span class="n">iris</span><span class="p">(</span><span class="n">Sepal_Length</span><span class="p">,</span> <span class="n">Sepal_Width</span><span class="p">,</span> <span class="n">Petal_Length</span><span class="p">,</span> <span class="n">Petal_Width</span><span class="p">,</span> <span class="n">Species</span><span class="p">)</span> <span class="k">FROM</span> <span class="s1">'/tmp/input.csv'</span> <span class="k">WITH</span> <span class="n">CSV</span> <span class="k">DELIMITER</span> <span class="s1">','</span> <span class="n">HEADER</span><span class="p">;</span>
+
+<span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">iris_decisiontree</span> <span class="p">(</span>
+  <span class="n">Id</span> <span class="nb">integer</span> <span class="k">REFERENCES</span> <span class="n">iris</span><span class="p">(</span><span class="n">Id</span><span class="p">),</span>
+  <span class="n">Predicted_Species</span> <span class="nb">varchar</span><span class="p">,</span>
+  <span class="n">Probability_setosa</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Probability_versicolor</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Probability_virginica</span> <span class="nb">double</span> <span class="nb">precision</span>
+<span class="p">);</span>
+</code></pre></div></div>
+
+<p>This separation makes it straightforward to scale the application from one model to many models. For example, if it becomes necessary to deploy an alternative model <code class="language-plaintext highlighter-rouge">RandomForestIris</code>, then these predicted data will be stored in another table <code class="language-plaintext highlighter-rouge">iris_randomforest</code>. A random forest model is a collection of decision tree models. The results take longer to compute, but should be more accurate.</p>
+
+<h3 id="export-of-model-argument-data">Export of model argument data</h3>
+
+<p>The table <code class="language-plaintext highlighter-rouge">iris</code> is (periodically-) monitored for data records that do not have a counterpart in the table <code class="language-plaintext highlighter-rouge">iris_decisiontree</code>. All such unclassified data records are exported to a CSV document <code class="language-plaintext highlighter-rouge">/tmp/iris_request.csv</code> using the <code class="language-plaintext highlighter-rouge">COPY .. TO</code> command:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">COPY</span> <span class="p">(</span><span class="k">SELECT</span> <span class="n">iris</span><span class="p">.</span><span class="n">Id</span> <span class="k">AS</span> <span class="nv">"Id"</span><span class="p">,</span> <span class="n">iris</span><span class="p">.</span><span class="n">Sepal_Length</span> <span class="k">AS</span> <span class="nv">"Sepal_Length"</span><span class="p">,</span> <span class="n">iris</span><span class="p">.</span><span class="n">Sepal_Width</span> <span class="k">AS</span> <span class="nv">"Sepal_Width"</span><span class="p">,</span> <span class="n">iris</span><span class="p">.</span><span class="n">Petal_Length</span> <span class="k">AS</span> <span class="nv">"Petal_Length"</span><span class="p">,</span> <span class="n">iris</span><span class="p">.</span><span class="n">Petal_Width</span> <span class="k">AS</span> <span class="nv">"Petal_Width"</span> <span class="k">FROM</span> <span class="n">iris</span> <span class="k">LEFT</span> <span class="k">JOIN</span> <span class="n">iris_decisiontree</span> <span class="k">ON</span> <span class="n">iris</span><span class="p">.</span><span class="n">Id</span> <span class="o">=</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Id</span> <span class="k">WHERE</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Predicted_Species</span> <span class="k">IS</span> <span class="k">NULL</span><span class="p">)</span> <span class="k">TO</span> <span class="s1">'/tmp/iris_request.csv'</span> <span class="k">WITH</span> <span class="n">CSV</span> <span class="k">DELIMITER</span> <span class="s1">','</span> <span class="n">HEADER</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>The CSV document must conform to the following rules:</p>
+
+<ul>
+  <li>The first row (“header”) represents column identifiers.</li>
+  <li>The first column represents row identifiers. The name of this column must be “Id” (case-insensitive). The Openscoring web service copies the row identifier column from the request CSV document to the response CSV document without changes.</li>
+  <li>All other columns represent field data. The ordering of field columns is not significant. The names of field columns are case sensitive. For example, the Openscoring web service throws an exception if the model expects a “Sepal_Length” column as an argument, but the CSV document provides a “sepal_length” column instead. Most database backends treat column names in a case-insensitive manner and automatically standardize them to the lowercase form. The above <code class="language-plaintext highlighter-rouge">COPY .. TO</code> command fights this behaviour by specifying the correct case using the <code class="language-plaintext highlighter-rouge">AS</code> alias.</li>
+  <li>The separator character can be the comma (<code class="language-plaintext highlighter-rouge">,</code>), the semicolon (<code class="language-plaintext highlighter-rouge">;</code>) or the horizontal tab (<code class="language-plaintext highlighter-rouge">\t</code>) character. String values may be quoted using the double quote (<code class="language-plaintext highlighter-rouge">"</code>) character.</li>
+  <li>Two consecutive separator characters (<code class="language-plaintext highlighter-rouge">,,</code>) indicate a missing field value. An empty string can be represented using two consecutive double quote characters (<code class="language-plaintext highlighter-rouge">,"",</code>).</li>
+</ul>
+
+<h3 id="model-evaluation">Model evaluation</h3>
+
+<p>The evaluation is handled by the Openscoring web service over the CSV evaluation REST API endpoint. In brief, this REST API endpoint is bound to the HTTP POST method. The request body is a CSV document with model arguments. The request is processed synchronously. For better responsiveness, application clients can perform the evaluation in parallel, where one big request is split into several smaller requests. The response body is another CSV document with model results.</p>
+
+<p>Database engines typically do not advertise HTTP client functionality as their core competency. It becomes a one-time responsibility for SQL developers to find and install a suitable database extension for this purpose. In this exercise, the HTTP client functionality is provided by the <a href="https://curl.haxx.se/">cURL</a> command-line application, which is executed from within PostgreSQL database using the <a href="https://github.com/petere/plsh">PL/sh</a> procedural language.</p>
+
+<p>Activating the PL/sh extension and creating two shell-backed SQL functions <code class="language-plaintext highlighter-rouge">evaluate_iris()</code> and <code class="language-plaintext highlighter-rouge">clean_iris()</code>:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="n">EXTENSION</span> <span class="n">plsh</span><span class="p">;</span>
+
+<span class="c1">-- uploads file `/tmp/iris_request.csv` to the Openscoring web service and downloads the result into file `/tmp/iris_response.csv`.</span>
+<span class="k">CREATE</span> <span class="k">FUNCTION</span> <span class="n">evaluate_iris</span><span class="p">()</span> <span class="k">RETURNS</span> <span class="n">void</span> <span class="k">AS</span> <span class="s1">'
+#!/bin/sh
+curl -X POST --data-binary @/tmp/iris_request.csv -H "Content-type: text/plain" http://localhost:8080/openscoring/model/DecisionTreeIris/csv &gt; /tmp/iris_response.csv
+'</span> <span class="k">LANGUAGE</span> <span class="n">plsh</span><span class="p">;</span>
+
+<span class="c1">-- deletes data exchange files `/tmp/iris_request.csv` and `/tmp/iris_response.csv`</span>
+<span class="k">CREATE</span> <span class="k">FUNCTION</span> <span class="n">clean_iris</span><span class="p">()</span> <span class="k">RETURNS</span> <span class="n">void</span> <span class="k">AS</span> <span class="s1">'
+#!/bin/sh
+rm /tmp/iris_request.csv
+rm /tmp/iris_response.csv
+'</span> <span class="k">LANGUAGE</span> <span class="n">plsh</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>SQL end users can then perform model evaluation by calling the <code class="language-plaintext highlighter-rouge">evaluate_iris()</code> function:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="n">evaluate_iris</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="import-of-model-result-data">Import of model result data</h3>
+
+<p>Class labels and associated probabilities are imported from the file <code class="language-plaintext highlighter-rouge">/tmp/iris_response.csv</code> to the table <code class="language-plaintext highlighter-rouge">iris_decisiontree</code> using the already familiar <code class="language-plaintext highlighter-rouge">COPY .. FROM</code> command.</p>
+
+<p>The CSV document contains the row identifier column (“Id”) and six field columns. However, the target table <code class="language-plaintext highlighter-rouge">iris_decisiontree</code> contains only four field columns. PostgreSQL database does not support copying only a subset of columns. Therefore, it becomes necessary to implement the import of classification results as a two step process. First, all field columns are copied to a temporary table <code class="language-plaintext highlighter-rouge">iris_decisiontree_temp</code>. Later, four field columns (“Predicted_Species”, “Probability_setosa”, “Probability_versicolor” and “Probability_virginica”) are copied over to the target table <code class="language-plaintext highlighter-rouge">iris_decisiontree</code>, whereas two field columns (“Species” and “Node_Id”) are left behind.</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">CREATE</span> <span class="k">TEMPORARY</span> <span class="k">TABLE</span> <span class="n">iris_decisiontree_temp</span> <span class="p">(</span>
+  <span class="n">Id</span> <span class="nb">integer</span><span class="p">,</span>
+  <span class="n">Species</span> <span class="nb">varchar</span><span class="p">,</span>
+  <span class="n">Predicted_Species</span> <span class="nb">varchar</span><span class="p">,</span>
+  <span class="n">Probability_setosa</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Probability_versicolor</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Probability_virginica</span> <span class="nb">double</span> <span class="nb">precision</span><span class="p">,</span>
+  <span class="n">Node_Id</span> <span class="nb">varchar</span>
+<span class="p">);</span>
+
+<span class="k">COPY</span> <span class="n">iris_decisiontree_temp</span> <span class="k">FROM</span> <span class="s1">'/tmp/iris_response.csv'</span> <span class="k">WITH</span> <span class="n">CSV</span> <span class="k">DELIMITER</span> <span class="s1">','</span> <span class="n">HEADER</span><span class="p">;</span>
+
+<span class="k">INSERT</span> <span class="k">INTO</span> <span class="n">iris_decisiontree</span><span class="p">(</span><span class="n">Id</span><span class="p">,</span> <span class="n">Predicted_Species</span><span class="p">,</span> <span class="n">Probability_setosa</span><span class="p">,</span> <span class="n">Probability_versicolor</span><span class="p">,</span> <span class="n">Probability_virginica</span><span class="p">)</span> <span class="k">SELECT</span> <span class="n">Id</span><span class="p">,</span> <span class="n">Predicted_Species</span><span class="p">,</span> <span class="n">Probability_setosa</span><span class="p">,</span> <span class="n">Probability_versicolor</span><span class="p">,</span> <span class="n">Probability_virginica</span> <span class="k">FROM</span> <span class="n">iris_decisiontree_temp</span><span class="p">;</span>
+
+<span class="k">DROP</span> <span class="k">TABLE</span> <span class="n">iris_decisiontree_temp</span><span class="p">;</span>
+
+<span class="k">SELECT</span> <span class="n">clean_iris</span><span class="p">();</span>
+</code></pre></div></div>
+
+<h3 id="making-use-of-classification-results">Making use of classification results</h3>
+
+<p>Displaying all iris flowers where the experimentally determined species (column <code class="language-plaintext highlighter-rouge">iris.Species</code>) and the predicted species (column <code class="language-plaintext highlighter-rouge">iris_decisiontree.Predicted_Species</code>) are not equal:</p>
+
+<div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="n">iris</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="n">iris</span><span class="p">.</span><span class="n">Species</span><span class="p">,</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Predicted_Species</span><span class="p">,</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Probability_setosa</span><span class="p">,</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Probability_versicolor</span><span class="p">,</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Probability_virginica</span> <span class="k">FROM</span> <span class="n">iris</span> <span class="k">LEFT</span> <span class="k">JOIN</span> <span class="n">iris_decisiontree</span> <span class="k">ON</span> <span class="n">iris</span><span class="p">.</span><span class="n">Id</span> <span class="o">=</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Id</span> <span class="k">WHERE</span> <span class="n">iris</span><span class="p">.</span><span class="n">Species</span> <span class="o">!=</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Predicted_Species</span><span class="p">;</span>
+</code></pre></div></div>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

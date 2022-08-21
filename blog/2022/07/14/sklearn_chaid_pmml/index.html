@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="CHAID jpmml-evaluator scikit-learn sklearn2pmml data-categorical data-missing">
+  <meta name="author" content="vruusmann">
+
+  <title>Extending Scikit-Learn with CHAID model type - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2022/07/14/sklearn_chaid_pmml/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Extending Scikit-Learn with CHAID model type - Openscoring" />
+  <meta property="og:url" content="/blog/2022/07/14/sklearn_chaid_pmml/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2022-07-14 00:00:00 +0300" />
+  <meta property="article:published_time" content="2022-07-14 00:00:00 +0300" />
+  <meta property="article:modified_time" content="2022-07-14 00:00:00 +0300" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Extending Scikit-Learn with CHAID model type - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Extending Scikit-Learn with CHAID model type</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>Scikit-Learn uses the Classification and Regression Trees (CART) algorithm for growing its decision trees.
+This choice is driven by high conceptual compatibility between the two (preference towards dense numeric datasets), ease of implementation, and good performance characteristics.</p>
+
+<p>The CART algorithm is so ingrained into the current code and data structures of the <a href="https://scikit-learn.org/stable/modules/classes.html#module-sklearn.tree"><code class="language-plaintext highlighter-rouge">sklearn.tree</code></a> module, that adding support for alternative algorithms has effectively been ruled out of the project roadmap.</p>
+
+<h3 id="cart-limitations">CART limitations</h3>
+
+<p>Scikit-Learn decision trees suffer from several functional issues:</p>
+
+<ul>
+  <li>Limited support for categorical features.
+All complex features must be transformed into simplified numerical features.
+The default one-hot-encoding (OHE) transformation is suitable to low-cardinality categorical features, where category levels are independent of one another. Even the most sophisticated transformations (such as the ones provided by the <a href="https://github.com/scikit-learn-contrib/category_encoders"><code class="language-plaintext highlighter-rouge">category_encoders</code></a> package) are qualitatively inferior to native categorical feature support, because every helper transformation loses or distorts information in some way.</li>
+  <li>No support for missing values.
+All missing values must be replaced via imputation.
+The effectiveness of the imputation transformation decreases as the sparsity of the dataset increases. The relevance of mean or mode values is questionable if the feature is more than 20% sparse, or if it does not adhere to the normal distribution function.</li>
+  <li>No support for multi-way splits.
+The only available split function is comparison against a threshold value, which splits the dataset into two subsets - data records that are “less than or equal” go to the “left” subset, whereas data records that are “greater than” go to the “right” subset.
+A multi-way split can be emulated by a hierarchy of binary splits, but this quickly adds depth to decision trees, which is undesirable.</li>
+</ul>
+
+<p>The CART algorithm is therefore rather sensitive towards the composition of the dataset.
+It performs best with dense continuous features, and worst with sparse categorical features. The worst imaginable candidate would be a sparse high-cardinality categorical feature, where category levels are not independent of one another, but aggregate into a number of clusters (eg. USPS ZIP Code).</p>
+
+<p>If the dataset is rich in complex features, then it will be smart to explore alternative algorithms such as CHAID, C4.5 or C5.0.</p>
+
+<h3 id="chaid-implementation">CHAID implementation</h3>
+
+<p>At the time of writing this (July 2022), there are no suitable Scikit-Learn extension packages available.
+The workaround is to choose a Python-based algorithm package, and then integrate it with Scikit-Learn by ourselves.</p>
+
+<p>Chi-Squared Automatic Inference Detection (CHAID) is one of the oldest algorithms, but is perfectly fine for use in the most demanding applications.
+Its success and versatility hinges on the fact that it operates with categorical (aka nominal) features. If a dataset contains continuous features, then they need to be analyzed and discretized externally.</p>
+
+<p>Arguably, <strong>it is much easier to discretize continuous features (ie. CHAID requirement) than to normalize categorical features (ie. CART requirement)</strong>.
+Discretization methods range from simple uni- and multivariate statistics to complex optimizers such as the <a href="https://github.com/guillermo-navas-palencia/optbinning"><code class="language-plaintext highlighter-rouge">optbinning</code></a> package.</p>
+
+<p>A single continuous feature may be discretized using different discretization methods and parameterizations.
+One end of the spectrum is binning into two classes (aka thresholding). The other end is performing an operational type cast from continuous to categorical, so that the number of bins equals the number of unique feature values in the training dataset.</p>
+
+<p>Missing values are treated as a special category level.
+During splitting, they can form a standalone branch, or be aggregated with other category levels.</p>
+
+<p>Decision tree algorithms do not care if the training dataset contains multiple collinear features, so there is no practical reason to withhold from experimenting with multiple competing feature transformations.
+If two or more features appear collinear for some subset (ie. not collinear for the training dataset as a whole, but collinear for some segment of it), then the winner is picked randomly.</p>
+
+<p>The <a href="https://github.com/Rambatino/CHAID"><code class="language-plaintext highlighter-rouge">CHAID</code></a> package provides a <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class, which codifies a complete and highly parameterizable CHAID algorithm implementation.
+However, its API is rather uncommon and is lacking some key interactions points.</p>
+
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.84 provides <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDClassifier</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDRegressor</code> estimators, which make the <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class embeddable into Scikit-Learn pipelines, and commandable via familiar <code class="language-plaintext highlighter-rouge">fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">predict(X)</code> methods.</p>
+
+<h3 id="training">Training</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">CHAIDEstimator.fit(X, y)</code> method assumes that all columns of the <code class="language-plaintext highlighter-rouge">X</code> dataset are categorical features.
+If the <code class="language-plaintext highlighter-rouge">X</code> dataset contains continuous features (eg. a <code class="language-plaintext highlighter-rouge">float</code> or <code class="language-plaintext highlighter-rouge">double</code> column, with many distinct values) then they shall be automatically casted to categorical features.</p>
+
+<p>However, it is recommended to make this conversion explicit by passing all features through the <code class="language-plaintext highlighter-rouge">sklearn2pmml.decoration.CategoricalDomain</code> decorator:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span>
+
+<span class="k">def</span> <span class="nf">make_passthrough_mapper</span><span class="p">(</span><span class="n">cols</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+    <span class="p">[([</span><span class="n">col</span><span class="p">],</span> <span class="n">CategoricalDomain</span><span class="p">())</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">cols</span><span class="p">]</span>
+  <span class="p">)</span>
+</code></pre></div></div>
+
+<p>For example, it is possible to apply <code class="language-plaintext highlighter-rouge">CHAIDClassifier</code> directly to the raw “iris” dataset:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.tree.chaid</span> <span class="kn">import</span> <span class="n">CHAIDClassifier</span>
+
+<span class="n">iris_X</span><span class="p">,</span> <span class="n">iris_y</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">return_X_y</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">as_frame</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">make_classifier</span><span class="p">(</span><span class="n">max_depth</span> <span class="o">=</span> <span class="mi">5</span><span class="p">):</span>
+  <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s">"max_depth"</span> <span class="p">:</span> <span class="n">max_depth</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">CHAIDClassifier</span><span class="p">(</span><span class="n">config</span> <span class="o">=</span> <span class="n">config</span><span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">make_passthrough_mapper</span><span class="p">()),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">make_classifier</span><span class="p">(</span><span class="n">max_depth</span> <span class="o">=</span> <span class="mi">3</span><span class="p">))</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">iris_X</span><span class="p">,</span> <span class="n">iris_y</span><span class="p">)</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"CHAIDIris.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The eventual type definitions of fields are easy to verify by opening the PMML document in text editor, and inspecting <code class="language-plaintext highlighter-rouge">DataField@optype</code> and <code class="language-plaintext highlighter-rouge">DataType@dataType</code> attribute values.</p>
+
+<p>For example, the <code class="language-plaintext highlighter-rouge">/PMML/DataDictionary</code> element for the “CHAIDIris” model contains three field declarations - one for the target field, and two for input fields:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;DataDictionary&gt;</span>
+  <span class="nt">&lt;DataField</span> <span class="na">name=</span><span class="s">"target"</span> <span class="na">optype=</span><span class="s">"categorical"</span> <span class="na">dataType=</span><span class="s">"integer"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"0"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"1"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"2"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/DataField&gt;</span>
+  <span class="nt">&lt;DataField</span> <span class="na">name=</span><span class="s">"sepal width (cm)"</span> <span class="na">optype=</span><span class="s">"categorical"</span> <span class="na">dataType=</span><span class="s">"double"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"2.0"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"2.2"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"2.3"</span><span class="nt">/&gt;</span>
+    <span class="c">&lt;!-- omitted 19 intermediate Value elements --&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"4.4"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/DataField&gt;</span>
+    <span class="nt">&lt;DataField</span> <span class="na">name=</span><span class="s">"petal length (cm)"</span> <span class="na">optype=</span><span class="s">"categorical"</span> <span class="na">dataType=</span><span class="s">"double"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"1.0"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"1.1"</span><span class="nt">/&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"1.2"</span><span class="nt">/&gt;</span>
+    <span class="c">&lt;!-- omitted 39 intermediate Value elements --&gt;</span>
+    <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"6.9"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/DataField&gt;</span>
+<span class="nt">&lt;/DataDictionary&gt;</span>
+</code></pre></div></div>
+
+<p>The category levels that are listed under a <code class="language-plaintext highlighter-rouge">DataField</code> element fully define the valid value space for that field.
+Any attempt to evaluate a model with an unlisted input value shall raise an error.</p>
+
+<p>If the goal is to preserve the “normalcy” of continuous features, and even allow for some interpolation and extrapolation, then they should be binned into (temporary-) categorical features.
+Scikit-Learn provides the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html"><code class="language-plaintext highlighter-rouge">slearn.preprocessing.KBinsDiscretizer</code></a> transformer, which can learn bin edges based on common statistical procedures.</p>
+
+<p>No matter which binning strategy is chosen, the results should be encoded using the ordinal encoding method.
+The reason for this is maintaining feature’s integrity.
+Ordinal encoding yields a single categorical integer feature, whereas one-hot-encodings yield many binary indicator features. The CHAID algorithm cannot (re-)aggregate binary indicators into larger chunks based on their parent, and would therefore resort to generating CART-style binary splits (signalling if a particular category level is “on” or “off”), instead of proper CHAID-style multy-way splits.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">KBinsDiscretizer</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span><span class="p">,</span> <span class="n">ContinuousDomain</span>
+
+<span class="k">def</span> <span class="nf">make_mapper</span><span class="p">(</span><span class="n">cat_cols</span><span class="p">,</span> <span class="n">cont_cols</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+    <span class="p">[([</span><span class="n">cat_col</span><span class="p">],</span> <span class="n">CategoricalDomain</span><span class="p">())</span> <span class="k">for</span> <span class="n">cat_col</span> <span class="ow">in</span> <span class="n">cat_cols</span><span class="p">]</span> <span class="o">+</span>
+    <span class="p">[(</span><span class="n">cont_cols</span><span class="p">,</span> <span class="p">[</span><span class="n">ContinuousDomain</span><span class="p">(),</span> <span class="n">KBinsDiscretizer</span><span class="p">(</span><span class="n">n_bins</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="n">encode</span> <span class="o">=</span> <span class="s">"ordinal"</span><span class="p">,</span> <span class="n">strategy</span> <span class="o">=</span> <span class="s">"quantile"</span><span class="p">)])]</span>
+  <span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">KBinsDiscretizer</code> transformer is currently unable to deal with missing values.
+The suggested workaround is to emulate its statistical procedure(s) in a missing value-aware way, and then use the learned bin edges for parameterizing a general-purpose <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.CutTransformer</code> transformer:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">make_sparse_mapper</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">cat_cols</span><span class="p">,</span> <span class="n">cont_cols</span><span class="p">):</span>
+  <span class="n">binners</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+  <span class="k">for</span> <span class="n">cont_col</span> <span class="ow">in</span> <span class="n">cont_cols</span><span class="p">:</span>
+    <span class="n">bins</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">nanquantile</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">cont_col</span><span class="p">],</span> <span class="n">q</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+    <span class="c1"># Deduplicate and convert from Numpy scalar float to Python float
+</span>    <span class="n">bins</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="nb">bin</span><span class="p">)</span> <span class="k">for</span> <span class="nb">bin</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">.</span><span class="n">fromkeys</span><span class="p">(</span><span class="n">bins</span><span class="p">)]</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">bins</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">binners</span><span class="p">[</span><span class="n">cont_col</span><span class="p">]</span> <span class="o">=</span> <span class="n">CutTransformer</span><span class="p">(</span><span class="n">bins</span> <span class="o">=</span> <span class="n">bins</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">labels</span><span class="p">)</span>
+
+  <span class="k">return</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+    <span class="p">[([</span><span class="n">cat_col</span><span class="p">],</span> <span class="n">CategoricalDomain</span><span class="p">())</span> <span class="k">for</span> <span class="n">cat_col</span> <span class="ow">in</span> <span class="n">cat_cols</span><span class="p">]</span> <span class="o">+</span>
+    <span class="p">[([</span><span class="n">cont_col</span><span class="p">],</span> <span class="p">[</span><span class="n">ContinuousDomain</span><span class="p">(),</span> <span class="n">binners</span><span class="p">[</span><span class="n">cont_col</span><span class="p">]])</span> <span class="k">for</span> <span class="n">cont_col</span> <span class="ow">in</span> <span class="n">cont_cols</span><span class="p">]</span>
+  <span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="prediction">Prediction</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class is a data exploration and mining tool. It does not provide any Python API for making predictions on new datasets (see <a href="https://github.com/Rambatino/CHAID/issues/128">Issue 128</a>).</p>
+
+<p>Instead of extending the <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDEstimator</code> base class with custom prediction methods, it is much easier to export the core decision tree data structure in Predictive Model Markup Language (PMML) data format, and make predictions using a PMML engine instead.</p>
+
+<p>Conversion to PMML:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">make_mapper</span><span class="p">(...)),</span>
+  <span class="p">(</span><span class="s">"estimator"</span><span class="p">,</span> <span class="n">make_chaid_estimator</span><span class="p">(...))</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"CHAID.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>When it comes to PMML engines, then the <a href="https://github.com/jpmml/jpmml-evaluator">JPMML-Evaluator</a> library is miles ahead of competition in terms of maturity, quality of design and engineering, and plain performance figures. The core library is written in Java, but there are easy integrations available for most common ML frameworks.</p>
+
+<p>Python users can install and use JPMML-Evaluator as the <a href="https://github.com/jpmml/jpmml-evaluator-python"><code class="language-plaintext highlighter-rouge">jpmml_evaluator</code></a> package.</p>
+
+<p>The JPMML-Evaluator API distinguises itself from Scikit-Learn conventions by calling its main entry point method <code class="language-plaintext highlighter-rouge">Evaluator.evaluate(X)</code>.
+This distinction is necessary to communicate that JPMML-Evaluator uses a simpler and more economical “business logic”, where all prediction aspects are computed and exposed simultaneously.</p>
+
+<p>A decision tree classifier has three main prediction aspects:</p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">predict(X)</code> - The class of the winning node.</li>
+  <li><code class="language-plaintext highlighter-rouge">predict_proba(X)</code> - The class probability distribution of the winning node.</li>
+  <li><code class="language-plaintext highlighter-rouge">apply(X)</code> - The index of the winning node.</li>
+</ol>
+
+<p>The <code class="language-plaintext highlighter-rouge">Evaluator.evaluate(X)</code> method accepts a <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> object, and returns a new <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> object, which packs all three prediction aspects.</p>
+
+<p>For maximum portability, PMML input and result fields are identified by name, not by position.
+The complete information (name, type, value space, etc.) about individual fields can be queried from the underlying model schema using <code class="language-plaintext highlighter-rouge">Evaluator.getInputFields()</code> and <code class="language-plaintext highlighter-rouge">Evaluator.getTargetFields()</code> methods.</p>
+
+<p>The fact that PMML is a strongly typed language can be used for performing additional data sanity and consistency checks when crossing important boundaries.</p>
+
+<p>The case in point is the encoding of missing values. Python APIs are typically pretty lax around here. For example, a dataset may have an <code class="language-plaintext highlighter-rouge">object</code> data type column, which contains a mix of string, <code class="language-plaintext highlighter-rouge">None</code> and <code class="language-plaintext highlighter-rouge">NaN</code> values:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">asarray</span><span class="p">([</span><span class="s">"puppy"</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="s">"NaN"</span><span class="p">)])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This kind of morphism (type and value auto-conversions) is beyond PMML tolerance.</p>
+
+<p>Specifically, PMML uses a system where values are assigned to valid, invalid and missing value spaces for data validation and pre-processing purposes.
+The <code class="language-plaintext highlighter-rouge">NaN</code> value is assigned to the invalid value space (ie. a reserved floating-point constant that “short-circuits” arithmetic operations at software and/or hardware layers).
+A model shall reject any evaluation requests that contain invalid values by throwing an <code class="language-plaintext highlighter-rouge">org.jpmml.evaluator.InvalidResultException</code> with a message like <code class="language-plaintext highlighter-rouge">Field &lt;name&gt; cannot accept user input value "NaN"</code>.</p>
+
+<p>Data validation errors could be solved by editing model files and activating value replacements and/or value space conversions for the affected fields.
+However, it would be more sustainable to deal with the real source of problems, which is about Python’s bad habit of using the <code class="language-plaintext highlighter-rouge">NaN</code> value to denote missing values even in non-numeric columns.</p>
+
+<p>Canonicalizing a dataset by replacing all <code class="language-plaintext highlighter-rouge">NaN</code> values with <code class="language-plaintext highlighter-rouge">None</code> values:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(...)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">replace</span><span class="p">({</span><span class="n">numpy</span><span class="p">.</span><span class="n">nan</span><span class="p">:</span> <span class="bp">None</span><span class="p">})</span>
+</code></pre></div></div>
+
+<p>The PMML representation of Scikit-Learn pipelines is completely free from any Scikit-Learn extension package dependencies.
+The deployment environment only needs to declare a <code class="language-plaintext highlighter-rouge">jpmml_evaluator</code> dependency. It is advisable to always be using the latest version, as newer versions deliver more and improved Python-to-Java connectivity options, and overall better user experience.</p>
+
+<p>Loading and evaluating a model:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">jpmml_evaluator</span> <span class="kn">import</span> <span class="n">make_evaluator</span>
+<span class="kn">from</span> <span class="nn">jpmml_evaluator.pyjnius</span> <span class="kn">import</span> <span class="n">jnius_configure_classpath</span><span class="p">,</span> <span class="n">PyJNIusBackend</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="c1"># Initialize Python-to-Java connectivity
+</span><span class="n">jnius_configure_classpath</span><span class="p">()</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">PyJNIusBackend</span><span class="p">()</span>
+
+<span class="c1"># Load model
+</span><span class="n">evaluator</span> <span class="o">=</span> <span class="n">make_evaluator</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s">"CHAID.pmml"</span><span class="p">)</span> \
+  <span class="p">.</span><span class="n">verify</span><span class="p">()</span>
+
+<span class="c1"># Load and canonicalize arguments
+</span><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"input.csv"</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span><span class="p">,</span> <span class="n">na_values</span> <span class="o">=</span> <span class="p">[</span><span class="s">"N/A"</span><span class="p">,</span> <span class="s">"NA"</span><span class="p">])</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">.</span><span class="n">replace</span><span class="p">({</span><span class="n">numpy</span><span class="p">.</span><span class="n">nan</span><span class="p">:</span> <span class="bp">None</span><span class="p">})</span>
+
+<span class="c1"># Evaluate
+</span><span class="n">df_pred</span> <span class="o">=</span> <span class="n">evaluator</span><span class="p">.</span><span class="n">evaluateAll</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="c1"># Save results
+</span><span class="n">df_pred</span><span class="p">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">"output.csv"</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>
+  <li>“Audit-NA” dataset: <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>
+  <li>Python scripts: <a href="https://openscoring.io/resources/2022-07-14/train-iris.py"><code class="language-plaintext highlighter-rouge">train-iris.py</code></a>, <a href="https://openscoring.io/resources/2022-07-14/train-audit.py"><code class="language-plaintext highlighter-rouge">train-audit.py</code></a> and <a href="https://openscoring.io/resources/2022-07-14/predict.py"><code class="language-plaintext highlighter-rouge">predict.py</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

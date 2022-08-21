@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn sklearn2pmml feature-importance">
+  <meta name="author" content="vruusmann">
+
+  <title>Analyzing Scikit-Learn feature importances via PMML - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2021/07/11/analyzing_sklearn_feature_importances_pmml/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Analyzing Scikit-Learn feature importances via PMML - Openscoring" />
+  <meta property="og:url" content="/blog/2021/07/11/analyzing_sklearn_feature_importances_pmml/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2021-07-11 00:00:00 +0300" />
+  <meta property="article:published_time" content="2021-07-11 00:00:00 +0300" />
+  <meta property="article:modified_time" content="2021-07-11 00:00:00 +0300" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Analyzing Scikit-Learn feature importances via PMML - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Analyzing Scikit-Learn feature importances via PMML</h1>
+  </div>
+  
+  <main class="gb-content">
+    <h3 id="terminology">Terminology</h3>
+
+<p><strong>Feature importance</strong> reflects which features are considered to be significant by the ML algorithm during model training.</p>
+
+<p>Feature importance is a relative metric. It is often expressed on the percentage scale.
+The main application area is ranking features, and providing guidance for further feature engineering and selection work.
+For example, the cost and complexity of models can be reduced by gradually eliminating low(est)-importance features from the training dataset.</p>
+
+<p>Feature importance is sometimes confused with feature impact.</p>
+
+<p><strong>Feature impact</strong> reflects which features and to which extent contribute towards the prediction when the fitted model is executed.</p>
+
+<p>Feature impact is calculated by substituting feature values into the model equation, and aggregating the partial scores of model terms feature-wise.
+This calculation is applicable to all data records, irrespective of their origin (ie. training, validation and testing datasets).</p>
+
+<h3 id="scikit-learn">Scikit-Learn</h3>
+
+<p>Some model types have built-in feature importance estimation capabilities.
+For example, decision tree and decision tree ensemble models declare a <code class="language-plaintext highlighter-rouge">feature_importances_</code> property that yields Gini Impurities upon invocation.
+Similarly, it is not formalized as a linear model property, but all seasoned data scientists know that the beta coefficients of a linear model act as surrogate feature importances (assuming standardized data).</p>
+
+<p>Scikit-Learn version 0.24 and newer provide the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.inspection.permutation_importance.html"><code class="language-plaintext highlighter-rouge">sklearn.inspection.permutation_importance</code></a> utility function for calculating permutation-based importances for all model types.</p>
+
+<p>The estimation is feasible in two locations.</p>
+
+<p>First, estimating the <strong>importance of raw features</strong> (data before the first data pre-processing step).
+Indicates which columns of a structured data source such as a CSV document or a relational database are critical for success.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.inspection</span> <span class="kn">import</span> <span class="n">permutation_importance</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipelin</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">make_pipeline</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">classifier</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># Perform PI calculation using the data as it entered the pipeline
+</span><span class="n">imp_pipeline</span> <span class="o">=</span> <span class="n">permutation_importance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">imp_pipeline</span><span class="p">.</span><span class="n">importances_mean</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Second, estimating the <strong>importance of fully-developed features</strong> (data after the last data pre-processing step).
+Indicates how to improve feature engineering and selection work.
+For example, optimizing feature encodings, exploring and generating feature interactions, deriving custom features.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">transformer</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># Transform raw features to fully-developed features
+</span><span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">classifier</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># TypeError: A sparse matrix was passed, but dense data is required. Use X.toarray() to convert to a dense numpy array.
+</span><span class="n">Xt</span> <span class="o">=</span> <span class="n">Xt</span><span class="p">.</span><span class="n">todense</span><span class="p">()</span>
+
+<span class="c1"># Perform PI calculation using the data as it entered the classifier
+</span><span class="n">imp_classifier</span> <span class="o">=</span> <span class="n">permutation_importance</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">Xt</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">imp_classifier</span><span class="p">.</span><span class="n">importances_mean</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="pickle">Pickle</h3>
+
+<p>The <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library can only work with this state of a Python object that is serializable in Pickle data format.
+A Python property does not have a persistent state. The workaround is to transfer its value into a new regular Python attribute.</p>
+
+<p>By convention, the JPMML-SkLearn library checks if the Python pipeline or model object has a <code class="language-plaintext highlighter-rouge">pmml_feature_importances_</code> attribute (the <code class="language-plaintext highlighter-rouge">pmml_</code> prefix prepended to the standard <code class="language-plaintext highlighter-rouge">feature_importances_</code> attribute name).
+If it does, then it is expected to hold a Numpy array of shape <code class="language-plaintext highlighter-rouge">(n_features, )</code>.</p>
+
+<p>Exposing the built-in feature importances of a decision tree:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
+
+<span class="n">dtc</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">make_fit_pmml_pipeline</span><span class="p">(</span><span class="n">dtc</span><span class="p">)</span>
+
+<span class="n">dtc</span><span class="p">.</span><span class="n">pmml_feature_importances_</span> <span class="o">=</span> <span class="n">dtc</span><span class="p">.</span><span class="n">feature_importances_</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"DecisionTreeAudit.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In case of ensemble models there are feature importances available at different aggregation levels.</p>
+
+<p>Exposing the built-in feature importances of a decision tree ensemble, first at the root model level, and then at the member model level:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+
+<span class="n">rfc</span> <span class="o">=</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">31</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">make_fit_pmml_pipeline</span><span class="p">(</span><span class="n">rfc</span><span class="p">)</span>
+
+<span class="n">rfc</span><span class="p">.</span><span class="n">pmml_feature_importances_</span> <span class="o">=</span> <span class="n">rfc</span><span class="p">.</span><span class="n">feature_importances_</span>
+<span class="k">for</span> <span class="n">rfc_dtc</span> <span class="ow">in</span> <span class="n">rfc</span><span class="p">.</span><span class="n">estimators_</span><span class="p">:</span>
+  <span class="n">rfc_dtc</span><span class="p">.</span><span class="n">pmml_feature_importances_</span> <span class="o">=</span> <span class="n">rfc_dtc</span><span class="p">.</span><span class="n">feature_importances_</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"RandomForestAudit.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Attaching custom feature importances to a PMML pipeline:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.inspection</span> <span class="kn">import</span> <span class="n">permutation_importance</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="n">lr</span> <span class="o">=</span> <span class="n">LogisticRegression</span><span class="p">()</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">make_fit_pmml_pipeline</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">standardize</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="n">permutation_importance</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">audit_X</span><span class="p">,</span> <span class="n">audit_y</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">13</span><span class="p">)</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">pmml_feature_importances_</span> <span class="o">=</span> <span class="n">result</span><span class="p">.</span><span class="n">importances_mean</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"LogisticRegressionAudit.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="pmml">PMML</h3>
+
+<p>The <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html"><code class="language-plaintext highlighter-rouge">MiningField</code></a> element specifies an <code class="language-plaintext highlighter-rouge">importance</code> attribute for recording field importance values.</p>
+
+<p>The PMML term “field” is incompatible with the Scikit-Learn term “feature”.
+The former corresponds to <strong>raw feature</strong> (data before the first pre-processing step), whereas the latter corresponds to <strong>fully-developed feature</strong> (data after the last pre-processing step).
+They are functionally equivalent only when the pipeline does not contain any data pre-processing steps.</p>
+
+<p>Thanks to the relative nature of Scikit-Learn feature importances it is possible to reduce them to PMML field importances via simple summation.
+If a feature is derived from two or more columns, then its importance value is split between them in equal proportions.</p>
+
+<p>The JPMML family of conversion tools and libraries preserves native feature importance information by attaching an <code class="language-plaintext highlighter-rouge">X-FeatureImportances</code> extension element to the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html"><code class="language-plaintext highlighter-rouge">MiningSchema</code></a> element. 
+This extension element contains a table of feature names mapped to their importance values.
+In the table header, there is a quick summary (the number and the sum of non-zero importance values, extreme non-zero importance values, etc.) to facilitate data parsing and interpreration.</p>
+
+<p>For example, the PMML representation of feature importances for the “DecisionTreeAudit” case is the following:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;MiningSchema&gt;</span>
+  <span class="nt">&lt;Extension</span> <span class="na">name=</span><span class="s">"X-FeatureImportances"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;InlineTable&gt;</span>
+      <span class="nt">&lt;Extension</span> <span class="na">name=</span><span class="s">"numberOfImportances"</span> <span class="na">value=</span><span class="s">"49"</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;Extension</span> <span class="na">name=</span><span class="s">"numberOfNonZeroImportances"</span> <span class="na">value=</span><span class="s">"36"</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;Extension</span> <span class="na">name=</span><span class="s">"sumOfImportances"</span> <span class="na">value=</span><span class="s">"1.0"</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;Extension</span> <span class="na">name=</span><span class="s">"minImportance"</span> <span class="na">value=</span><span class="s">"2.0667387553303666E-4"</span><span class="nt">/&gt;</span>
+      <span class="nt">&lt;Extension</span> <span class="na">name=</span><span class="s">"maxImportance"</span> <span class="na">value=</span><span class="s">"0.20155442366598394"</span><span class="nt">/&gt;</span>
+      <span class="c">&lt;!-- Omitted PMML content --&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Hours<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>0.07440333502077028<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Income<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>0.14371484745257854<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Hourly_Income<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>0.15704030730211904<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="c">&lt;!-- Omitted PMML content --&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Marital=Absent<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>8.359547712811907E-4<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Marital=Divorced<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>8.777525098452488E-4<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Marital=Married<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>0.20155442366598394<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Marital=Married-spouse-absent<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>0.0<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Marital=Unmarried<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>0.0025007194012685165<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="nt">&lt;row&gt;</span>
+        <span class="nt">&lt;data:name&gt;</span>Marital=Widowed<span class="nt">&lt;/data:name&gt;</span>
+        <span class="nt">&lt;data:importance&gt;</span>0.0<span class="nt">&lt;/data:importance&gt;</span>
+      <span class="nt">&lt;/row&gt;</span>
+      <span class="c">&lt;!-- Omitted PMML content --&gt;</span>
+    <span class="nt">&lt;/InlineTable&gt;</span>
+  <span class="nt">&lt;/Extension&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Adjusted"</span> <span class="na">usageType=</span><span class="s">"target"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Education"</span> <span class="na">importance=</span><span class="s">"0.1063161558038196"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Employment"</span> <span class="na">importance=</span><span class="s">"0.04921320368045852"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Gender"</span> <span class="na">importance=</span><span class="s">"0.013711896190992362"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Marital"</span> <span class="na">importance=</span><span class="s">"0.20576885034837888"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Occupation"</span> <span class="na">importance=</span><span class="s">"0.13993815739579937"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Age"</span> <span class="na">importance=</span><span class="s">"0.10989324680508326"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Hours"</span> <span class="na">importance=</span><span class="s">"0.1529234886718298"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;MiningField</span> <span class="na">name=</span><span class="s">"Income"</span> <span class="na">importance=</span><span class="s">"0.22223500110363806"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/MiningSchema&gt;</span>
+</code></pre></div></div>
+
+<p>The quick statistics shows that 13 out of 49 features have zero importance, which means that they are redundant from the current model perspective.
+Of the remaining 36 features, the most important one is the “Marital=Married” binary indicator feature that alone does over 20% of work. Interestingly enough, all the other “Marital” category levels contribute very little.
+This suggest that the “Marital” column should be encoded using some binarizing transformer instead (“Marital equals Married” vs. “Marital does not equal Married”).</p>
+
+<p>On aggregate, the importance of the “Marital” column is only surpassed by the “Income” column.
+Its importance is obtained by summing the “Income” direct feature importance and half of the “Hourly_Income” derived feature importance (<code class="language-plaintext highlighter-rouge">0.14371484745257854 + 1/2 * 0.15704030730211904 = 0.22223500110363806</code>).</p>
+
+<p>The overall ranking of columns is “Income” &gt; “Marital” &gt; “Hours” &gt; “Occupation” &gt; “Age” &gt; “Education” &gt; “Employment” &gt; “Gender”.
+Numeric columns tend to precede string columns.
+This may be caused by the fact that Scikit-Learn decision tree algorithms do underperform when categorical features have been one-hot-encoded.</p>
+
+<p>PMML documents are text based and very well structured, which allows for efficient information retrieval using command-line tools.</p>
+
+<p>Using the <a href="https://github.com/benibela/xidel">Xidel</a> tool to extract “Occupation” field importances for the “RandomForestAudit” case:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ xidel --xpath "//MiningField[@name = 'Occupation']/@importance" RandomForestAudit.pmml
+</code></pre></div></div>
+
+<p>The console print-out shows 32 values.
+The first value corresponds to the root model (<code class="language-plaintext highlighter-rouge">/PMML/MiningModel</code>), and the following 31 values to member decision tree models (<code class="language-plaintext highlighter-rouge">/PMML/MiningModel/Segmentation/Segment/TreeModel</code>).
+All field importance values are roughly of the same magnitude.</p>
+
+<p>Using the <code class="language-plaintext highlighter-rouge">grep</code> tool to extract “Occupation” field importances for the “GradientBoostingAudit” case:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ grep -Po "(?&lt;=&lt;MiningField name=\"Occupation\" importance=\")[^\"]*(?=\"/&gt;)" GradientBoostingAudit.pmml
+</code></pre></div></div>
+
+<p>The console print-out shows only 24 values this time.
+The first value <code class="language-plaintext highlighter-rouge">0.1445742412830531</code> corresponds to the root model. The following 23 values range from <code class="language-plaintext highlighter-rouge">0.00341113616139356</code> to <code class="language-plaintext highlighter-rouge">0.4084976807753639</code>, and correspond to member decision tree models; the “missing” eight field importances should be interpreted as <code class="language-plaintext highlighter-rouge">0.0</code> values.</p>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>
+  <li>Python script: <a href="https://openscoring.io/resources/2021-07-11/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

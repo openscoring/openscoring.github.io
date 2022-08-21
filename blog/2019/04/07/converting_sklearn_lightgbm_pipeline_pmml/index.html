@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn lightgbm sklearn2pmml data-categorical data-missing">
+  <meta name="author" content="vruusmann">
+
+  <title>Converting Scikit-Learn based LightGBM pipelines to PMML documents - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2019/04/07/converting_sklearn_lightgbm_pipeline_pmml/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Converting Scikit-Learn based LightGBM pipelines to PMML documents - Openscoring" />
+  <meta property="og:url" content="/blog/2019/04/07/converting_sklearn_lightgbm_pipeline_pmml/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2019-04-07 00:00:00 +0300" />
+  <meta property="article:published_time" content="2019-04-07 00:00:00 +0300" />
+  <meta property="article:modified_time" content="2019-04-07 00:00:00 +0300" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Converting Scikit-Learn based LightGBM pipelines to PMML documents - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Converting Scikit-Learn based LightGBM pipelines to PMML documents</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p><a href="https://github.com/Microsoft/LightGBM">LightGBM</a> is a serious contender for the top spot among gradient boosted trees (GBT) algorithms.</p>
+
+<p>Even though it can be used as a standalone tool, it is mostly used as a plugin to more sophisticated ML frameworks such as Scikit-Learn or R.
+The idea is to use the underlying ML framework for generic activities such as loading, cleaning and preparing data, and use a third-party library only in the final stage of training a model.
+As a specialized library, LightGBM offers much better performance (eg. distributed and hardware-accelerated backends) and richer parameterization options.</p>
+
+<p>Getting started with third-party libraries is fairly easy on Scikit-Learn, because everything is organized around the pipeline concept, and the roles and responsibilities of individual pipeline steps are formalized via an API.
+For example, a Scikit-Learn pipeline that was constructed around the <code class="language-plaintext highlighter-rouge">sklearn.ensemble.GradientBoostingClassifier</code> model can be upgraded to LightGBM by simply replacing it with the <code class="language-plaintext highlighter-rouge">lightgbm.LGBMClassifier</code> model.</p>
+
+<p>However, in order to unlock the full potential of third-party libraries, it becomes necessary to learn about their main characteristics and assumptions by systematically going through their documentation and code examples.
+It is often the case that a good portion of key functionality remains unused, because end users simply do not know about it, or cannot find a way to implement it in practice.</p>
+
+<p>This blog post demonstrates how to take full advantage of LightGBM categorical feature support and missing values support.</p>
+
+<p>The exercise starts with defining a generic two-step pipeline that trains a binary classification model for the “audit” dataset.
+In brief, the dataset contains both categorical and continuous features, which are separated from one another and subjected to operational type-dependent data pre-processing using the <code class="language-plaintext highlighter-rouge">sklearn_pandas.DataFrameMapper</code> meta-transformer.
+Categorical features are mapped one by one, by first capturing their domain using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.decoration.CategoricalDomain</code> decorator and then binarizing and/or integer encoding them using Scikit-Learn’s built-in label transformers.
+Continuous features are mapped all together, simply by capturing their domain using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.decoration.ContinuousDomain</code> decorator.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">lightgbm</span> <span class="kn">import</span> <span class="n">LGBMClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelBinarizer</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span><span class="p">,</span> <span class="n">ContinuousDomain</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"audit.csv"</span><span class="p">)</span>
+
+<span class="n">cat_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"Education"</span><span class="p">,</span> <span class="s">"Employment"</span><span class="p">,</span> <span class="s">"Marital"</span><span class="p">,</span> <span class="s">"Occupation"</span><span class="p">]</span>
+<span class="n">cont_columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"Age"</span><span class="p">,</span> <span class="s">"Hours"</span><span class="p">,</span> <span class="s">"Income"</span><span class="p">]</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+  <span class="p">[([</span><span class="n">cat_column</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">LabelBinarizer</span><span class="p">()])</span> <span class="k">for</span> <span class="n">cat_column</span> <span class="ow">in</span> <span class="n">cat_columns</span><span class="p">]</span> <span class="o">+</span>
+  <span class="p">[(</span><span class="n">cont_columns</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">())]</span>
+<span class="p">)</span>
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">LGBMClassifier</span><span class="p">(</span><span class="n">objective</span> <span class="o">=</span> <span class="s">"binary"</span><span class="p">,</span> <span class="n">n_estimators</span> <span class="o">=</span> <span class="mi">31</span><span class="p">,</span> <span class="n">random_state</span> <span class="o">=</span> <span class="mi">42</span><span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">mapper</span><span class="p">),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">classifier</span><span class="p">)</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">])</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"LightGBMAudit.pmml"</span><span class="p">)</span> 
+</code></pre></div></div>
+
+<p>LightGBM models can be converted to the standardized Predictive Model Markup Language (PMML) representation using the <a href="https://github.com/jpmml/jpmml-lightgbm">JPMML-LightGBM</a> library.
+Just like LightGBM itself, this library can be used as a standalone tool or as a plugin to other JPMML family conversion tools and libraries.
+The main difference between these two usage modes is related to the sourcing of feature definitions.
+In standalone mode, they are extracted from the LightGBM model object.
+In plugin mode, they are inherited from the host ML framework, and only checked for consistency against the LightGBM model object.</p>
+
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides <code class="language-plaintext highlighter-rouge">CategoricalDomain</code> and <code class="language-plaintext highlighter-rouge">ContinuousDomain</code> decorators specifically for the purpose of ensuring that Scikit-Learn feature definitions are as rich and nuanced as possible.</p>
+
+<h3 id="categorical-features">Categorical features</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">LabelBinarizer</code> transformer expands a string column to a list of integer columns, one for each category level. For example, the “Education” column is expanded to sixteen integer columns (with cell values being either 0 or 1).</p>
+
+<p>The LightGBM classifier in its default configuration, just like all Scikit-Learn estimators, treats binary features as regular numeric features.
+Continuous splits are encoded using the <code class="language-plaintext highlighter-rouge">SimplePredicate</code> element:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"19"</span> <span class="na">recordCount=</span><span class="s">"134.0"</span> <span class="na">defaultChild=</span><span class="s">"-2"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;SimplePredicate</span> <span class="na">field=</span><span class="s">"Hours"</span> <span class="na">operator=</span><span class="s">"lessOrEqual"</span> <span class="na">value=</span><span class="s">"41.50000000000001"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"-2"</span> <span class="na">score=</span><span class="s">"-1.247754842205732"</span> <span class="na">recordCount=</span><span class="s">"109.0"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;SimplePredicate</span> <span class="na">field=</span><span class="s">"Education=College"</span> <span class="na">operator=</span><span class="s">"lessOrEqual"</span> <span class="na">value=</span><span class="s">"1.0000000180025095E-35"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/Node&gt;</span>
+  <span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"-21"</span> <span class="na">score=</span><span class="s">"-1.1311261704956659"</span> <span class="na">recordCount=</span><span class="s">"25.0"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;SimplePredicate</span> <span class="na">field=</span><span class="s">"Education=College"</span> <span class="na">operator=</span><span class="s">"greaterThan"</span> <span class="na">value=</span><span class="s">"1.0000000180025095E-35"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/Node&gt;</span>
+<span class="nt">&lt;/Node&gt;</span>
+</code></pre></div></div>
+
+<p>The backing binary features are defined under the <code class="language-plaintext highlighter-rouge">/PMML/TransformationDictionary</code> element:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;DerivedField</span> <span class="na">name=</span><span class="s">"Education=College"</span> <span class="na">optype=</span><span class="s">"continuous"</span> <span class="na">dataType=</span><span class="s">"double"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;NormDiscrete</span> <span class="na">field=</span><span class="s">"Education"</span> <span class="na">value=</span><span class="s">"College"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;/DerivedField&gt;</span>
+</code></pre></div></div>
+
+<p>While correct, the above PMML markup is not particularly elegant.</p>
+
+<p>LightGBM uses a type system, where continuous and categorical features are represented using <code class="language-plaintext highlighter-rouge">double</code> and <code class="language-plaintext highlighter-rouge">integer</code> values, respectively.
+This is different from Scikit-Learn GBT algorithms, which do not use the notion of an operational type, and represent everything using <code class="language-plaintext highlighter-rouge">float</code> values.</p>
+
+<p>LightGBM has categorical feature detection capabilities, but since the output of a <code class="language-plaintext highlighter-rouge">DataFrameMapper</code> step is a 2-D Numpy array of <code class="language-plaintext highlighter-rouge">double</code> values, it does not fire correctly.
+The solution is to supply the indices of categorical features manually, by specifying a <code class="language-plaintext highlighter-rouge">categorical_feature</code> fit parameter to the <code class="language-plaintext highlighter-rouge">LGBMClassifier.fit(X, y, **fit_params)</code> method.
+Since the LightGBM classifier is contained inside a pipeline object and the interaction is intermediated by the <code class="language-plaintext highlighter-rouge">Pipeline.fit(X, y, **fit_params)</code> method, then the name of this fit parameter needs to be prefixed with the name of the step (ie. <code class="language-plaintext highlighter-rouge">categorical_feature</code> becomes <code class="language-plaintext highlighter-rouge">classifier__categorical_feature</code>):</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelBinarizer</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+  <span class="p">[([</span><span class="n">cat_column</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">LabelBinarizer</span><span class="p">()])</span> <span class="k">for</span> <span class="n">cat_column</span> <span class="ow">in</span> <span class="n">cat_columns</span><span class="p">]</span> <span class="o">+</span>
+  <span class="p">[(</span><span class="n">cont_columns</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">())]</span>
+<span class="p">)</span>
+
+<span class="c1"># A categorical feature transforms to a variable number of binary features.
+# One way of obtaining a list of binary feature indices is to transform the dataset, and exclude the indices of known continuous features
+</span><span class="n">Xt</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="n">cat_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">Xt</span><span class="p">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">cont_columns</span><span class="p">))]</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([...])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">],</span> <span class="n">classifier__categorical_feature</span> <span class="o">=</span> <span class="n">cat_indices</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The predictive performance of the LightGBM classifier is completely unaffected by this operational type hint.
+However, the PMML document is much conciser now, because earlier continuous splits (<code class="language-plaintext highlighter-rouge">SimplePredicate</code> value comparison operators <code class="language-plaintext highlighter-rouge">lessOrEqual</code> and <code class="language-plaintext highlighter-rouge">greaterThan</code>) have been replaced with categorical splits (ie. <code class="language-plaintext highlighter-rouge">SimplePredicate</code> equality check operators <code class="language-plaintext highlighter-rouge">equal</code> and <code class="language-plaintext highlighter-rouge">notEqual</code>):</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"19"</span> <span class="na">recordCount=</span><span class="s">"134.0"</span> <span class="na">defaultChild=</span><span class="s">"-21"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;SimplePredicate</span> <span class="na">field=</span><span class="s">"Hours"</span> <span class="na">operator=</span><span class="s">"lessOrEqual"</span> <span class="na">value=</span><span class="s">"41.50000000000001"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"-4"</span> <span class="na">score=</span><span class="s">"-1.1311261704956659"</span> <span class="na">recordCount=</span><span class="s">"25.0"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;SimplePredicate</span> <span class="na">field=</span><span class="s">"Education"</span> <span class="na">operator=</span><span class="s">"equal"</span> <span class="na">value=</span><span class="s">"College"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/Node&gt;</span>
+  <span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"-21"</span> <span class="na">score=</span><span class="s">"-1.247754842205732"</span> <span class="na">recordCount=</span><span class="s">"109.0"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;SimplePredicate</span> <span class="na">field=</span><span class="s">"Education"</span> <span class="na">operator=</span><span class="s">"notEqual"</span> <span class="na">value=</span><span class="s">"College"</span><span class="nt">/&gt;</span>
+  <span class="nt">&lt;/Node&gt;</span>
+<span class="nt">&lt;/Node&gt;</span>
+</code></pre></div></div>
+
+<p>When a categorical feature is manually transformed to a list of binary features, then one is depriving LightGBM from seeing the categorical feature for what it actually is, and performing its own, more effective and efficient transformation work.</p>
+
+<p>However, there is a minor inconvenience related to the fact that LightGBM estimators do not accept string columns directly, but expect them to be re-encoded as integer columns. For example, the “Education” column needs to be transformed to a sole integer column (with cell values ranging from 0 to 15).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">LabelEncoder</code> transformer provides this exact functionality:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">LabelEncoder</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+  <span class="p">[([</span><span class="n">cat_column</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">LabelEncoder</span><span class="p">()])</span> <span class="k">for</span> <span class="n">cat_column</span> <span class="ow">in</span> <span class="n">cat_columns</span><span class="p">]</span> <span class="o">+</span>
+  <span class="p">[(</span><span class="n">cont_columns</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">())]</span>
+<span class="p">)</span>
+
+<span class="c1"># A categorical string feature transforms to exactly one categorical integer feature.
+# The list of categorical feature indices contains len(cat_columns) elements
+</span><span class="n">cat_indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cat_columns</span><span class="p">))]</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([...])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">],</span> <span class="n">classifier__categorical_feature</span> <span class="o">=</span> <span class="n">cat_indices</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>A binary-style categorical split discriminates one category level against all others (“send category level A to the left, and all other category levels to the right”).
+A multinomial-style categorical split examines every category level, and proposes two distinct subsets based on their discriminatory effect (“send category levels A, C, D and F to the left, and category levels B, and E to the right”).
+LightGBM does not appear to limit the cardinality of categorical features. There is no need to change anything about the Python script when scaling from two to twenty thousand category levels.</p>
+
+<p>Multinomial-style categorical splits are encoded using the <code class="language-plaintext highlighter-rouge">SimpleSetPredicate</code> element:</p>
+
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"3"</span> <span class="na">recordCount=</span><span class="s">"1021.0"</span> <span class="na">defaultChild=</span><span class="s">"27"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;SimpleSetPredicate</span> <span class="na">field=</span><span class="s">"Marital"</span> <span class="na">booleanOperator=</span><span class="s">"isIn"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;Array</span> <span class="na">type=</span><span class="s">"string"</span><span class="nt">&gt;</span>Absent Divorced Married-spouse-absent Unmarried Widowed<span class="nt">&lt;/Array&gt;</span>
+  <span class="nt">&lt;/SimpleSetPredicate&gt;</span>
+  <span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"4"</span> <span class="na">recordCount=</span><span class="s">"271.0"</span> <span class="na">defaultChild=</span><span class="s">"-2"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;SimpleSetPredicate</span> <span class="na">field=</span><span class="s">"Education"</span> <span class="na">booleanOperator=</span><span class="s">"isIn"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;Array</span> <span class="na">type=</span><span class="s">"string"</span><span class="nt">&gt;</span>Associate Bachelor Doctorate Master Professional Yr12 Yr9<span class="nt">&lt;/Array&gt;</span>
+    <span class="nt">&lt;/SimpleSetPredicate&gt;</span>
+    <span class="c">&lt;!-- Omitted Node elements --&gt;</span>
+  <span class="nt">&lt;/Node&gt;</span>
+  <span class="nt">&lt;Node</span> <span class="na">id=</span><span class="s">"27"</span> <span class="na">recordCount=</span><span class="s">"750.0"</span> <span class="na">defaultChild=</span><span class="s">"-5"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;SimpleSetPredicate</span> <span class="na">field=</span><span class="s">"Education"</span> <span class="na">booleanOperator=</span><span class="s">"isIn"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;Array</span> <span class="na">type=</span><span class="s">"string"</span><span class="nt">&gt;</span>College HSgrad Preschool Vocational Yr10 Yr11 Yr1t4 Yr5t6 Yr7t8<span class="nt">&lt;/Array&gt;</span>
+    <span class="nt">&lt;/SimpleSetPredicate&gt;</span>
+    <span class="c">&lt;!-- Omitted Node elements --&gt;</span>
+  <span class="nt">&lt;/Node&gt;</span>
+<span class="nt">&lt;/Node&gt;</span>
+</code></pre></div></div>
+
+<p>The predictive performance of the LightGBM classifier did not change much (some metrics improved, some others deteriorated slightly).
+The biggest impact is observed around the estimated feature importances instead.
+When a categorical feature is binarized, then each category level is benchmarked in isolation. In contrast, when a categorical feature is integer-encoded, then category levels “stay together” and are benchmarked as an aggregate.</p>
+
+<h3 id="missing-values">Missing values</h3>
+
+<p>Another major advantage of LightGBM is its ability to deal with missing values (aka sparse data).</p>
+
+<p>For example, when substituting the dense “audit” dataset with a sparse “audit-NA” dataset, then the <code class="language-plaintext highlighter-rouge">LabelEncoder</code> transformer is no longer able to perform its function:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"audit-NA.csv"</span><span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([...])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">],</span> <span class="n">classifier__categorical_feature</span> <span class="o">=</span> <span class="n">cat_indices</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Python error:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Traceback (most recent call last):
+  File "/usr/lib/python3.4/site-packages/sklearn_pandas/pipeline.py", line 24, in _call_fit
+    return fit_method(X, y, **kwargs)
+  File "/usr/lib/python3.4/site-packages/sklearn_pandas/pipeline.py", line 84, in fit_transform
+    Xt, y, **fit_params)
+  File "/usr/lib/python3.4/site-packages/sklearn_pandas/pipeline.py", line 27, in _call_fit
+    return fit_method(X, **kwargs)
+  File "/usr/lib64/python3.4/site-packages/sklearn/preprocessing/label.py", line 236, in fit_transform
+    self.classes_, y = _encode(y, encode=True)
+  File "/usr/lib64/python3.4/site-packages/sklearn/preprocessing/label.py", line 108, in _encode
+    return _encode_python(values, uniques, encode)
+  File "/usr/lib64/python3.4/site-packages/sklearn/preprocessing/label.py", line 63, in _encode_python
+    uniques = sorted(set(values))
+TypeError: unorderable types: str() &lt; float()
+</code></pre></div></div>
+
+<p>If data sparsity is not too high, then it can be made whole by imputing missing values based on available evidence.
+For continuous features, the replacement value is typically the mean or median. For categorical features, the replacement value is typically the mode or some predefined constant (eg. “N/A”).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">SimpleImputer</code> transformer changes a sparse dataset to dense dataset:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.impute</span> <span class="kn">import</span> <span class="n">SimpleImputer</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+  <span class="p">[([</span><span class="n">cat_column</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span> <span class="o">=</span> <span class="s">"most_frequent"</span><span class="p">),</span> <span class="n">LabelEncoder</span><span class="p">()])</span> <span class="k">for</span> <span class="n">cat_column</span> <span class="ow">in</span> <span class="n">cat_columns</span><span class="p">]</span> <span class="o">+</span>
+  <span class="p">[(</span><span class="n">cont_columns</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">())]</span>
+<span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([...])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">],</span> <span class="n">classifier__categorical_feature</span> <span class="o">=</span> <span class="n">cat_indices</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Missing value imputation skews the training dataset towards the “average” sample, and may lead the ML algorithm to discover all sorts of biased or outright false relationships.</p>
+
+<p>The inspection of the above pipeline shows that all components except the <code class="language-plaintext highlighter-rouge">LabelEncoder</code> transformer can more or less cope with missing values.
+For example, both <code class="language-plaintext highlighter-rouge">CategoricalDomain</code> and <code class="language-plaintext highlighter-rouge">ContinuousDomain</code> decorators count the number of missing values in a column (for summary/statistics purposes), but otherwise simply pass them on to the next component.</p>
+
+<p>It really is a poor proposition to perform the missing value imputation and risk the data science experiment just to satisfy one component that performs a helper function. Therefore, it needs to go.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides a <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.PMMLLabelEncoder</code> transformer, which is essentially a missing value-aware replacement for the <code class="language-plaintext highlighter-rouge">LabelEncoder</code> transformer.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">PMMLLabelEncoder</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">(</span>
+  <span class="p">[([</span><span class="n">cat_column</span><span class="p">],</span> <span class="p">[</span><span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="n">PMMLLabelEncoder</span><span class="p">()])</span> <span class="k">for</span> <span class="n">cat_column</span> <span class="ow">in</span> <span class="n">cat_columns</span><span class="p">]</span> <span class="o">+</span>
+  <span class="p">[(</span><span class="n">cont_columns</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">())]</span>
+<span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([...])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">],</span> <span class="n">classifier__categorical_feature</span> <span class="o">=</span> <span class="n">cat_indices</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In this final configuration, the <code class="language-plaintext highlighter-rouge">DataFrameMapper</code> step is transforming the training dataset to a dense 2-D Numpy array of <code class="language-plaintext highlighter-rouge">object</code> values, where missing continuous and categorical values are denoted by <code class="language-plaintext highlighter-rouge">NaN</code> and <code class="language-plaintext highlighter-rouge">None</code> values, respectively.
+A LightGBM estimator has no problem accepting and interpreting such data matrix if the <code class="language-plaintext highlighter-rouge">categorical_feature</code> fit parameter is specified.</p>
+
+<p>The predictive performance of the LightGBM classifier improves considerably across all tracked metrics (accuracy, precision, recall, ROC AUC), when the missing value-ignorant <code class="language-plaintext highlighter-rouge">[SimpleImputer(), LabelEncoder()]</code> component is replaced with the missing value-aware <code class="language-plaintext highlighter-rouge">PMMLLabelEncoder</code> component.</p>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>
+  <li>“Audit-NA” dataset: <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>
+  <li>Python script: <a href="https://openscoring.io/resources/2019-04-07/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang=" en-US">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn sklearn2pmml feature-domain data-temporal">
+  <meta name="author" content="vruusmann">
+
+  <title>Extending Scikit-Learn with date and datetime features - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large" />
+  <link rel="canonical" href="https://openscoring.io/blog/2020/03/08/sklearn_date_datetime_pmml/" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Extending Scikit-Learn with date and datetime features - Openscoring" />
+  <meta property="og:url" content="/blog/2020/03/08/sklearn_date_datetime_pmml/" />
+  <meta property="og:site_name" content="Openscoring" />
+  <meta property="og:updated_time" content="2020-03-08 00:00:00 +0200" />
+  <meta property="article:published_time" content="2020-03-08 00:00:00 +0200" />
+  <meta property="article:modified_time" content="2020-03-08 00:00:00 +0200" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Extending Scikit-Learn with date and datetime features - Openscoring" />
+  <meta name="twitter:label1" content="Written by" />
+  <meta name="twitter:data1" content="Villu Ruusmann" />
+  <meta name="twitter:label2" content="Time to read" />
+  <meta name="twitter:data2" content="Less than a minute" />
+
+  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
+  <link rel='dns-prefetch' href='http://s.w.org/' />
+  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
+  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
+  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
+  <link rel="apple-touch-icon" href="/assets/images/fa.png" />
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
+  <!--[if lt IE 9]>
+  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="c-head">
+  <div class="c-head__container container-p0">
+    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
+    <nav class="c-head__nav">
+      <ul id="menu-main-menu" class="c-head__menu">
+        <li><a href="/" aria-current="page">Home</a></li>
+        <li><a href="/blog/">Blog</a></li>
+        <li><a href="/#products" aria-current="page">Products</a></li>
+        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+      </ul>
+    </nav>
+    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
+      <span class="c-toggle__line c-toggle__top"></span>
+      <span class="c-toggle__line c-toggle__mid"></span>
+      <span class="c-toggle__line c-toggle__bot"></span>
+    </button>
+  </div>
+</header>
+
+  <div class="single-post">
+  <div class="c-entry-header bg-b bg-b--cover">
+    <h1 class="c-entry-header__title h3 container-p0">Extending Scikit-Learn with date and datetime features</h1>
+  </div>
+  
+  <main class="gb-content">
+    <p>Scikit-Learn algorithms operate on numerical data.
+If the dataset contains complex features, then they need to be explicitly encoded and/or transformed from their native high-level representation to a suitable low-level representation.
+For example, a string column must be expanded into a list of binary indicator features using <code class="language-plaintext highlighter-rouge">LabelBinarizer</code> or <code class="language-plaintext highlighter-rouge">OneHotEncoder</code> transformers.</p>
+
+<p>Scikit-Learn can be extended with custom features by building extension layers on top of the numeric base layer.</p>
+
+<p>Custom features allow data scientists to represent and manipulate data using more realistic concepts, thereby improving their productivity (reducing cognitive load, eliminating whole categories of systematic errors).
+For example, compare working with temporal data in the form of Unix timestamps (number of seconds since the Unix Epoch) versus ISO 8601 strings.</p>
+
+<p>This blog post demonstrates how the <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package extends Scikit-Learn with PMML-compatible date and datetime features.</p>
+
+<h3 id="temporal-data">Temporal data</h3>
+
+<p>A datetime is a data structure that represents an instant (point in time) according to some calendar and time zone.</p>
+
+<p>The calendar component takes care of mapping larger periods of time such as years, months and days.
+Most computer systems use the <a href="https://en.wikipedia.org/wiki/Gregorian_calendar">Gregorian calendar</a>, which provides a rather simple algorithm for spacing 365.2422-day solar years uniformly.</p>
+
+<p>The time zone component takes care of mapping periods within a day.
+While based on solar time, they include socially and economically motivated adjustments.
+From the software development perspective, time zones should be regarded as ever-growing lookup tables that need to be updated regularly (typically handled behind the scenes by the operating system).
+The lookup function returns a time zone offset relative to the <a href="https://en.wikipedia.org/wiki/Coordinated_Universal_Time">Coordiated Universal Time (UTC)</a> for the specified point in time.</p>
+
+<p>Datetimes should be formatted as strings following the <a href="https://en.wikipedia.org/wiki/ISO_8601">ISO 8601</a> standard:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">&lt;date part&gt;</code> - Local date</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;date part&gt;T&lt;time part&gt;</code> - Local datetime</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;date part&gt;T&lt;time part&gt;±&lt;time zone offset part&gt;</code> - Local datetime with explicit time zone offset</li>
+  <li><code class="language-plaintext highlighter-rouge">&lt;date part&gt;T&lt;time part&gt;Z</code> - UTC datetime</li>
+</ul>
+
+<h3 id="pmml">PMML</h3>
+
+<p>PMML defines four temporal data types for representing instants (points in time):</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">date</code> - Local date</li>
+  <li><code class="language-plaintext highlighter-rouge">datetime</code> - Local datetime</li>
+  <li><code class="language-plaintext highlighter-rouge">time</code> - Local time (24-hour clock)</li>
+  <li><code class="language-plaintext highlighter-rouge">timeSeconds</code> - Local time (unrestricted clock)</li>
+</ul>
+
+<p>They are all “local” in a sense that they do not maintain explicit time zone offset (close analogy with <code class="language-plaintext highlighter-rouge">java.time.LocalDate</code>, <code class="language-plaintext highlighter-rouge">java.time.LocalDateTime</code> and <code class="language-plaintext highlighter-rouge">java.time.Time</code> Java classes).
+If a predictive analytics application is dealing with temporal values associated with different time zones, then it should unify them to a common time zone (UTC or local time zone) before passing them on to the PMML engine.</p>
+
+<p>Instants should be regarded as discrete.
+The natural operational type is ordinal (ordered categorical), because it is possible to compare instants for equality plus determine the ordering between them (eg. answering a question “is instant A earlier/later than instant B?”).</p>
+
+<p>PMML further defines two sets of temporal data types for representing durations (distances between two points in time):</p>
+
+<ol>
+  <li><code class="language-plaintext highlighter-rouge">dateDaysSince[&lt;year&gt;]</code> - Distance from the epoch in days</li>
+  <li><code class="language-plaintext highlighter-rouge">dateTimeSecondsSince[&lt;year&gt;]</code> - Distance from the epoch in seconds</li>
+</ol>
+
+<p>The epoch can take values <code class="language-plaintext highlighter-rouge">0</code>, <code class="language-plaintext highlighter-rouge">1960</code>, <code class="language-plaintext highlighter-rouge">1970</code> or <code class="language-plaintext highlighter-rouge">1980</code>.
+The JPMML ecosystem extends this range with values <code class="language-plaintext highlighter-rouge">1990</code>, <code class="language-plaintext highlighter-rouge">2000</code>, <code class="language-plaintext highlighter-rouge">2010</code> and <code class="language-plaintext highlighter-rouge">2020</code> as proposed in <a href="http://mantis.dmg.org/view.php?id=234">http://mantis.dmg.org/view.php?id=234</a>.</p>
+
+<p>Durations should be regarded as continuous integers.</p>
+
+<p>PMML defines three built-in functions for converting instants to durations:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">dateDaysSinceYear(x, &lt;year&gt;)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">dateSecondsSinceYear(x, &lt;year&gt;)</code></li>
+  <li><code class="language-plaintext highlighter-rouge">dateSecondsSinceMidnight(x)</code></li>
+</ul>
+
+<p>The <code class="language-plaintext highlighter-rouge">dateDaysSinceYear</code> and <code class="language-plaintext highlighter-rouge">dateSecondsSinceYear</code> built-in functions support arbitrary epochs.
+The suggestion is to use an epoch that would minimize the range of computed durations, and make them easier to analyze and explain for humans.
+A good choice is the minimum year of the training dataset (restricts values to <code class="language-plaintext highlighter-rouge">[0, (maximum - minimum)]</code>).</p>
+
+<p>In principle, subtracting one instant from another should yield a duration, and adding a duration to an instant should yield another instant.
+The PMML specification does not clarify the behaviour of temporal values in the context of arithmetic operations so, while technically feasible, it should be avoided for the time being.</p>
+
+<h3 id="data-pre-processing">Data pre-processing</h3>
+
+<p>The sample dataset is a list of crewed lunar missions under the <a href="https://en.wikipedia.org/wiki/List_of_Apollo_missions">Apollo program</a>.
+In years 1968 thorugh 1972 there were nine flights.
+The first two were lunar orbiting missions, and the remaining seven were lunar landing missions.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">([</span>
+  <span class="p">[</span><span class="s">"1968-12-21T12:51:00Z"</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">"1968-12-27T15:51:42Z"</span><span class="p">,</span> <span class="bp">True</span><span class="p">],</span> <span class="c1"># Apollo 8
+</span>  <span class="p">[</span><span class="s">"1969-05-18T16:49:00Z"</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">"1969-05-26T16:52:23Z"</span><span class="p">,</span> <span class="bp">True</span><span class="p">],</span> <span class="c1"># Apollo 10
+</span>  <span class="p">[</span><span class="s">"1969-07-16T13:32:00Z"</span><span class="p">,</span> <span class="s">"1969-07-20T20:17:40Z"</span><span class="p">,</span> <span class="s">"1969-07-24T16:50:35Z"</span><span class="p">,</span> <span class="bp">True</span><span class="p">],</span> <span class="c1"># Apollo 11
+</span>  <span class="p">[</span><span class="s">"1969-11-14T16:22:00Z"</span><span class="p">,</span> <span class="s">"1969-11-19T06:54:35Z"</span><span class="p">,</span> <span class="s">"1969-11-24T20:58:24Z"</span><span class="p">,</span> <span class="bp">True</span><span class="p">],</span> <span class="c1"># Apollo 12
+</span>  <span class="p">[</span><span class="s">"1970-04-11T19:13:00Z"</span><span class="p">,</span> <span class="bp">None</span><span class="p">,</span> <span class="s">"1970-04-17T18:07:41Z"</span><span class="p">,</span> <span class="bp">False</span><span class="p">],</span> <span class="c1"># Apollo 13
+</span>  <span class="p">[</span><span class="s">"1971-01-31T21:03:02Z"</span><span class="p">,</span> <span class="s">"1971-02-05T09:18:11Z"</span><span class="p">,</span> <span class="s">"1971-02-09T21:05:00Z"</span><span class="p">,</span> <span class="bp">True</span><span class="p">],</span> <span class="c1"># Apollo 14
+</span>  <span class="p">[</span><span class="s">"1971-07-26T13:34:00Z"</span><span class="p">,</span> <span class="s">"1971-07-30T22:16:29Z"</span><span class="p">,</span> <span class="s">"1971-08-07T20:45:53Z"</span><span class="p">,</span> <span class="bp">True</span><span class="p">],</span> <span class="c1"># Apollo 15
+</span>  <span class="p">[</span><span class="s">"1972-04-16T17:54:00Z"</span><span class="p">,</span> <span class="s">"1972-04-21T02:23:35Z"</span><span class="p">,</span> <span class="s">"1972-04-27T19:45:05Z"</span><span class="p">,</span> <span class="bp">True</span><span class="p">],</span> <span class="c1"># Apollo 16
+</span>  <span class="p">[</span><span class="s">"1972-12-07T05:33:00Z"</span><span class="p">,</span> <span class="s">"1972-12-11T19:54:57Z"</span><span class="p">,</span> <span class="s">"1972-12-19T19:24:59Z"</span><span class="p">,</span> <span class="bp">True</span><span class="p">],</span> <span class="c1"># Apollo 17
+</span><span class="p">],</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"launch"</span><span class="p">,</span> <span class="s">"moon landing"</span><span class="p">,</span> <span class="s">"return"</span><span class="p">,</span> <span class="s">"success"</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In Python language speak, a datetime with time zone information is regarded as “(time zone-) offset-aware”, whereas a datetime without time zone information is called a “(time zone-) offset-naive”.
+Python datetime functions typically raise an error when offset-aware and offset-naive datetimes are interacted:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span><span class="p">,</span> <span class="n">timezone</span>
+
+<span class="c1"># Offset-aware begin date
+</span><span class="n">begin</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span> <span class="o">=</span> <span class="mi">2020</span><span class="p">,</span> <span class="n">month</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">day</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tzinfo</span> <span class="o">=</span> <span class="n">timezone</span><span class="p">.</span><span class="n">utc</span><span class="p">)</span>
+
+<span class="c1"># Offset-naive end date
+</span><span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span> <span class="o">=</span> <span class="mi">2020</span><span class="p">,</span> <span class="n">month</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">day</span> <span class="o">=</span> <span class="mi">8</span><span class="p">,</span> <span class="n">tzinfo</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span>
+
+<span class="c1"># Raises a TypeError: "can't subtract offset-naive and offset-aware datetimes"
+</span><span class="n">duration</span> <span class="o">=</span> <span class="n">end</span> <span class="o">-</span> <span class="n">begin</span>
+</code></pre></div></div>
+
+<p>The aim of data pre-procesing is to convert offset-aware UTC datetimes to offset-naive PMML-compatible local datetimes:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="k">def</span> <span class="nf">awarestr_to_naivestr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tzinfo</span><span class="p">):</span>
+  <span class="c1"># Parse string into offset-aware datetime
+</span>  <span class="n">x</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="c1"># Unify time zones
+</span>  <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">dt</span><span class="p">.</span><span class="n">tz_convert</span><span class="p">(</span><span class="n">tzinfo</span><span class="p">)</span>
+  <span class="c1"># Convert from offset-aware to offset-naive
+</span>  <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">dt</span><span class="p">.</span><span class="n">tz_localize</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+  <span class="c1"># Format offset-naive datetime into string
+</span>  <span class="n">x</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="n">dt</span><span class="p">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">"%Y-%m-%dT%H:%M:%S"</span><span class="p">)</span>
+
+<span class="n">tzinfo</span> <span class="o">=</span> <span class="s">"Europe/Tallinn"</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">"launch"</span><span class="p">]</span> <span class="o">=</span> <span class="n">awarestr_to_naivestr</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">"launch"</span><span class="p">],</span> <span class="n">tzinfo</span><span class="p">)</span>
+<span class="n">df</span><span class="p">[</span><span class="s">"moon landing"</span><span class="p">]</span> <span class="o">=</span> <span class="n">awarestr_to_naivestr</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">"moon landing"</span><span class="p">],</span> <span class="n">tzinfo</span><span class="p">).</span><span class="n">replace</span><span class="p">({</span><span class="s">"NaT"</span> <span class="p">:</span> <span class="bp">None</span><span class="p">})</span>
+<span class="n">df</span><span class="p">[</span><span class="s">"return"</span><span class="p">]</span> <span class="o">=</span> <span class="n">awarestr_to_naivestr</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">"return"</span><span class="p">],</span> <span class="n">tzinfo</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>For example, the first cell of the dataset is converted from <code class="language-plaintext highlighter-rouge">1968-12-21T12:51:00Z</code> to <code class="language-plaintext highlighter-rouge">1968-12-21T15:51:00</code>.
+The hour of day has been incremented by three hours (representing the time zone offset between UTC and Estonia/Tallinn time zone on 21st of December, 1968), and the <code class="language-plaintext highlighter-rouge">Z</code> suffix has been truncated.</p>
+
+<h3 id="feature-specification-and-engineering">Feature specification and engineering</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides domain decorators and transformers for working with pre-processed temporal values.</p>
+
+<p>Domain decorators are meant for declaring the type and behaviour of individual features.
+They were discussed in full detail in an earlier blog post about <a href="/blog/2020/02/23/sklearn_feature_specification_pmml/">extending Scikit-Learn with feature specifications</a>.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml.decoration</code> module provides three domain decorators:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">TemporalDomain</code>
+    <ul>
+      <li><code class="language-plaintext highlighter-rouge">DateDomain</code> - Default date</li>
+      <li><code class="language-plaintext highlighter-rouge">DateTimeDomain</code> - Default datetime</li>
+    </ul>
+  </li>
+  <li><code class="language-plaintext highlighter-rouge">OrdinalDomain</code> - Custom date or datetime</li>
+</ul>
+
+<p>Domain decorators take care of parsing or casting input values to appropriate temporal values.</p>
+
+<p><code class="language-plaintext highlighter-rouge">TemporalDomain</code> decorators can be applied to multiple columns at once.
+Their core configuration is hard-coded to prevent the collection and storage of valid value space information (ie. <code class="language-plaintext highlighter-rouge">Domain(with_data = False, with_statistics = False)</code>).
+The main assumption is that the temporal feature(s) is likely to take previously unseen values.</p>
+
+<p>In contrast, the <code class="language-plaintext highlighter-rouge">OrdinalDomain</code> decorator can only be applied to one column at once, but is fully configurable.
+It may come in handy when a temporal feature must be restricted in a certain way.</p>
+
+<p>A datetime is a complex data structure which needs to be “flattened” to a scalar before it can be fed to Scikit-Learn algorithms.
+The <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing</code> module provides three transformers, which correspond to previously discussed PMML built-in functions:</p>
+
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">DaysSinceYearTransformer</code></li>
+  <li><code class="language-plaintext highlighter-rouge">SecondsSinceYearTransformer</code></li>
+  <li><code class="language-plaintext highlighter-rouge">SecondsSinceMidnightTransformer</code></li>
+</ul>
+
+<p>Further transformations are possible using the good old <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> transformer.</p>
+
+<p>For example, calculating the duration of a mission in seconds:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">DateTimeDomain</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">ExpressionTransformer</span><span class="p">,</span> <span class="n">SecondsSinceYearTransformer</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">([</span>
+  <span class="p">([</span><span class="s">"launch"</span><span class="p">,</span> <span class="s">"return"</span><span class="p">],</span> <span class="p">[</span><span class="n">DateTimeDomain</span><span class="p">(),</span> <span class="n">SecondsSinceYearTransformer</span><span class="p">(</span><span class="n">year</span> <span class="o">=</span> <span class="mi">1968</span><span class="p">),</span> <span class="n">ExpressionTransformer</span><span class="p">(</span><span class="s">"X[1] - X[0]"</span><span class="p">)])</span>
+<span class="p">])</span>
+<span class="n">duration</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">duration</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The lack of more fine-grained calendaring functions can be overcome by performing the required arithmetic operations manually.
+If some functionality is needed often, then it should be extracted into a separate utility function.</p>
+
+<p>For example, calculating the hour of day (24-hour clock) by dividing the number of seconds since midnight by 3600 seconds/hour:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">Alias</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">SecondsSinceMidnightTransformer</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="k">def</span> <span class="nf">make_hour_of_day_transformer</span><span class="p">():</span>
+  <span class="k">return</span> <span class="n">ExpressionTransformer</span><span class="p">(</span><span class="s">"numpy.floor(X[0] / 3600)"</span><span class="p">)</span>
+
+<span class="n">mapper</span> <span class="o">=</span> <span class="n">DataFrameMapper</span><span class="p">([</span>
+  <span class="p">([</span><span class="s">"launch"</span><span class="p">],</span> <span class="p">[</span><span class="n">DateTimeDomain</span><span class="p">(),</span> <span class="n">SecondsSinceMidnightTransformer</span><span class="p">(),</span> <span class="n">Alias</span><span class="p">(</span><span class="n">make_hour_of_day_transformer</span><span class="p">(),</span> <span class="s">"HourOfLaunch"</span><span class="p">,</span> <span class="n">prefit</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)])</span>
+<span class="p">])</span>
+<span class="n">hour_of_day</span> <span class="o">=</span> <span class="n">mapper</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">hour_of_day</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>Python script: <a href="https://openscoring.io/resources/2020-03-08/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>
+</ul>
+
+  </main>
+</div>
+
+
+
+  <footer class="c-footer bg-primary">
+  <div class="c-footer__container container">
+    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
+    <div class="c-footer__info">
+      <div class="c-footer__text">© 2022 - Openscoring.io</div>
+    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
+      Follow Openscoring on Twitter
+    </a>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script type="text/javascript" src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics" />
+      </a>
+    </div>
+  </noscript>
+
+  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
+  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+</body>
+
+</html>
