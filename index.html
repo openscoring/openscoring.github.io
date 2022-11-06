@@ -4,13 +4,13 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="format-detection" content="telephone=no">
   <meta name="theme-color" content="#ffffff" />
   <meta name="msapplication-navbutton-color" content="#ffffff">
   <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
 
-  <meta name="description" content="TODO: write page description">
+  <meta name="description" content="Java PMML API overview, licensing and support">
   <meta name="keywords" content="">
   <meta name="author" content="">
 
@@ -33,583 +33,650 @@
   <meta name="twitter:label2" content="Time to read" />
   <meta name="twitter:data2" content="Less than a minute" />
 
-  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
-  <link rel='dns-prefetch' href='http://s.w.org/' />
-  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
-  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
-  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
   <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
   <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/images/fa.png" />
   <link rel="stylesheet" href="/assets/css/main.css">
   <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
   <!--[if lt IE 9]>
-  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
 </head>
 
 <body>
-  <header class="c-head">
-  <div class="c-head__container container-p0">
-    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
-    <nav class="c-head__nav">
-      <ul id="menu-main-menu" class="c-head__menu">
-        <li><a href="/" aria-current="page">Home</a></li>
-        <li><a href="/blog/">Blog</a></li>
-        <li><a href="/#products" aria-current="page">Products</a></li>
-        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
-        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
-      </ul>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring.IO</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog" class="btn btn--small">Blog</a>
     </nav>
-    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
-      <span class="c-toggle__line c-toggle__top"></span>
-      <span class="c-toggle__line c-toggle__mid"></span>
-      <span class="c-toggle__line c-toggle__bot"></span>
-    </button>
   </div>
 </header>
 
-  <div class="c-hero">
-  <div class="c-hero__main bg-primary text-white">
-    <div class="c-hero__main-inner container-p0">
-      <div class="c-hero__main-content text-white">
-        <h1 class="c-hero__title h2 text-white">Quick and Easy Deployment of Machine Learning (ML) Models</h1>
-        <div class="c-hero__text" style="font-size: larger">
-          <p>A standards-based, open-source software suite for moving Apache Spark, R and Scikit-Learn
-            models from &#8220;lab&#8221; to &#8220;factory&#8221;</p>
-        </div>
-        <div class="c-hero__bottom">
-          <a class="c-hero__buttons-item btn btn-secondary" href="#benefits">Our value proposition</a>
-          <a class="c-hero__buttons-item btn btn-secondary" href="#why-pmml">Our approach</a>
-        </div>
-      </div><a class="c-hero__main-badge" href="#products">TL;DR</a>
-    </div>
-    <div class="c-hero__main-media">
-      <img class="c-hero__image fill-bg" src="/assets/images/102186691_m-940x600.webp" alt="" />
-    </div>
-  </div>
-</div>
+  <main class="container mt-26">
+    <section class="hero">
+  <div>
+    <a name="hero" id="hero" class="anchor"></a>
+    <h1>Standards-based, Open-source Middleware for Predictive Analytics Applications</h1>
+    <p class="mb-8 lg:mb-6">Convert your fitted <span class="semibold">Scikit-Learn</span>, <span class="semibold">R</span> or <span class="semibold">Apache Spark</span> models and pipelines into the standardized <a href="https://dmg.org/pmml/v4-4-1/GeneralStructure.html" class="semibold" target="_blank">Predictive Model Markup Language</a> (PMML) representation, and make quick and dependable predictions in your <span class="semibold">Java/JVM</span> application.</p>
 
-<main class="gb-content">
-  <div class="b-block pt10 pb4">
-    <div class="b-block__anchor" id="benefits"></div>
-    <div class="b-part p-logos container text-center">
-      <h2 class="p-logos__title">Why do startups, SMEs and Fortune 500 companies choose Openscoring software?</h2>
+    <p><span class="semibold">Standardization enables automation</span>, which in turn enables higher efficiency and higher quality business processes.</p>
+
+    <div class="hero__cta mb-16 lg:mb-0">
+      <a href="/#products" class="btn btn--outline text-lg lg:text-sm">GET STARTED NOW!</a>
     </div>
   </div>
-  <div class="b-block pt3 pb8">
-    <div class="b-part p-cols container">
-      <div class="p-cols__row row">
-        <div class="p-cols__col col editor-content">
-          <h2 class="p-cols__title h3">Predictability</h2>
-          <span class="p-cols__subtitle h4 text-secondary">Turn-key implementation of ML projects</span>
-          <div class="p-cols__content">
-            <p>Business value is created by finding a solution to a problem, and delivering it to
-              customers.</p>
-            <p>The more engineering you need to do, the slower the pace, and the higher the cost. Use a
-              deterministic helper (&#8220;buy&#8221;) instead of taking on an open-ended development
-              and maintenance commitment (&#8220;build&#8221;).</p>
-            <p><u>Openscoring provides end-to-end, no-code/low-code workflows</u>.</p>
-          </div>
+  <div>
+    <img src="assets/images/hero.webp" width="683" height="480" alt="">
+  </div>
+</section>
+
+<section class="flex flex-column lg:flex-row md:gap-4 mt-26">
+  <a name="overview" id="overview" class="anchor"></a>
+  <div class="w-full lg:w-1/2 mb-8">
+    <h2>Why choose (J)PMML by Openscoring.IO?</h2>
+    <details class="accordion">
+      <summary>
+        <img src="assets/images/font.svg" alt="" width="36" height="36" loading="lazy">
+        The gold standard
+      </summary>
+      <div>
+        <p>
+        PMML embodies decades' worth of knowledge and best practices in the Tabular ML field.
+        Do not dismiss it, build on it!
+        </p>
+
+        <ul>
+          <li>Joint effort. PMML is developed and maintained by the <a href="https://dmg.org/" class="semibold" target="_blank">Data Mining Group</a> (DMG), which is an independent consortium between major statistics and data mining software vendors.</li>
+          <li>Backwards- and forwards-compatible. PMML version changes are incremental/evolutionary. Any PMML model that has been generated since early 2000s can be put into production today.</li>
+          <li>No challengers. PMML outsmarts and outdoes alternative Tabular ML standardization efforts, whether commercial or (F)OSS.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="accordion">
+      <summary>
+        <img src="assets/images/selection.svg" alt="" width="36" height="42" loading="lazy">
+        The &#8220;less code, less coding&#8221; approach
+      </summary>
+      <div>
+        <p>
+        PMML is designed around human-oriented data structures (as opposed to computer-executable code).
+        By eliminating the code component, PMML eliminates the need for coding roles and coding activities within the organization.
+        The data science team and the application development team can focus on their core competencies; there is no need for extra hybrid teams (&#8220;MLOps&#8221; or &#8220;DevOps&#8221;), extra inter-team communication.
+        </p>
+
+        <ul>
+          <li>Functionally complete. PMML captures all of feature engineering, modelling and decision engineering.</li>
+          <li>Reductionist. PMML promotes a one &mdash; <em>the best</em> &mdash; way of conceptualizing things. For example, all linear models collapse into a singular <a href="https://dmg.org/pmml/v4-4-1/Regression.html" target="_blank">PMML &#8220;regression table&#8221; data structure</a>, all decision tree models collapse into a singular <a href="https://dmg.org/pmml/v4-4-1/TreeModel.html" target="_blank">PMML &#8220;tree&#8221; data structure</a>, etc.
+          Less to learn and remember.</li>
+          <li>Auditable and verifiable. PMML holds ample metadata for quality assurance and quality control purposes. A PMML model is a fully self-contained and self-informed artifact, which takes active part in ensuring that its predictions are reliable and correct.</li>
+          <li>Explainable. PMML operates at high, real-world abstraction level. The inner workings of a PMML model are easily approachable even for non-experts.</li>
+          <li>Stable and secure. PMML models do not require any maintenance while in storage. PMML models cannot be attacked or breached while in production.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="accordion">
+      <summary>
+        <img src="assets/images/layouts.svg" alt="" width="36" height="36" loading="lazy">
+        Full software stack
+      </summary>
+      <div>
+        <p>
+        The <a href="https://github.com/jpmml" class="semibold" target="_blank">Java API for PMML</a> (JPMML) software project provides a right Java-based tool for every PMML job.
+        End user-facing components are equipped with command-line and/or REST interface, which enables integration with alternative application platforms.
+        </p>
+
+        <ul>
+          <li>Layered library architecture. Specialized, high-level APIs are derived from common low-level APIs. Simple and minimalistic dependency graph. Automatic assembly of 5 to 10 MB application-oriented library sets.</li>
+          <li>Pure Java. The same library set works on any Java SE 8/11 compatible Java VM.</li>
+          <li>Most efficient conversion. JPMML converters support most common Tabular ML frameworks, model and transformation types. They perform deep examinations and analyses on the incoming pipeline object in order to come up with the best encoding plan. Sub-optimal encodings (by lesser PMML converters) are difficult to correct after the fact, and will degrade the deployment experience significantly.</li>
+          <li>Most efficient evaluation. JPMML evaluators are among the smallest and fastest general-purpose scoring engines for the Java/JVM platform. They challenge the performance of any Tabular ML framework (with or without hardware acceleration) in real-time scoring scenarios.</li>
+          <li>End-to-end reproducibility guarantee. JPMML predictions always match the original Tabular ML framework predictions, as proven by extensive integration tests.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="accordion">
+      <summary>
+        <img src="assets/images/fox.svg" alt="" width="36" height="27" loading="lazy">
+        Vendor backing and support
+      </summary>
+      <div>
+        <p>
+        In the long run, you get what you paid for.
+        The choice is between upfront, fixed monetary costs vs. after-the-fact, indeterminate business costs.
+        </p>
+
+        <ul>
+          <li>Commitment. Openscoring.IO is the only pure-PMML company in existence today.</li>
+          <li>Longevity and reliability. Openscoring IO has over eight years of public track record. Openscoring.IO will be there for the entirety of your software project, your business venture.</li>
+          <li>Proof of work. Openscoring.IO conducts original research, and is known for delivering many &#8220;Firsts&#8221; and &#8220;Bests&#8221; in the field.</li>
+          <li>Direct, personal connection.</li>
+        </ul>
+      </div>
+    </details>
+  </div>
+  <div class="w-full lg:w-1/2 flex justify-end">
+    <div>
+      <img src="assets/images/pmml.webp" alt="" width="636" height="513" loading="lazy">
+    </div>
+  </div>
+</section>
+
+<section class="mt-24">
+  <a id="products" name="products" class="anchor"></a>
+  <h2 class="text-center mb-4">Products</h2>
+  <p class="text-center">Openscoring.IO software is grouped into three product verticals:</p>
+
+  <div class="tabs">
+    <input type="radio" name="tab" id="tab__1" checked="true">
+    <label for="tab__1">Model conversion</label>
+    <div class="tab">
+      <div class="grid grid-columns-1 lg:grid-columns-3 lg:gap-26">
+        <div class="lg:col-span-2 order-1 lg:order-0">
+          <p>Model conversion involves translating a fitted model or pipeline object from the original Tabular ML representation into the PMML representation, and saving it as a PMML document.</p>
+
+          <h3 id="scikit-learn">Scikit-Learn</h3>
+          <p>Install and import the SkLearn2PMML package.
+          Replace usages of the <code>sklearn.pipeline.Pipeline</code> class with the <code>sklearn2pmml.pipeline.PMMLPipeline</code> class.
+          Fit as usual. Export the fitted <code>PMMLPipeline</code> object into a PMML XML file using the <code>sklearn2pmml.sklearn2pmml(obj, path)</code> utility function:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([...])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># Enable automated QA
+</span><span class="n">pipeline</span><span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">X</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"MyPipeline.pmml.xml"</span><span class="p">)</span></code></pre></figure>
+
+          <h3 id="r">R</h3>
+          <p>Install and import the R2PMML package.
+          Fit as usual. Export the fitted model object into a PMML XML file using the <code>r2pmml::r2pmml(obj, path)</code> utility function:</p>
+
+<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="n">library</span><span class="p">(</span><span class="s2">"r2pmml"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">glm.obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="n">.</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">df</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># Enable automated QA</span><span class="w">
+</span><span class="n">glm.obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r2pmml</span><span class="o">::</span><span class="n">verify</span><span class="p">(</span><span class="n">glm.obj</span><span class="p">,</span><span class="w"> </span><span class="n">newdata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_n</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="w"> </span><span class="m">100</span><span class="p">))</span><span class="w">
+
+</span><span class="n">r2pmml</span><span class="o">::</span><span class="n">r2pmml</span><span class="p">(</span><span class="n">glm.obj</span><span class="p">,</span><span class="w"> </span><span class="s2">"MyPipeline.pmml.xml"</span><span class="p">)</span></code></pre></figure>
+
+          <h3 id="apache-spark">Apache Spark</h3>
+          <p>Install and import the JPMML-SparkML library.
+          Fit as usual. Construct an <code>org.jpmml.sparkml.PMMLBuilder</code> object based on the <code>DataFrame</code> schema and the fitted <code>PipelineModel</code> object, customize it, and export into a PMML XML file using the <code>PMMLBuilder#buildFile(File)</code> builder method:</p>
+
+<figure class="highlight"><pre><code class="language-scala" data-lang="scala"><span class="k">import</span> <span class="nn">org.jpmml.sparkml.PMMLBuilder</span>
+
+<span class="k">val</span> <span class="nv">pipeline</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Pipeline</span><span class="o">().</span><span class="py">setStages</span><span class="o">(...)</span>
+<span class="k">val</span> <span class="nv">pipelineModel</span> <span class="k">=</span> <span class="nv">pipeline</span><span class="o">.</span><span class="py">fit</span><span class="o">(</span><span class="n">df</span><span class="o">)</span>
+
+<span class="k">var</span> <span class="n">pmmlBuilder</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">PMMLBuilder</span><span class="o">(</span><span class="nv">df</span><span class="o">.</span><span class="py">schema</span><span class="o">,</span> <span class="n">pipelineModel</span><span class="o">)</span>
+
+<span class="c1">// Enable automated QA</span>
+<span class="n">pmmlBuilder</span> <span class="k">=</span> <span class="nv">pmmlBuilder</span><span class="o">.</span><span class="py">verify</span><span class="o">(</span><span class="nv">df</span><span class="o">.</span><span class="py">sample</span><span class="o">(</span><span class="kc">false</span><span class="o">,</span> <span class="mf">0.01</span><span class="o">).</span><span class="py">limit</span><span class="o">(</span><span class="mi">100</span><span class="o">))</span>
+
+<span class="nv">pmmlBuilder</span><span class="o">.</span><span class="py">buildFile</span><span class="o">(</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"MyPipeline.pmml.xml"</span><span class="o">))</span></code></pre></figure>
         </div>
-        <div class="p-cols__col col editor-content">
-          <h2 class="p-cols__title h3">Scalability</h2>
-          <span class="p-cols__subtitle h4 text-secondary">Keeping humans out of the everyday ML loop</span>
-          <div class="p-cols__content">
-            <p>Humans outdo machines only on creative tasks. Creativity is involved in designing and
-              assembling ML workflows, not running them.</p>
-            <p>Good software is an easier hire than a good data scientist or data engineer.</p>
-            <p><u>Openscoring provides self-documenting, self-testing, self-integrating ML models</u>.
-            </p>
-          </div>
-        </div>
-        <div class="p-cols__col col editor-content">
-          <h2 class="p-cols__title h3">Functionality</h2>
-          <span class="p-cols__subtitle h4 text-secondary">Unlocking the full potential of ML artifacts</span>
-          <div class="p-cols__content">
-            <p>Finalized ML models are typically regarded as “black boxes” that can only deliver numeric
-              predictions.</p>
-            <p>Yet, if you approach them right, they can become intellectual property /assets, which give
-              valuable insights into business processes.</p>
-            <p><u>Openscoring provides rich APIs for accessing each and every aspect of models and
-                predictions</u>.</p>
-          </div>
+
+        <div>
+          <h3>Data science packages:</h3>
+
+          <ul class="mb-8">
+            <li>
+              <a href="https://github.com/jpmml/sklearn2pmml" target="_blank">SkLearn2PMML</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/r2pmml" target="_blank">R2PMML</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/pyspark2pmml" target="_blank">PySpark2PMML</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/sparklyr2pmml" target="_blank">Sparklyr2PMML</a>
+            </li>
+          </ul>
+
+          <h3>Data application engineering libraries:</h3>
+
+          <ul class="mb-8">
+            <li>
+              <a href="https://github.com/jpmml/jpmml-sklearn" target="_blank">JPMML-SkLearn</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-r" target="_blank">JPMML-R</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-sparkml" target="_blank">JPMML-SparkML</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-h2o" target="_blank">JPMML-H2O</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-lightgbm" target="_blank">JPMML-LightGBM</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-xgboost" target="_blank">JPMML-XGBoost</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-statsmodels" target="_blank">JPMML-StatsModels</a>
+            </li>
+          </ul>
+
+          <h3>PMML engineering libraries:</h3>
+
+          <ul class="mb-8">
+            <li>
+              <a href="https://github.com/jpmml/jpmml-converter" target="_blank">JPMML-Converter</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-model" target="_blank">JPMML-Model</a>
+            </li>
+          </ul>
         </div>
       </div>
-    </div>
-  </div>
 
-  <div class="b-block pt18 pb20 bg-b">
-    <div class='b-part p-title container-p0 text-center'>
-      <div class="p-title__anchor" id="products"></div>
-      <h2 class='p-title__content'>Products</h2>
-      <div class="p-title__subtitle">Openscoring software has been grouped into three product verticals:</div>
+      <!--
+      <div class="w-full">
+        <input type="checkbox" id="tab__1__read_more" class="read-more">
+        <div class="read-more__button">
+          <label for="tab__1__read_more">Learn more</label>
+        </div>
+        <div class="read-more__content">
+        </div>
+      </div>
+      -->
     </div>
-    <div class="b-part p-tabs">
-      <nav class="p-tabs__nav nav nav-tabs nav-tabs-secondary">
-        <a class="nav-link active" id="t62f9e8edc8b65-tab" href="#t62f9e8edc8b65" aria-controls="t62f9e8edc8b65"
-          data-toggle="tab" role="tab" aria-selected="true">
-          Model evaluation
-        </a>
-        <a class="nav-link" id="t62f9e8edc8cd0-tab" href="#t62f9e8edc8cd0" aria-controls="t62f9e8edc8cd0"
-          data-toggle="tab" role="tab" aria-selected="false">
-          Model conversion
-        </a>
-        <a class="nav-link" id="t62f9e8edc8e16-tab" href="#t62f9e8edc8e16" aria-controls="t62f9e8edc8e16"
-          data-toggle="tab" role="tab" aria-selected="false">
-          Openscoring
-        </a>
-      </nav>
-      <div class="p-tabs__content tab-content">
-        <div class="tab-pane fade active show" id="t62f9e8edc8b65" role="tabpanel" aria-labelledby="t62f9e8edc8b65-tab">
-          <div class="b-part p-pgroup container">
-            <div class="p-pgroup__info">
-              <div class="info">
-                <p>Building a model evaluator instance from a PMML XML file:</p>
 
-<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">java.io.File</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.jpmml.evaluator.Evaluator</span><span class="o">;</span>
+    <input type="radio" name="tab" id="tab__2">
+    <label for="tab__2">Model scoring</label>
+    <div class="tab">
+      <div class="grid grid-columns-1 lg:grid-columns-3 lg:gap-26">
+        <div class="w-full lg:col-span-2 order-1 lg:order-0">
+          <p>Model scoring involves loading a PMML object from a PMML document, and making predictions for new data records.
+          The scoring component resides in the application space, right between &#8220;data source&#8221; and &#8220;data sink&#8221; components, which makes the workflow most suitable for real-time prediction (sub-microsecond turnaround times).</p>
+
+          <h3 id="java">Java</h3>
+          <p>Install and import the JPMML-Evaluator library.
+          Build an <code>org.jpmml.evaluator.Evaluator</code> object based on a PMML XML file.
+          Verify the state of the evaluator using the previously embedded dataset of tricky data records:</p>
+
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">org.jpmml.evaluator.Evaluator</span><span class="o">;</span>
 <span class="kn">import</span> <span class="nn">org.jpmml.evaluator.LoadingModelEvaluatorBuilder</span><span class="o">;</span>
 
 <span class="nc">Evaluator</span> <span class="n">evaluator</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LoadingModelEvaluatorBuilder</span><span class="o">()</span>
-    <span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"LogisticRegression.pmml"</span><span class="o">))</span>
-    <span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre></figure>
+    <span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"MyPipeline.pmml.xml"</span><span class="o">))</span>
+    <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 
-                <p>Doing the same, plus transpiling PMML XML markup to Java PMML API-backed Java
-                  bytecode for 5-15x performance improvement:</p>
+<span class="c1">// Perform automated QA</span>
+<span class="n">evaluator</span><span class="o">.</span><span class="na">verify</span><span class="o">();</span></code></pre></figure>
 
-<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="kn">import</span> <span class="nn">org.jpmml.transpiler.FileTranspiler</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.jpmml.transpiler.Transpiler</span><span class="o">;</span>
-<span class="kn">import</span> <span class="nn">org.jpmml.transpiler.TranspilerTransformer</span><span class="o">;</span>
+          <p>Score new data records.
+          The ordering of dictionary entries is not significant, because in PMML fields are identified by name, not by position:</p>
+<figure class="highlight"><pre><code class="language-java" data-lang="java"><span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;</span> <span class="n">arguments</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;();</span>
+<span class="n">arguments</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"temperature"</span><span class="o">,</span> <span class="mi">75</span><span class="o">);</span>
+<span class="n">arguments</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"humidity"</span><span class="o">,</span> <span class="mf">55.0</span><span class="o">);</span>
+<span class="n">arguments</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"windy"</span><span class="o">,</span> <span class="kc">false</span><span class="o">);</span>
+<span class="n">arguments</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="s">"outlook"</span><span class="o">,</span> <span class="s">"overcast"</span><span class="o">);</span>
 
-<span class="nc">LoadingModelEvaluatorBuilder</span> <span class="n">evaluatorBuilder</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LoadingModelEvaluatorBuilder</span><span class="o">()</span>
-    <span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"XGBoost.pmml"</span><span class="o">));</span>
+<span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="o">?&gt;</span> <span class="n">results</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="na">evaluate</span><span class="o">(</span><span class="n">arguments</span><span class="o">);</span>
+<span class="nc">String</span> <span class="n">whatIdo</span> <span class="o">=</span> <span class="o">(</span><span class="nc">String</span><span class="o">)</span><span class="n">results</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="s">"whatIdo"</span><span class="o">);</span></code></pre></figure>
 
-<span class="k">try</span> <span class="o">{</span>
-    <span class="nc">Transpiler</span> <span class="n">transpiler</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">FileTranspiler</span><span class="o">(</span><span class="kc">null</span><span class="o">,</span> <span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"XGBoost.pmml.jar"</span><span class="o">));</span>
+          <h3 id="python">Python</h3>
+          <p>Install and import the JPMML-Evaluator-Python package.
+          Establish Python-to-Java connectivity by launching a JPype, PyJNIus or Py4J backend.
+          Load, verify and score. The Python API is designed after the Java API.</p>
 
-    <span class="n">evaluatorBuilder</span> <span class="o">=</span> <span class="n">evaluatorBuilder</span>
-        <span class="o">.</span><span class="na">transform</span><span class="o">(</span><span class="k">new</span> <span class="nc">TranspilerTransformer</span><span class="o">(</span><span class="n">transpiler</span><span class="o">));</span>
-<span class="o">}</span> <span class="k">catch</span><span class="o">(</span><span class="nc">IOException</span> <span class="n">ioe</span><span class="o">){</span>
-    <span class="c1">// Ignored - the buildable evaluator shall fall back to the default evaluation mode</span>
-<span class="o">}</span>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">jpmml_evaluator</span> <span class="kn">import</span> <span class="n">LoadingModelEvaluatorBuilder</span>
 
-<span class="nc">Evaluator</span> <span class="n">evaluator</span> <span class="o">=</span> <span class="n">evaluatorBuilder</span><span class="o">.</span><span class="na">build</span><span class="o">();</span></code></pre></figure>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">LoadingModelEvaluatorBuilder</span><span class="p">(</span><span class="n">backend</span> <span class="o">=</span> <span class="p">...)</span> \
+  <span class="p">.</span><span class="n">loadFile</span><span class="p">(</span><span class="s">"MyPipeline.pmml.xml"</span><span class="p">)</span> \
+  <span class="p">.</span><span class="n">build</span><span class="p">()</span>
 
-                <p>Using the embedded verification dataset for self-testing and overall warm-up:</p>
-<figure class="highlight"><pre><code class="language-java" data-lang="java">  <span class="n">evaluator</span><span class="o">.</span><span class="na">verify</span><span class="o">();</span></code></pre></figure>
+<span class="c1"># Perform automated QA
+</span><span class="n">evaluator</span><span class="p">.</span><span class="n">verify</span><span class="p">()</span>
 
-                <p>Evaluating data records:</p>
+<span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s">"temperature"</span> <span class="p">:</span> <span class="mi">75</span><span class="p">,</span>
+  <span class="s">"humidity"</span><span class="p">:</span> <span class="mf">55.0</span><span class="p">,</span>
+  <span class="s">"windy"</span> <span class="p">:</span> <span class="bp">False</span><span class="p">,</span>
+  <span class="s">"outlook"</span> <span class="p">:</span> <span class="s">"overcast"</span>
+<span class="p">}</span>
 
-<figure class="highlight"><pre><code class="language-java" data-lang="java">  <span class="kn">import</span> <span class="nn">org.jpmml.evaluator.EvaluatorUtil</span><span class="o">;</span>
-  <span class="kn">import</span> <span class="nn">org.jpmml.evaluator.FieldValue</span><span class="o">;</span>
-  <span class="kn">import</span> <span class="nn">org.jpmml.evaluator.InputField</span><span class="o">;</span>
-  <span class="kn">import</span> <span class="nn">org.jpmml.evaluator.OutputField</span><span class="o">;</span>
-  <span class="kn">import</span> <span class="nn">org.jpmml.evaluator.TargetField</span><span class="o">;</span>
-  
-  <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;</span> <span class="n">userArguments</span> <span class="o">=</span> <span class="n">readArguments</span><span class="o">();</span>
-  
-  <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">FieldName</span><span class="o">,</span> <span class="nc">FieldValue</span><span class="o">&gt;</span> <span class="n">pmmlArguments</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
-  <span class="nc">List</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">InputField</span><span class="o">&gt;</span> <span class="n">inputFields</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="na">getInputFields</span><span class="o">();</span>
-  <span class="k">for</span><span class="o">(</span><span class="nc">InputField</span> <span class="n">inputField</span> <span class="o">:</span> <span class="n">inputFields</span><span class="o">){</span>
-      <span class="nc">Object</span> <span class="n">userValue</span> <span class="o">=</span> <span class="n">userArguments</span><span class="o">.</span><span class="na">get</span><span class="o">((</span><span class="n">inputField</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">getValue</span><span class="o">());</span>
-      <span class="c1">// Transform an arbitrary Java primitive value to a known-good PMML argument value</span>
-      <span class="nc">FieldValue</span> <span class="n">pmmlValue</span> <span class="o">=</span> <span class="n">inputField</span><span class="o">.</span><span class="na">prepare</span><span class="o">(</span><span class="n">userValue</span><span class="o">);</span>
-      <span class="n">pmmlArguments</span><span class="o">.</span><span class="na">put</span><span class="o">(</span><span class="n">inputField</span><span class="o">.</span><span class="na">getName</span><span class="o">(),</span> <span class="n">pmmlValue</span><span class="o">);</span>
-  <span class="o">}</span>
-  
-  <span class="c1">// Evaluate</span>
-  <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">FieldName</span><span class="o">,</span> <span class="o">?&gt;</span> <span class="n">pmmlResults</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="na">evaluate</span><span class="o">(</span><span class="n">pmmlArguments</span><span class="o">);</span>
-  
-  <span class="nc">Map</span><span class="o">&lt;</span><span class="nc">String</span><span class="o">,</span> <span class="nc">Object</span><span class="o">&gt;</span> <span class="n">userResults</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">HashMap</span><span class="o">&lt;&gt;();</span>
-  <span class="c1">// Primary result(s) (eg. y)</span>
-  <span class="nc">List</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">TargetField</span><span class="o">&gt;</span> <span class="n">targetFields</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="na">getTargetFields</span><span class="o">();</span>
-  <span class="k">for</span><span class="o">(</span><span class="nc">TargetField</span> <span class="n">targetField</span> <span class="o">:</span> <span class="n">targetFields</span><span class="o">){</span>
-      <span class="nc">Object</span> <span class="n">targetValue</span> <span class="o">=</span> <span class="n">pmmlResults</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">targetField</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
-      <span class="c1">// Transform a PMML result value to a Java primitive value</span>
-      <span class="n">targetValue</span> <span class="o">=</span> <span class="nc">EvaluatorUtil</span><span class="o">.</span><span class="na">decode</span><span class="o">(</span><span class="n">targetValue</span><span class="o">);</span>
-      <span class="n">userResults</span><span class="o">.</span><span class="na">put</span><span class="o">((</span><span class="n">targetField</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">getValue</span><span class="o">(),</span> <span class="n">targetValue</span><span class="o">);</span>
-  <span class="o">}</span>
-  <span class="c1">// Secondary results (eg. probability(y), affinity(y), entityId(y))</span>
-  <span class="nc">List</span><span class="o">&lt;?</span> <span class="kd">extends</span> <span class="nc">OutputField</span><span class="o">&gt;</span> <span class="n">outputFields</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="na">getOutputFields</span><span class="o">();</span>
-  <span class="k">for</span><span class="o">(</span><span class="nc">OutputField</span> <span class="n">outputField</span> <span class="o">:</span> <span class="n">outputFields</span><span class="o">){</span>
-      <span class="nc">Object</span> <span class="n">outputValue</span> <span class="o">=</span> <span class="n">pmmlResults</span><span class="o">.</span><span class="na">get</span><span class="o">(</span><span class="n">outputField</span><span class="o">.</span><span class="na">getName</span><span class="o">());</span>
-      <span class="n">userResults</span><span class="o">.</span><span class="na">put</span><span class="o">((</span><span class="n">outputField</span><span class="o">.</span><span class="na">getName</span><span class="o">()).</span><span class="na">getValue</span><span class="o">(),</span> <span class="n">outputValue</span><span class="o">);</span>
-  <span class="o">}</span>
-  
-  <span class="n">writeResults</span><span class="o">(</span><span class="n">userResults</span><span class="o">);</span></code></pre></figure>
-
-              </div>
-            </div>
-            <div class="p-pgroup__products">
-              <div class="p-pgroup__term">Data science packages</div>
-              <a href="https://github.com/jpmml/jpmml-evaluator-python" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-Evaluator for Python</span>
-              </a>
-
-              <div class="p-pgroup__term">Data engineering libraries</div>
-              <a href="https://github.com/jpmml/jpmml-transpiler" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-Transpiler</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-evaluator" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-Evaluator</span>
-              </a>
-
-              <div class="p-pgroup__term">Big Data framework integrations</div>
-              <a href="https://github.com/jpmml/jpmml-evaluator-hive" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">PMML functions for Apache Hive</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-evaluator-pig" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">PMML functions for Apache Pig</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-evaluator-spark" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">PMML functions for Apache Spark</span>
-              </a>
-            </div>
-          </div>
+<span class="n">results</span> <span class="o">=</span> <span class="n">evaluator</span><span class="p">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
+<span class="n">whatIdo</span> <span class="o">=</span> <span class="n">results</span><span class="p">[</span><span class="s">"whatIdo"</span><span class="p">]</span></code></pre></figure>
         </div>
-        <div class="tab-pane fade" id="t62f9e8edc8cd0" role="tabpanel" aria-labelledby="t62f9e8edc8cd0-tab">
-          <div class="b-part p-pgroup container">
-            <div class="p-pgroup__info">
-              <div class="info">
-                <h5 id="scikit-learn">Scikit-Learn</h5>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python">  <span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
-  <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
-  <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span>
-  <span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
-  <span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
-  
-  <span class="kn">import</span> <span class="nn">pandas</span>
-  
-  <span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"Audit.csv"</span><span class="p">)</span>
-  
-  <span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
-      <span class="p">(</span><span class="s">"transformer"</span><span class="p">,</span> <span class="n">ColumnTransformer</span><span class="p">([</span>
-          <span class="p">(</span><span class="s">"continuous"</span><span class="p">,</span> <span class="s">"passthrough"</span><span class="p">,</span> <span class="p">[</span><span class="s">"Age"</span><span class="p">,</span> <span class="s">"Hours"</span><span class="p">,</span> <span class="s">"Income"</span><span class="p">]),</span>
-          <span class="p">(</span><span class="s">"categorical"</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">(),</span> <span class="p">[</span><span class="s">"Employment"</span><span class="p">,</span> <span class="s">"Education"</span><span class="p">,</span> <span class="s">"Marital"</span><span class="p">,</span> <span class="s">"Occupation"</span><span class="p">,</span> <span class="s">"Gender"</span><span class="p">,</span> <span class="s">"Deductions"</span><span class="p">])</span>
-      <span class="p">])),</span>
-      <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">LogisticRegression</span><span class="p">(</span><span class="n">multi_class</span> <span class="o">=</span> <span class="s">"ovr"</span><span class="p">))</span>
-  <span class="p">])</span>
-  <span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">])</span>
-  <span class="n">pipeline</span><span class="p">.</span><span class="n">verify</span><span class="p">(</span><span class="n">df</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
-  
-  <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"LogisticRegression.pmml"</span><span class="p">)</span></code></pre></figure>
+        <div class="w-full">
+          <h3>Data science packages:</h3>
 
-                <h5 id="r">R</h5>
+          <ul class="mb-8">
+            <li>
+              <a href="https://github.com/jpmml/jpmml-evaluator-python" target="_blank">JPMML-Evaluator-Python</a>
+            </li>
+            <li>
+              <a target="_blank">JPMML-Evaluator-R</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-evaluator-spark" target="_blank">JPMML-Evaluator-Spark</a>
+            </li>
+          </ul>
 
-<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="w">  </span><span class="n">library</span><span class="p">(</span><span class="s2">"dplyr"</span><span class="p">)</span><span class="w">
-  </span><span class="n">library</span><span class="p">(</span><span class="s2">"r2pmml"</span><span class="p">)</span><span class="w">
-  
-  </span><span class="n">df</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read.csv</span><span class="p">(</span><span class="s2">"Audit.csv"</span><span class="p">)</span><span class="w">
-  </span><span class="n">df</span><span class="o">$</span><span class="n">Adjusted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">as.factor</span><span class="p">(</span><span class="n">df</span><span class="o">$</span><span class="n">Adjusted</span><span class="p">)</span><span class="w">
-  
-  </span><span class="n">audit.glm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="p">(</span><span class="s2">"Adjusted ~ ."</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">df</span><span class="p">,</span><span class="w"> </span><span class="n">family</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"binomial"</span><span class="p">)</span><span class="w">
-  </span><span class="n">audit.glm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">verify</span><span class="p">(</span><span class="n">audit.glm</span><span class="p">,</span><span class="w"> </span><span class="n">newdata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_n</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="w"> </span><span class="m">10</span><span class="p">))</span><span class="w">
-  
-  </span><span class="n">r2pmml</span><span class="p">(</span><span class="n">audit.glm</span><span class="p">,</span><span class="w"> </span><span class="s2">"LogisticRegression.pmml"</span><span class="p">)</span></code></pre></figure>
+          <h3>Data application engineering libraries:</h3>
+          <ul class="mb-8">
+            <li>
+              <a href="https://github.com/jpmml/jpmml-transpiler" target="_blank">JPMML-Transpiler</a>
+            </li>
+            <li>
+              <a href="https://github.com/jpmml/jpmml-evaluator" target="_blank">JPMML-Evaluator</a>
+            </li>
+          </ul>
 
-                <h5 id="apache-spark">Apache Spark</h5>
-                
-<figure class="highlight"><pre><code class="language-scala" data-lang="scala">  <span class="k">import</span> <span class="nn">java.io.File</span>
-  <span class="k">import</span> <span class="nn">org.apache.spark.ml.Pipeline</span>
-  <span class="k">import</span> <span class="nn">org.apache.spark.ml.classification.LogisticRegression</span>
-  <span class="k">import</span> <span class="nn">org.apache.spark.ml.feature.RFormula</span>
-  <span class="k">import</span> <span class="nn">org.jpmml.sparkml.PMMLBuilder</span>
-  <span class="k">import</span> <span class="nn">org.jpmml.sparkml.model.HasPredictionModelOptions</span><span class="o">;</span>
-  
-  <span class="k">val</span> <span class="nv">df</span> <span class="k">=</span> <span class="nv">spark</span><span class="o">.</span><span class="py">read</span><span class="o">.</span><span class="py">format</span><span class="o">(</span><span class="s">"csv"</span><span class="o">).</span><span class="py">option</span><span class="o">(</span><span class="s">"header"</span><span class="o">,</span> <span class="s">"true"</span><span class="o">).</span><span class="py">option</span><span class="o">(</span><span class="s">"inferSchema"</span><span class="o">,</span> <span class="s">"true"</span><span class="o">).</span><span class="py">load</span><span class="o">(</span><span class="s">"Audit.csv"</span><span class="o">)</span>
-  
-  <span class="k">val</span> <span class="nv">rFormula</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">RFormula</span><span class="o">().</span><span class="py">setFormula</span><span class="o">(</span><span class="s">"Adjusted ~ ."</span><span class="o">)</span>
-  <span class="k">val</span> <span class="nv">lr</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">LogisticRegression</span><span class="o">().</span><span class="py">setLabelCol</span><span class="o">(</span><span class="nv">rFormula</span><span class="o">.</span><span class="py">getLabelCol</span><span class="o">).</span><span class="py">setFeaturesCol</span><span class="o">(</span><span class="nv">rFormula</span><span class="o">.</span><span class="py">getFeaturesCol</span><span class="o">)</span>
-  <span class="k">val</span> <span class="nv">pipeline</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">Pipeline</span><span class="o">().</span><span class="py">setStages</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="n">rFormula</span><span class="o">,</span> <span class="n">lr</span><span class="o">))</span>
-  
-  <span class="k">val</span> <span class="nv">pipelineModel</span> <span class="k">=</span> <span class="nv">pipeline</span><span class="o">.</span><span class="py">fit</span><span class="o">(</span><span class="n">df</span><span class="o">)</span>
-  
-  <span class="k">val</span> <span class="nv">pmmlBuilder</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">PMMLBuilder</span><span class="o">(</span><span class="nv">df</span><span class="o">.</span><span class="py">schema</span><span class="o">,</span> <span class="n">pipelineModel</span><span class="o">).</span><span class="py">putOption</span><span class="o">(</span><span class="nv">HasPredictionModelOptions</span><span class="o">.</span><span class="py">OPTION_KEEP_PREDICTIONCOL</span><span class="o">,</span> <span class="kc">false</span><span class="o">).</span><span class="py">verify</span><span class="o">(</span><span class="nv">df</span><span class="o">.</span><span class="py">sample</span><span class="o">(</span><span class="kc">false</span><span class="o">,</span> <span class="mf">0.01</span><span class="o">).</span><span class="py">limit</span><span class="o">(</span><span class="mi">10</span><span class="o">))</span>
-  
-  <span class="nv">pmmlBuilder</span><span class="o">.</span><span class="py">buildFile</span><span class="o">(</span><span class="k">new</span> <span class="nc">File</span><span class="o">(</span><span class="s">"LogisticRegression.pmml"</span><span class="o">))</span></code></pre></figure>
+          <h3>PMML engineering libraries:</h3>
 
-                <p>The <a
-                    href="https://raw.githubusercontent.com/jpmml/jpmml-sklearn/master/src/test/resources/csv/Audit.csv">Audit</a>
-                  dataset (binary target; three continuous and six categorical features)</p>
-              </div>
-            </div>
-            <div class="p-pgroup__products">
-              <div class="p-pgroup__term">Data science packages</div>
-              <a href="https://github.com/jpmml/sklearn2pmml" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">SkLearn-to-PMML</span>
-              </a>
-              <a href="https://github.com/jpmml/r2pmml" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">R-to-PMML</span>
-              </a>
-              <a href="https://github.com/jpmml/pyspark2pmml" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">PySpark-to-PMML</span>
-              </a>
-              <a href="https://github.com/jpmml/sparklyr2pmml" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">Sparklyr-to-PMML</span>
-              </a>
-
-              <div class="p-pgroup__term">Data engineering libraries</div>
-              <a href="https://github.com/jpmml/jpmml-sklearn" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-SkLearn</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-r" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-R</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-sparkml" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-SparkML</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-h2o" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-H2O</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-python" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-Python</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-lightgbm" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-LightGBM</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-xgboost" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-XGBoost</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-statsmodels" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-StatsModels</span>
-              </a>
-
-              <div class="p-pgroup__term">PMML engineering libraries</div>
-              <a href="https://github.com/jpmml/jpmml-converter" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-Converter</span>
-              </a>
-              <a href="https://github.com/jpmml/jpmml-model" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">JPMML-Model</span>
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="tab-pane fade" id="t62f9e8edc8e16" role="tabpanel" aria-labelledby="t62f9e8edc8e16-tab">
-          <div class="b-part p-pgroup container">
-            <div class="p-pgroup__info">
-              <div class="info">
-                <p>Running the Openscoring server application:</p>
-
-<figure class="highlight"><pre><code class="language-text" data-lang="text">  $ java -jar openscoring-server-executable-${version}.jar</code></pre></figure>
-
-                <p>Deploying a model from a PMML XML file, using it for evaluation (batch mode), and
-                  undeploying:</p>
-
-<figure class="highlight"><pre><code class="language-text" data-lang="text">  $ curl -X PUT --data-binary @LogisticRegression.pmml -H "Content-type: text/xml" http://localhost:8080/openscoring/model/MyAuditModel
-  $ curl -X POST --data-binary @Audit.csv -H "Content-type: text/plain; charset=UTF-8" http://localhost:8080/openscoring/model/MyAuditModel/csv &gt; Audit-results.csv
-  $ curl -X DELETE http://localhost:8080/openscoring/model/MyAuditModel</code></pre></figure>
-
-                <p>Doing the same using the Openscoring-Python client library:</p>
-
-<figure class="highlight"><pre><code class="language-python" data-lang="python">  <span class="kn">from</span> <span class="nn">openscoring</span> <span class="kn">import</span> <span class="n">Openscoring</span>
-  
-  <span class="n">os</span> <span class="o">=</span> <span class="n">Openscoring</span><span class="p">(</span><span class="n">base_url</span> <span class="o">=</span> <span class="s">"http://localhost:8080/openscoring"</span><span class="p">)</span>
-  
-  <span class="n">os</span><span class="p">.</span><span class="n">deployFile</span><span class="p">(</span><span class="s">"MyAuditModel"</span><span class="p">,</span> <span class="s">"LogisticRegression.pmml"</span><span class="p">)</span>
-  <span class="n">os</span><span class="p">.</span><span class="n">evaluateCsvFile</span><span class="p">(</span><span class="s">"MyAuditModel"</span><span class="p">,</span> <span class="s">"Audit.csv"</span><span class="p">,</span> <span class="s">"Audit-results.csv"</span><span class="p">)</span>
-  <span class="n">os</span><span class="p">.</span><span class="n">undeploy</span><span class="p">(</span><span class="s">"MyAuditModel"</span><span class="p">)</span></code></pre></figure>
-
-                <p><a href="https://www.papis.io/2018">PAPIs 2018</a> tool demonstration: <a
-                    href="https://github.com/openscoring/papis.io">"Putting five ML models to
-                    production in five minutes"</a></p>
-              </div>
-            </div>
-            <div class="p-pgroup__products">
-              <div class="p-pgroup__term">Client libraries</div>
-              <a href="https://github.com/openscoring/openscoring-python" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">Openscoring-Python</span>
-              </a>
-              <a href="https://github.com/openscoring/openscoring-r" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">Openscoring-R</span>
-              </a>
-
-              <div class="p-pgroup__term">Server application</div>
-              <a href="https://github.com/openscoring/openscoring" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">Openscoring REST web service</span>
-              </a>
-
-              <div class="p-pgroup__term">Application platform integrations</div>
-              <a href="https://github.com/openscoring/openscoring-docker" target="_blank" class="p-pgroup__p">
-                <span class="p-pgroup__p-title">Openscoring for Docker</span>
-              </a>
-              <a href="https://github.com/openscoring/openscoring-elastic-beanstalk" target="_blank"
-                class="p-pgroup__p">
-                <span class="p-pgroup__p-title">Openscoring for AWS Elastic Beanstalk</span>
-              </a>
-            </div>
-          </div>
+          <ul class="mb-8">
+            <li>
+              <a href="https://github.com/jpmml/jpmml-model" target="_blank">JPMML-Model</a>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
-    <div class='b-part p-title container-p0 text-center p-title--full'>
-      <div class="p-title__anchor" id="licensing"></div>
-      <h2 class='p-title__content'>How does re-licensing work?</h2>
-    </div>
-    <div class="b-part p-text container editor-content">
-      <p>The majority of Openscoring software is released under the terms and conditions of the <a
-          href="https://www.gnu.org/licenses/agpl-3.0.en.html" target="_blank" rel="noopener">GNU Affero
-          General Public License (AGPL), version 3.0</a>. AGPLv3 is a free software license [1]. AGPLv3 is
-        very similar to the GNU General Public License (GPL), version 3, but comes with an additional
-        provision, which addresses the use of software over a computer network.</p>
-      <p><u>If AGPLv3 is not acceptable, then it is possible to enter into a licensing agreement, which makes
-          Openscoring software available under the terms and conditions of the <a
-            href="https://opensource.org/licenses/BSD-3-Clause" target="_blank" rel="noopener">BSD
-            3-Clause License</a></u>. The re-licensing process is quick and easy (attainable by
-        exchanging three e-mails), and protects the interests of both parties.</p>
-      <p>[1] “Free software” is a matter of liberty, not price. To understand the concept, you should think of
-        “free” as in “free speech”, not as in “free beer”. For more information, please see <a
-          href="https://www.gnu.org/philosophy/free-sw.en.html" target="_blank" rel="noopener">The Free
-          Software Definition</a>.</p>
-      <div id="gtx-trans" style="position: absolute; left: 292px; top: 195.266px;">
-        <div class="gtx-trans-icon"></div>
+
+    <input type="radio" name="tab" id="tab__3">
+    <label for="tab__3">Model RESTful scoring</label>
+    <div class="tab">
+      <div class="grid grid-columns-1 lg:grid-columns-3 lg:gap-26">
+        <div class="lg:col-span-2 order-1 lg:order-0">
+          <p>Turn any PMML document into a RESTful web service, and interact with it from any application, anywhere!
+          The workflow is subject to network latency, and is therefore more suitable for less time-sensitive tasks such as web form prediction and batch prediction (tens to hundreds of milliseconds turnaround times).</p>
+
+          <h3 id="server">Server-side</h3>
+          <p>Download and run the Openscoring server executable JAR file:</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text">$ java -jar openscoring-server-executable-${version}.jar</code></pre></figure>
+
+
+          <h3 id="client">Client-side</h3>
+          <p>Performing a full deploy-score-undeploy workflow using a command-line cURL application:</p>
+
+<figure class="highlight"><pre><code class="language-text" data-lang="text">$ curl -X PUT --data-binary MyPipeline.pmml.xml -H "Content-type: text/xml" http://localhost:8080/openscoring/model/MyPipeline
+$ curl -X POST --data-binary @MyNewData.csv -H "Content-type: text/plain; charset=UTF-8" http://localhost:8080/openscoring/model/MyPipeline/csv &gt; MyNewData-results.csv
+$ curl -X DELETE http://localhost:8080/openscoring/model/MyPipeline</code></pre></figure>
+
+          <p>Doing the same using the Openscoring-Python package:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">openscoring</span> <span class="kn">import</span> <span class="n">Openscoring</span>
+
+<span class="n">os</span> <span class="o">=</span> <span class="n">Openscoring</span><span class="p">(</span><span class="n">base_url</span> <span class="o">=</span> <span class="s">"http://localhost:8080/openscoring"</span><span class="p">)</span>
+
+<span class="n">os</span><span class="p">.</span><span class="n">deployFile</span><span class="p">(</span><span class="s">"MyPipeline"</span><span class="p">,</span> <span class="s">"MyPipeline.pmml.xml"</span><span class="p">)</span>
+<span class="n">os</span><span class="p">.</span><span class="n">evaluateCsvFile</span><span class="p">(</span><span class="s">"MyPipeline"</span><span class="p">,</span> <span class="s">"MyNewData.csv"</span><span class="p">,</span> <span class="s">"MyNewData-results.csv"</span><span class="p">)</span>
+<span class="n">os</span><span class="p">.</span><span class="n">undeploy</span><span class="p">(</span><span class="s">"MyPipeline"</span><span class="p">)</span></code></pre></figure>
+
+          <p>Doing the same using the Openscoring-R package:</p>
+
+<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="n">library</span><span class="p">(</span><span class="s2">"openscoring"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">os</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new</span><span class="p">(</span><span class="s2">"Openscoring"</span><span class="p">,</span><span class="w"> </span><span class="n">base_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"http://localhost:8080/openscoring"</span><span class="p">)</span><span class="w">
+
+</span><span class="n">deployFile</span><span class="p">(</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="s2">"MyPipeline"</span><span class="p">,</span><span class="w"> </span><span class="s2">"MyPipeline.pmml.xml"</span><span class="p">)</span><span class="w">
+</span><span class="n">evaluateCsvFile</span><span class="p">(</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="s2">"MyPipeline"</span><span class="p">,</span><span class="w"> </span><span class="s2">"MyNewData.csv"</span><span class="p">,</span><span class="w"> </span><span class="s2">"MyNewData-results.csv"</span><span class="p">)</span><span class="w">
+</span><span class="n">undeploy</span><span class="p">(</span><span class="n">os</span><span class="p">,</span><span class="w"> </span><span class="s2">"MyPipeline"</span><span class="p">)</span></code></pre></figure>
+        </div>
+
+        <div>
+          <h3>Client packages:</h3>
+
+          <ul class="mb-8">
+            <li>
+              <a href="https://github.com/openscoring/openscoring-python" target="_blank">Openscoring-Python</a>
+            </li>
+            <li>
+              <a href="https://github.com/openscoring/openscoring-r" target="_blank">Openscoring-R</a>
+            </li>
+          </ul>
+
+          <h3>Server application:</h3>
+
+          <ul class="mb-8">
+            <li>
+              <a href="https://github.com/openscoring/openscoring" target="_blank">Openscoring REST web service</a>
+            </li>
+          </ul>
+        </div>
       </div>
-    </div>
-    <div class="b-part p-btn container text-center"><a class="p-btn__item btn btn-secondary"
-        href="mailto:info@openscoring.io?subject=Request%20for%20BSD%203-Clause%20License">Send a license
-        request: info@openscoring.io</a></div>
-  </div>
-  <div class="b-block pt7 pb8">
-    <div class="b-block__anchor" id="why-pmml"></div>
-    <div class='b-part p-title container-p0 text-center p-title--narrow'>
-      <h2 class='p-title__content'>Why standardize ML workflows using the Predictive Model Markup Language
-        (PMML)?</h2>
-    </div>
-    <ul class="b-part p-list container-p0">
-      <li class="p-list__item">
-        <div class="p-list__icon"><img src="/assets/images/fox.svg" class="attachment-full size-full" alt=""
-            loading="lazy" /></div><span class="p-list__title">ML vs AI</span>
-        <p>Machine learning (ML) deals with small- and medium-size statistical and data mining models, whose
-          inner workings can be easily reasoned. In contrast, Artificial Intelligence (AI) deals with
-          unfathomable neural networks.</p>
-        <p>ML is applicable to business problems that are based on structured datasets (spreadsheets,
-          relational databases). AI is applicable to large unstructured datasets (media collections).</p>
-        <p>Statistics/ML may not sound as cool as deep learning/AI, but its economic impact is way higher.
-        </p>
-      </li>
-      <li class="p-list__item">
-        <div class="p-list__icon"><img src="/assets/images/layouts.svg" class="attachment-full size-full" alt=""
-            loading="lazy" /></div><span class="p-list__title">The simplest thing that works</span>
-        <p>ML models &#8220;at rest&#8221; can be captured and systematized using very simple data
-          structures.</p>
-        <p><a href="https://www.dmg.org/" target="_blank" rel="noopener">The Data Mining Group (DMG)</a> is
-          an independent vendor led consortium that works on the standardization of ML model data
-          structures.</p>
-        <p>DMG released the <a href="https://dmg.org/pmml/v4-4-1/GeneralStructure.html">Predictive Model
-            Markup Language (PMML)</a> in its current form (the 3.0+ schema version) in 2004, and has
-          been continuously updating and maintaining it since then. DMG has also released the <a
-            href="https://dmg.org/pfa/index.html">Portable Format for Analytics (PFA)</a>, but its uptake
-          has been negligible due to technical complexity.</p>
-      </li>
-      <li class="p-list__item">
-        <div class="p-list__icon"><img src="/assets/images/selection.svg" class="attachment-full size-full" alt=""
-            loading="lazy" /></div><span class="p-list__title">Stable, high-level, extensible
-          representation</span>
-        <p>PMML uses high-level data structures, which abstract away all medium- and low-level data
-          structures used by popular ML frameworks and application.</p>
-        <p>For example, PMML defines singular tree and regression table data structures that can capture the
-          entirety of decision tree, linear regression and logistic regression models in everyday use
-          (Apache Spark, R, Scikit-Learn, LightGBM, XGBoost, etc).</p>
-        <p>PMML data structures can be extended by adding new elements and attributes to them. The evolution
-          of data structures is carried out both in backwards- and forwards-compatible manner.</p>
-        <p>Any PMML document generated in the past 15 years is valid and usable today, and will likely be 15
-          years into the future.</p>
-      </li>
-      <li class="p-list__item">
-        <div class="p-list__icon"><img src="/assets/images/font.svg" class="attachment-full size-full" alt=""
-            loading="lazy" /></div><span class="p-list__title">Humans and machines on equal footing</span>
-        <p>PMML data structures balance expressiveness with executability.</p>
-        <p>A PMML document can be worked on (analyzed, executed) manually, or using a wide variety of tools
-          from open-source and proprietary vendors. The default data format for PMML documents is XML, but
-          they can equally well be stored in alternative text (JSON, YAML) or binary data formats.</p>
-        <p>Openscoring has established itself as the most innovative and most capable vendor of PMML tools.
-        </p>
-      </li>
-    </ul>
-  </div>
-  <div class="b-block pt18 pb20 bg-b">
-    <div class="b-part p-cat container">
-      <div class="p-title text-center" style="margin-bottom: 5rem">
-        <h2 class="p-title__content">Featured blog posts</h2>
-      </div>
-      <div class="c-post col"><a class="c-post__link"
-          href="blog/2020/02/16/deploying_sparkml_pipeline_openscoring_rest/index.html">
-          <div class="c-post__text"><span class="c-post__date">2020-02-16</span>
-            <h4 class="c-post__title">Deploying Apache Spark ML pipeline models on Openscoring REST web
-              service</h4>
-          </div>
-        </a></div>
-      <div class="c-post col"><a class="c-post__link"
-          href="blog/2020/01/19/converting_logistic_regression_pmml/index.html">
-          <div class="c-post__text"><span class="c-post__date">2020-01-19</span>
-            <h4 class="c-post__title">Converting logistic regression models to PMML documents</h4>
-          </div>
-        </a></div>
-      <div class="c-post col"><a class="c-post__link" href="blog/2019/12/03/deploying_lightgbm_java/index.html">
-          <div class="c-post__text"><span class="c-post__date">2019-12-03</span>
-            <h4 class="c-post__title">Deploying LightGBM models on Java/JVM platform</h4>
-          </div>
-        </a></div>
-      <div class="c-post col"><a class="c-post__link" href="blog/2019/06/19/sklearn_gbdt_lr_ensemble/index.html">
-          <div class="c-post__text"><span class="c-post__date">2019-06-19</span>
-            <h4 class="c-post__title">Extending Scikit-Learn with GBDT plus LR ensemble (GBDT+LR) model
-              type</h4>
-          </div>
-        </a></div>
-      <div class="c-post col"><a class="c-post__link"
-          href="blog/2018/07/09/converting_sparkml_pipeline_pmml/index.html">
-          <div class="c-post__text"><span class="c-post__date">2018-07-09</span>
-            <h4 class="c-post__title">Converting Apache Spark ML pipeline models to PMML documents</h4>
-          </div>
-        </a></div>
-      <div class="b-part p-btn container text-center"><a class="p-btn__item btn btn-secondary"
-          href="blog/index.html">All
-          blog posts</a></div>
     </div>
   </div>
-  <div class="b-block pt7 pb11">
-    <div class="b-block__anchor" id="consulting"></div>
-    <div class='b-part p-title container-p0 text-center p-title--full'>
-      <h2 class='p-title__content'>Further assistance and discussion</h2>
+</section>
+
+<section class="mt-26">
+  <a name="licensing" id="licensing" class="anchor"></a>
+  <div class="flex flex-column md:flex-row gap-8 md:gap-14">
+    <div class="md:w-1/2">
+      <h2>What are (J)PMML by Openscoring.IO license terms?</h2>
+      <p>The base layer of JPMML software project is released under the <a href="https://opensource.org/licenses/BSD-3-Clause" class="semibold" target="_blank">BSD 3-Clause License</a>.
+      However, the higher and more sophisticated layers are released under the <a href="https://www.gnu.org/licenses/agpl-3.0.en.html" class="semibold" target="_blank">GNU Affero General Public License, version 3.0</a> (AGPL-v3).
+      When in doubt, see the contents of the <code>LICENSE.txt</code> file at the root of each product's GitHub repository.</br>
+      </p>
+
+      <p>Your rights and obligations under different licenses are summarized in the adjacent table.</p>
+
+      <p>If the terms and conditions of AGPL-v3 are not acceptable, then it is possible to enter into a licensing agreement with Openscoring.IO, which re-licenses the desired parts of the JPMML software project from AGPL-v3 to BSD 3-Clause License.
+      The re-licensing process is simple and straightforward. Please initiate it by clicking the button below:</p>
+
+      <a href="mailto:info@openscoring.io?subject=Request%20for%20BSD%203-Clause%20License" class="btn">Request for BSD 3-Clause License</a>
     </div>
-    <div class="b-part p-contact">
-      <div class="p-contact__text container-p0">Openscoring sells software, but provides free support services
+
+    <div class="md:w-1/2">
+      <div class="licensing_chart">
+        <table>
+          <tr>
+            <td class="term"></td>
+            <td>
+              <u>AGPL-v3</u>
+            </td>
+            <td class="separator"></td>
+            <td>
+              <u>BSD 3-Clause License</u>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="term">Type:</td>
+            <td>
+              <div class="bad">Protective (copyleft)</div>
+            </td>
+            <td class="separator"></td>
+            <td>
+              <div class="good">Permissive (copyright)</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="term">Can use commercially:</td>
+            <td>
+              <div class="average">Yes</div>
+            </td>
+            <td class="separator"></td>
+            <td>
+              <div class="average">Yes</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="term">Can modify and distribute:</td>
+            <td>
+              <div class="average">Yes</div>
+            </td>
+            <td class="separator"></td>
+            <td>
+              <div class="average">Yes</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="term">Must disclose source form to end users:</td>
+            <td>
+              <div class="disastrous">Yes</div>
+            </td>
+            <td class="separator"></td>
+            <td>
+              <div class="excellent">No</div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="term">Can sublicense:</td>
+            <td>
+              <div class="disastrous">No</div>
+            </td>
+            <td class="separator"></td>
+            <td>
+              <div class="excellent">Yes</div>
+            </td>
+          </tr>
+        </table>
       </div>
-      <div class="p-contact__main container-p0">
-        <div class="p-contact__contact"><img width="200" height="200" src="/assets/images/VR-200x200-c.jpg"
-            class="p-contact__contact-image" alt="VR" />
-          <div class="p-contact__contact-name">Villu Ruusmann</div>
-          <div class="p-contact__contact-role">Founder and CTO</div>
-        </div>
-        <div class="p-contact__info editor-content">
-          <p>Detailed guidance, feature requests, bug reports about specific products? Please open a new
-            GitHub issue with the appropriate <a href="https://github.com/jpmml">Java PMML API</a> or <a
-              href="https://github.com/openscoring">Openscoring REST API</a> repository.</p>
-          <p>Questions about PMML and its applicability to ML workflows? Please open a new thread in the
-            <a href="https://groups.google.com/forum/#!forum/jpmml">JPMML Mailing List</a>.
-          </p>
-          <p>Other exciting opportunities? Contact privately.</p>
-        </div>
-      </div>
-      <div class="p-contact__text container-p0">Openscoring is domiciled in Estonia. The business activity
-        takes place between 7am and 9pm GMT, seven days a week.</div>
-    </div>
-    <div class="b-part p-btn container text-center">
-      <a class="p-btn__item btn btn-secondary" href="mailto:villu@openscoring.io">Send a message: villu@openscoring.io</a>
     </div>
   </div>
-</main>
+</section>
 
-  <footer class="c-footer bg-primary">
-  <div class="c-footer__container container">
-    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
-    <div class="c-footer__info">
-      <div class="c-footer__text">© 2022 - Openscoring.io</div>
-    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
-      Follow Openscoring on Twitter
+<section class="consulting">
+  <a name="consulting" id="consulting" class="anchor"></a>
+  <div class="contact">
+    <a href="https://github.com/vruusmann" target="_blank">
+      <img width="200" height="200" src="/assets/images/VR-200x200-c.jpg" class="image" alt="VR" loading="lazy">
+      <div class="name">Villu Ruusmann</div>
+      <div class="role">Founder and CTO</div>
     </a>
+  </div>
+
+  <h2 class="title">Further assistance and discussion</h2>
+
+  <p class="subtitle">Openscoring.IO sells software, but provides support services for free.</p>
+
+  <div class="description">
+    <p>Technical questions, feature requests, bug reports, etc. about specific products?<br/>
+    Please open a new GitHub issue with one of the <a href="https://github.com/jpmml" class="semibold" target="_blank">Java PMML API</a> or <a href="https://github.com/openscoring" class="semibold" target="_blank">Openscoring REST API</a> software projects.</p>
+
+    <p>General questions about (J)PMML?<br/>
+    Please open a new thread in the <a href="https://groups.google.com/forum/#!forum/jpmml" class="semibold" target="_blank">JPMML Mailing List</a>.</p>
+
+    <p>Other exciting opportunities?<br/>
+    Please contact privately.</p>
+  </div>
+</section>
+
+<section class="info">
+  <a name="info" id="info" class="anchor"></a>
+  <div>
+    <div class="card">
+      <img src="assets/images/estonia.svg" alt="" width="57" height="39" loading="lazy">
+      <div class="title">
+        Openscoring is domiciled in Estonia
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="assets/images/7to9.svg" alt="" width="57" height="85" loading="lazy">
+      <div class="title">
+        The majority of business activity takes place between 7am and 9pm GMT
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="assets/images/7days.svg" alt="" width="57" height="84" loading="lazy">
+      <div class="title">
+        Seven days a week
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="news">
+  <a name="news" id="news" class="anchor"></a>
+  <div class="background"></div>
+
+  <div class="title">
+    <span>News</span>
+    <span class="subtitle">Latest blog posts</span>
+  </div>
+
+  <div class="items">
+    
+    <div class="item">
+      <div class="title"><a href="/blog/2022/07/14/sklearn_chaid_pmml/" class="semibold">Extending Scikit-Learn with CHAID model type</a></div>
+      <div class="date">07.14.2022</div>
+      <!--
+      <div class="description"></div>
+      -->
+    </div>
+    
+    <div class="item">
+      <div class="title"><a href="/blog/2022/05/06/sklearn_prediction_postprocessing/" class="semibold">Extending Scikit-Learn with prediction post-processing</a></div>
+      <div class="date">05.06.2022</div>
+      <!--
+      <div class="description"></div>
+      -->
+    </div>
+    
+    <div class="item">
+      <div class="title"><a href="/blog/2022/04/12/onehot_encoding_sklearn_xgboost_pipeline/" class="semibold">One-hot-encoding (OHE) categorical features in Scikit-Learn based XGBoost pipelines</a></div>
+      <div class="date">04.12.2022</div>
+      <!--
+      <div class="description"></div>
+      -->
+    </div>
+    
+
+    <a href="/blog" class="btn w-full lg:w-5/6 mt-6 py-4 text-sm">All blog posts</a>
+  </div>
+</section>
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring.IO</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring.IO">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring.IO on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 </footer>
 
@@ -631,9 +698,7 @@
     </div>
   </noscript>
 
-  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
-  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
-  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+  <script type="text/javascript" src="/assets/js/script.js" defer></script>
 </body>
 
 </html>

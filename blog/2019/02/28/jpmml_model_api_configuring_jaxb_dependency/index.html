@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <meta name="format-detection" content="telephone=no">
   <meta name="theme-color" content="#ffffff" />
   <meta name="msapplication-navbutton-color" content="#ffffff">
@@ -33,50 +33,50 @@
   <meta name="twitter:label2" content="Time to read" />
   <meta name="twitter:data2" content="Less than a minute" />
 
-  <link rel='dns-prefetch' href='http://fonts.googleapis.com/' />
-  <link rel='dns-prefetch' href='http://s.w.org/' />
-  <link rel='stylesheet' href='https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&amp;display=swap' type='text/css' media='all' />
-  <script type='text/javascript' src='/assets/js/jquery/jquery.min.js?ver=3.6.0' defer></script>
-  <script type='text/javascript' src='/assets/js/jquery/jquery-migrate.min.js?ver=3.3.2' defer></script>
   <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32" />
   <link rel="icon" href="/assets/images/fa.png" sizes="192x192" />
   <link rel="apple-touch-icon" href="/assets/images/fa.png" />
   <link rel="stylesheet" href="/assets/css/main.css">
   <meta name="msapplication-TileImage" content="h/assets/images/fa.png" />
   <!--[if lt IE 9]>
-  	<script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-  	<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
 </head>
 
 <body>
-  <header class="c-head">
-  <div class="c-head__container container-p0">
-    <a class="c-head__logo" href="/"><img src="/assets/images/logo.svg" alt="" /></a>
-    <nav class="c-head__nav">
-      <ul id="menu-main-menu" class="c-head__menu">
-        <li><a href="/" aria-current="page">Home</a></li>
-        <li><a href="/blog/">Blog</a></li>
-        <li><a href="/#products" aria-current="page">Products</a></li>
-        <li><a href="/#licensing" aria-current="page">Licensing</a></li>
-        <li><a href="/#consulting" aria-current="page">Consulting</a></li>
-      </ul>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring.IO</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog" class="btn btn--small">Blog</a>
     </nav>
-    <button id="menu-toggle" class="c-head__toggle c-toggle" type="button">
-      <span class="c-toggle__line c-toggle__top"></span>
-      <span class="c-toggle__line c-toggle__mid"></span>
-      <span class="c-toggle__line c-toggle__bot"></span>
-    </button>
   </div>
 </header>
 
-  <div class="single-post">
-  <div class="c-entry-header bg-b bg-b--cover">
-    <h1 class="c-entry-header__title h3 container-p0">JPMML-Model: Configuring JAXB dependency for Java SE versions 8, 9, 10 and 11</h1>
-  </div>
+  <main class="container mt-26">
+    <h1>JPMML-Model: Configuring JAXB dependency for Java SE versions 8, 9, 10 and 11</h1>
   
-  <main class="gb-content">
-    <p>The <a href="https://github.com/jpmml/jpmml-model">JPMML-Model</a> library provides a Java class model for the Predictive Model Markup Language (PMML) standard.
+<div class="post">
+  <p>The <a href="https://github.com/jpmml/jpmml-model">JPMML-Model</a> library provides a Java class model for the Predictive Model Markup Language (PMML) standard.
 The core set of JPMML-Model classes have been generated based on the PMML XML Schema Definition (XSD) file using the XJC binding compiler technology. As such, they are heavily dependent on the Java XML Binding (JAXB) runtime.</p>
 
 <p>The JAXB runtime was more or less an integral part of Java SE versions 1.6 thorugh 1.8. However, with the advent of <a href="https://jcp.org/en/jsr/detail?id=376">Java SE 9 module system</a>, the JAXB runtime was isolated to a <code class="language-plaintext highlighter-rouge">java.xml.bind</code> module, and excluded from the core (ie. active by default) module set.</p>
@@ -213,19 +213,30 @@ Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext
   <li>Java application: <a href="https://openscoring.io/resources/2019-02-28/jaxb_demo.zip">“jaxb_demo.zip”</a></li>
 </ul>
 
-  </main>
 </div>
 
 
 
-  <footer class="c-footer bg-primary">
-  <div class="c-footer__container container">
-    <a class="c-footer__logo" href="index.html"><img src="/assets/images/logo-w.svg" alt="" /></a>
-    <div class="c-footer__info">
-      <div class="c-footer__text">© 2022 - Openscoring.io</div>
-    </div><a class="c-footer__social" href="https://twitter.com/openscoring" target="_blank">
-      Follow Openscoring on Twitter
-    </a>
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring.IO</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring.IO">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring.IO on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
   </div>
 </footer>
 
@@ -247,9 +258,7 @@ Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext
     </div>
   </noscript>
 
-  <script type="text/javascript" src="/assets/js/bootstrap.bundle.min.js" defer></script>
-  <script type="text/javascript" src="/assets/js/swiper/swiper.min.js" defer></script>
-  <script type="text/javascript" src="/assets/js/functions.js" defer></script>
+  <script type="text/javascript" src="/assets/js/script.js" defer></script>
 </body>
 
 </html>
