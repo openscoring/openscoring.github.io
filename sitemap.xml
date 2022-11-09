@@ -3,6 +3,21 @@
   
     
     <url>
+      <loc>https://openscoring.io/blog/2022/11/09/measuring_memory_sklearn/</loc>
+      
+        <lastmod>2022-11-09T00:00:00+02:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
       <loc>https://openscoring.io/blog/2022/07/14/sklearn_chaid_pmml/</loc>
       
         <lastmod>2022-07-14T00:00:00+03:00</lastmod>
@@ -501,7 +516,7 @@
     <url>
       <loc>https://openscoring.io/404.html</loc>
       
-        <lastmod>2022-11-09T18:56:03+02:00</lastmod>
+        <lastmod>2022-11-09T23:37:17+02:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -516,7 +531,7 @@
     <url>
       <loc>https://openscoring.io/blog/</loc>
       
-        <lastmod>2022-11-09T18:56:03+02:00</lastmod>
+        <lastmod>2022-11-09T23:37:17+02:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -531,7 +546,7 @@
     <url>
       <loc>https://openscoring.io/</loc>
       
-        <lastmod>2022-11-09T18:56:03+02:00</lastmod>
+        <lastmod>2022-11-09T23:37:17+02:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
