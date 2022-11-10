@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
 
   <meta name="description" content="">
-  <meta name="keywords" content="scikit-learn memory">
+  <meta name="keywords" content="scikit-learn sklearn2pmml memory">
   <meta name="author" content="vruusmann">
 
   <title>Measuring the memory consumption of Scikit-Learn models - Openscoring</title>
@@ -79,7 +79,7 @@
   <p>The size of Python objects has two components - the size of the instance state, plus the size of the Python system overhead state.</p>
 
 <p>The size of the instance state (in bytes) can be measured using the <code class="language-plaintext highlighter-rouge">__sizeof__()</code> method.
-This method was introduced in Python 2.6, and should have canonical implementations available for all built-in types by now. However, the same cannot be said about many popular extension packages.</p>
+This method was introduced in Python 2.6, and should have canonical implementations available for all built-in types by now. Sadly, popular extension packages have been rather slow in adopting it.</p>
 
 <p>The size of the Python system overhead state cannot be measured directly.
 It can be calculated by measuring the total size of a Python object using the <a href="https://docs.python.org/3/library/sys.html#sys.getsizeof"><code class="language-plaintext highlighter-rouge">sys.getsizeof(obj)</code></a> function, and then subtracting the size of the instance state from it.
@@ -106,11 +106,11 @@ Typically, it is zero for primitive types and 16 bytes for reference types.</p>
 <span class="k">print</span><span class="p">(</span><span class="s">"Final fitted state: {} B"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">estimator</span><span class="p">.</span><span class="n">__sizeof__</span><span class="p">()))</span>
 </code></pre></div></div>
 
-<p>The most telling thing is that the reported size of the <code class="language-plaintext highlighter-rouge">estimator</code> object does not change after it has been fitted.</p>
+<p>The most damning evidence is that the reported size of the <code class="language-plaintext highlighter-rouge">estimator</code> object does not change after it has been fitted.</p>
 
 <h3 id="scikit-learn-estimator-instance-state">Scikit-Learn estimator instance state</h3>
 
-<p>Scikit-Learn estimator types actually have two instance states:</p>
+<p>Scikit-Learn estimator types can exist in two instance states:</p>
 
 <ol>
   <li>Initial state. Contains learning instructions.</li>
@@ -174,7 +174,7 @@ However, such code snippet can be written for Scikit-Learn estimator types, beca
 <span class="k">print</span><span class="p">(</span><span class="s">"Instance state: {} B"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">sklearn_sizeof</span><span class="p">(</span><span class="n">estimator</span><span class="p">)))</span>
 </code></pre></div></div>
 
-<p>Unfortunately, closer inspection of <code class="language-plaintext highlighter-rouge">RandomForestRegressor</code> attributes reveals several issues and irregularities:</p>
+<p>Unfortunately, closer inspection of <code class="language-plaintext highlighter-rouge">RandomForestRegressor</code> attributes reveals serious issues and irregularities:</p>
 
 <table>
   <thead>
@@ -324,23 +324,20 @@ However, such code snippet can be written for Scikit-Learn estimator types, beca
 </table>
 
 <p>First, nested estimator objects (<code class="language-plaintext highlighter-rouge">base_estimator</code> and <code class="language-plaintext highlighter-rouge">base_estimator_</code> attributes) still contribute a constant value of 24 or 32 bytes.
-Second, built-in iterable types such as <code class="language-plaintext highlighter-rouge">list</code> and <code class="language-plaintext highlighter-rouge">tuple</code> appear to mis-represent their in-memory size. The situation is understandable for a list of estimator objects (the <code class="language-plaintext highlighter-rouge">estimators_</code> attribute) but defies all expectations for a list of Python strings (the <code class="language-plaintext highlighter-rouge">_required_parameters</code> attribute).
-Third, non-Python objects (eg. CPython and NumPy types) contribute fixed values around one hundred bytes each.</p>
+Second, built-in iterable types such as <code class="language-plaintext highlighter-rouge">list</code> and <code class="language-plaintext highlighter-rouge">tuple</code> appear to mis-represent their in-memory size. The situation is understandable for a list of estimator objects (the <code class="language-plaintext highlighter-rouge">estimators_</code> attribute) but defies all expectations for a list of Python strings (the <code class="language-plaintext highlighter-rouge">_required_parameters</code> attribute) or a tuple of Python strings (the <code class="language-plaintext highlighter-rouge">estimator_params</code> attribute).
+Third, non-Python objects (eg. CPython and NumPy types) contribute constant values of around one hundred bytes.</p>
 
 <p>The solution is to define a custom “sizeof” function, and apply it (recursively-) to all objects in the object graph.</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span>
 
-<span class="k">def</span> <span class="nf">_qualname</span><span class="p">(</span><span class="n">clazz</span><span class="p">):</span>
-  <span class="k">return</span> <span class="s">"."</span><span class="p">.</span><span class="n">join</span><span class="p">([</span><span class="n">clazz</span><span class="p">.</span><span class="n">__module__</span><span class="p">,</span> <span class="n">clazz</span><span class="p">.</span><span class="n">__name__</span><span class="p">])</span>
-
 <span class="k">def</span> <span class="nf">deep_sklearn_sizeof</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="bp">True</span><span class="p">):</span>
-  <span class="c1"># Primitive-valued attributes
+  <span class="c1"># Primitive type values
 </span>  <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">obj</span><span class="p">.</span><span class="n">__sizeof__</span><span class="p">()</span>
   <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">numpy</span><span class="p">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">numpy</span><span class="p">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">numpy</span><span class="p">.</span><span class="n">float64</span><span class="p">)):</span>
     <span class="k">return</span> <span class="n">obj</span><span class="p">.</span><span class="n">__sizeof__</span><span class="p">()</span>
-  <span class="c1"># Iterable attributes
+  <span class="c1"># Iterables
 </span>  <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
     <span class="nb">sum</span> <span class="o">=</span> <span class="p">[].</span><span class="n">__sizeof__</span><span class="p">()</span> <span class="c1"># Empty list
 </span>    <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obj</span><span class="p">:</span>
@@ -353,13 +350,15 @@ Third, non-Python objects (eg. CPython and NumPy types) contribute fixed values 
       <span class="n">v_sizeof</span> <span class="o">=</span> <span class="n">deep_sklearn_sizeof</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
       <span class="nb">sum</span> <span class="o">+=</span> <span class="n">v_sizeof</span>
     <span class="k">return</span> <span class="nb">sum</span>
-  <span class="c1"># Numpy ndarray-valued attributes
+  <span class="c1"># Numpy ndarrays
 </span>  <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">numpy</span><span class="p">.</span><span class="n">ndarray</span><span class="p">):</span>
-    <span class="nb">sum</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="n">__sizeof__</span><span class="p">()</span> <span class="c1"># Array container
+    <span class="nb">sum</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="n">__sizeof__</span><span class="p">()</span> <span class="c1"># Array header
 </span>    <span class="nb">sum</span> <span class="o">+=</span> <span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">size</span> <span class="o">*</span> <span class="n">obj</span><span class="p">.</span><span class="n">itemsize</span><span class="p">)</span> <span class="c1"># Array content
 </span>    <span class="k">return</span> <span class="nb">sum</span>
-  <span class="k">else</span><span class="p">:</span>
-    <span class="n">qualname</span> <span class="o">=</span> <span class="n">_qualname</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">__class__</span><span class="p">)</span>
+  <span class="c1"># Reference type values
+</span>  <span class="k">else</span><span class="p">:</span>
+    <span class="n">clazz</span> <span class="o">=</span> <span class="n">obj</span><span class="p">.</span><span class="n">__class__</span>
+    <span class="n">qualname</span> <span class="o">=</span> <span class="s">"."</span><span class="p">.</span><span class="n">join</span><span class="p">([</span><span class="n">clazz</span><span class="p">.</span><span class="n">__module__</span><span class="p">,</span> <span class="n">clazz</span><span class="p">.</span><span class="n">__name__</span><span class="p">])</span>
     <span class="c1"># Restrict the circle of competence to Scikit-Learn classes
 </span>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">qualname</span><span class="p">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">"_abc."</span><span class="p">)</span> <span class="ow">or</span> <span class="n">qualname</span><span class="p">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">"sklearn."</span><span class="p">)):</span>
       <span class="k">raise</span> <span class="nb">ValueError</span><span class="p">(</span><span class="n">qualname</span><span class="p">)</span>
@@ -436,6 +435,16 @@ The <code class="language-plaintext highlighter-rouge">estimators_</code> attrib
 
 <p>The in-memory size of fitted decision tree objects ranges from ~805’000 bytes to ~820’000 bytes.
 The variance stems from the fact that the training data was randomly generated. All the trees are close to fully grown, but some branches of some trees have hit early stopping criteria, leading to small variations in node counts.</p>
+
+<h3 id="update">Update</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">deep_sklearn_sizeof(obj, verbose)</code> utility function has been refactored, and made available in the <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.87.1 as the <code class="language-plaintext highlighter-rouge">sklearn2pmml.util.deep_sizeof(obj, with_overhead, verbose)</code> utility function:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.util</span> <span class="kn">import</span> <span class="n">deep_sizeof</span>
+
+<span class="n">memory_size</span> <span class="o">=</span> <span class="n">deep_sizeof</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">with_overhead</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">memory_size</span><span class="p">)</span>
+</code></pre></div></div>
 
 <h3 id="resources">Resources</h3>
 
