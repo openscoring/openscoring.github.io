@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="h2o scikit-learn sklearn2pmml data-categorical data-missing">
+  <meta name="author" content="vruusmann">
+
+  <title>Training Scikit-Learn based H2O.ai pipelines - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
+  <link rel="canonical" href="https://openscoring.io/blog/2022/11/11/sklearn_h2o_pipeline/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Training Scikit-Learn based H2O.ai pipelines - Openscoring">
+  <meta property="og:url" content="/blog/2022/11/11/sklearn_h2o_pipeline/">
+  <meta property="og:site_name" content="Openscoring">
+  <meta property="og:updated_time" content="2022-11-11 00:00:00 +0200">
+  <meta property="article:published_time" content="2022-11-11 00:00:00 +0200">
+  <meta property="article:modified_time" content="2022-11-11 00:00:00 +0200">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Training Scikit-Learn based H2O.ai pipelines - Openscoring">
+  <meta name="twitter:label1" content="Written by">
+  <meta name="twitter:data1" content="Villu Ruusmann">
+  <meta name="twitter:label2" content="Time to read">
+  <meta name="twitter:data2" content="Less than a minute">
+
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32">
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/assets/images/fa.png">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png">
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring.IO</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog/" class="btn btn--small">Blog</a>
+    </nav>
+  </div>
+</header>
+
+  <main class="container mt-26">
+    <h1>Training Scikit-Learn based H2O.ai pipelines</h1>
+  
+<div class="post">
+  <p><a href="https://h2o.ai/">H2O.ai</a> is an alternative ML framework, which is built with maximum in-memory scaling properties in mind.
+Scikit-Learn users may find H2O.ai interesting when working with datasets that exceed the logical and physical limits of a desktop computer.</p>
+
+<p>Sure, it is often possible to ignore the problem for extended periods of time by renting a bigger and faster computer.
+But the fact remains that Scikit-Learn is not a “Big Data”-oriented ML framework by design, and some new tools and new ways of doing things are likely to yield much better results.</p>
+
+<h3 id="estimator-upgrade-from-scikit-learn-to-h2oai">Estimator upgrade from Scikit-Learn to H2O.ai</h3>
+
+<p>H2O.ai is written in Java, and typically runs in a managed server (whether on-premise or “cloud”).
+Python users can interact with an H2O.ai server using the <a href="https://github.com/h2oai/h2o-3/tree/master/h2o-py"><code class="language-plaintext highlighter-rouge">h2o</code></a> package.</p>
+
+<p>Every H2O.ai algorithm is encapsulated into an <code class="language-plaintext highlighter-rouge">h2o.estmators.H2OEstimator</code> subclass:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Scikit-Learn class</th>
+      <th>H2O.ai class</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">sklearn.cluster.KMeans</code></td>
+      <td><code class="language-plaintext highlighter-rouge">h2o.estimators.kmeans.H2OKMeansEstimator</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">sklearn.ensemble.IsolationForest</code></td>
+      <td><code class="language-plaintext highlighter-rouge">h2o.estimators.isolation_forest.H2OIsolationForestEstimator</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">sklearn.ensemble.GradientBoostingClassifier</code>, <code class="language-plaintext highlighter-rouge">GradientBoostingRegressor</code></td>
+      <td><code class="language-plaintext highlighter-rouge">h2o.estimators.gbm.H2OGradientBoostingEstimator</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">sklearn.ensemble.RandomForestClassifier</code>, <code class="language-plaintext highlighter-rouge">RandomForestRegressor</code></td>
+      <td><code class="language-plaintext highlighter-rouge">h2o.estimators.random_forest.H2ORandomForestEstimator</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">sklearn.isotonic.IsotonicRegression</code></td>
+      <td><code class="language-plaintext highlighter-rouge">h2o.estimators.isotonicregression.H2OIsotonicRegressionEstimator</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">sklearn.linear_model.LinearRegression</code>, <code class="language-plaintext highlighter-rouge">LogisticRegression</code></td>
+      <td><code class="language-plaintext highlighter-rouge">h2o.estimators.glm.H2OGeneralizedLinearEstimator</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">sklearn.naive_bayes.GaussianNB</code></td>
+      <td><code class="language-plaintext highlighter-rouge">h2o.estimators.naive_bayes.H2ONaiveBayesEstimator</code></td>
+    </tr>
+    <tr>
+      <td><code class="language-plaintext highlighter-rouge">sklearn.svm.SVC</code>, <code class="language-plaintext highlighter-rouge">SVR</code></td>
+      <td><code class="language-plaintext highlighter-rouge">h2o.estimators.psvm.H2OSupportVectorMachineEstimator</code></td>
+    </tr>
+  </tbody>
+</table>
+
+<p>According to <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/modeling.html">H2O.ai modeling documentation</a>, all these classes have Scikit-Learn style <code class="language-plaintext highlighter-rouge">fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">predict(X)</code> methods readily available.</p>
+
+<p>This suggests that it should be possible to insert H2O.ai estimator objects into standard Scikit-Learn pipelines:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">h2o.estimators.glm</span> <span class="kn">import</span> <span class="n">H2OGeneralizedLinearEstimator</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"audit.csv"</span><span class="p">)</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="p">[[</span><span class="n">column</span> <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">df</span><span class="p">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">column</span> <span class="o">!=</span> <span class="s">"Adjusted"</span><span class="p">]]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">]</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">H2OGeneralizedLinearEstimator</span><span class="p">())</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">Pipeline()</code> constructor succeeds, but the subsequent <code class="language-plaintext highlighter-rouge">Pipeline.fit(X, y)</code> method invocation raises a rather obscure attribute error:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Traceback (most recent call last):
+  File "train.py", line 23, in &lt;module&gt;
+    pipeline.fit(X, y)
+  File "/usr/local/lib/python3.9/site-packages/sklearn/pipeline.py", line 382, in fit
+    self._final_estimator.fit(Xt, y, **fit_params_last_step)
+  File "/usr/local/lib/python3.9/site-packages/h2o/estimators/estimator_base.py", line 481, in fit
+    training_frame = X.cbind(y) if y is not None else X
+  File "/usr/local/lib/python3.9/site-packages/pandas/core/generic.py", line 5902, in __getattr__
+    return object.__getattribute__(self, name)
+AttributeError: 'DataFrame' object has no attribute 'cbind'
+</code></pre></div></div>
+
+<h3 id="manual-data-upload-to-h2oai-server">Manual data upload to H2O.ai server</h3>
+
+<p>Closer inspection of the <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/modeling.html#h2o.estimators.estimator_base.H2OEstimator.fit"><code class="language-plaintext highlighter-rouge">H2OEstimator.fit(X, y)</code></a> method signature reveals that it expects both <code class="language-plaintext highlighter-rouge">X</code> and <code class="language-plaintext highlighter-rouge">y</code> arguments to be of <code class="language-plaintext highlighter-rouge">h2o.H2OFrame</code> type.</p>
+
+<p>In spite of many API similarities, <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> and <code class="language-plaintext highlighter-rouge">h2o.H2OFrame</code> classes are not related in any way, and cannot be used interchangeably in Python application code.
+The former represents local data, which is stored in local computer memory as “live” NumPy arrays.
+The latter represents <strong>a reference</strong> to remote data, which is stored in H2O.ai server memory.</p>
+
+<p>An <code class="language-plaintext highlighter-rouge">H2OFrame</code> object can be constructed from, and be deconstruced back to a <code class="language-plaintext highlighter-rouge">DataFrame</code> object.
+However, these operations are rather slow, because they involve transmitting the complete dataset between local and remote machines:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">h2o</span> <span class="kn">import</span> <span class="n">H2OFrame</span>
+
+<span class="kn">import</span> <span class="nn">h2o</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">h2o</span><span class="p">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="n">pandas_df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(...)</span>
+
+<span class="c1"># Uploads to H2O.ai server
+</span><span class="n">h2o_df</span> <span class="o">=</span> <span class="n">H2OFrame</span><span class="p">(</span><span class="n">pandas_df</span><span class="p">)</span>
+
+<span class="c1"># Downloads from H2O.ai server
+</span><span class="n">pandas_h2o_df</span> <span class="o">=</span> <span class="n">h2o_df</span><span class="p">.</span><span class="n">as_data_frame</span><span class="p">()</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">"All values equal after round-trip: {}"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">numpy</span><span class="p">.</span><span class="nb">all</span><span class="p">(</span><span class="n">pandas_df</span> <span class="o">==</span> <span class="n">pandas_h2o_df</span><span class="p">)))</span>
+</code></pre></div></div>
+
+<p><strong>Important</strong>: All operations that interact with an <code class="language-plaintext highlighter-rouge">H2OFrame</code> object (whether directly or indirectly) require an active connection to an H2O.ai server.</p>
+
+<p>Getting the standard Scikit-Learn pipeline to fit:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">H2OGeneralizedLinearEstimator</span><span class="p">())</span>
+<span class="p">])</span>
+
+<span class="n">h2o_X</span> <span class="o">=</span> <span class="n">H2OFrame</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="n">h2o_y</span> <span class="o">=</span> <span class="n">H2OFrame</span><span class="p">(</span><span class="n">y</span><span class="p">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">column_types</span> <span class="o">=</span> <span class="p">[</span><span class="s">"categorical"</span><span class="p">])</span>
+
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">h2o_X</span><span class="p">,</span> <span class="n">h2o_y</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="semi-automated-data-upload-to-h2oai-server">Semi-automated data upload to H2O.ai server</h3>
+
+<p>If the pipeline contains any transformer steps, then the manual data upload approach will not work, because Scikit-Learn transformer classes do not support data container types other than <code class="language-plaintext highlighter-rouge">numpy.ndarray</code> and <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code>.</p>
+
+<p>In practice, most transformers interact with the <code class="language-plaintext highlighter-rouge">X</code> argument of the <code class="language-plaintext highlighter-rouge">TransformerMixin.fit_transform(X, y)</code> method, but not with the <code class="language-plaintext highlighter-rouge">y</code> argument.
+It means that the <code class="language-plaintext highlighter-rouge">X</code> dataset cannot be uploaded until the last transformer step has completed, whereas the <code class="language-plaintext highlighter-rouge">y</code> dataset can be uploaded right away.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">h2o</code> package does not provide a meta-transformer class for data uploading.
+This gap is filled by the <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package in the form of the <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.h2o.H2OFrameConstructor</code> class.</p>
+
+<p>The best place for inserting a data upload step is right before the final H2O estimator step:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing.h2o</span> <span class="kn">import</span> <span class="n">H2OFrameConstructor</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"transformer"</span><span class="p">,</span> <span class="p">...),</span>
+  <span class="p">(</span><span class="s">"uploader"</span><span class="p">,</span> <span class="n">H2OFrameConstructor</span><span class="p">()),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">H2OGeneralizedLinearEstimator</span><span class="p">())</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">H2OFrame</span><span class="p">(</span><span class="n">y</span><span class="p">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">column_types</span> <span class="o">=</span> <span class="p">[</span><span class="s">"categorical"</span><span class="p">]))</span>
+</code></pre></div></div>
+
+<h3 id="h2oai-pipeline-persistence">H2O.ai pipeline persistence</h3>
+
+<p>Scikit-Learn developers recommend using Python’s built-in Pickle data format for short-term persistence needs:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">"pipeline.pkl"</span><span class="p">,</span> <span class="s">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+  <span class="n">pickle</span><span class="p">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Unfitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> objects can be pickled and unpickled freely.</p>
+
+<p>However, any attempt to pickle a fitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> object raises a pickling error in latest H2O.ai versions (at the time of writing this (November 2022), eg. 3.34.0.8, 3.36.1.5, 3.38.0.2):</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Traceback (most recent call last):
+  File "main.py", line 4, in &lt;module&gt;
+    pickle.dump(pipeline, f)
+_pickle.PicklingError: Can't pickle &lt;class 'h2o.estimators.glm.H2OGeneralizedLinearEstimator'&gt;: it's not the same object as h2o.estimators.glm.H2OGeneralizedLinearEstimator
+</code></pre></div></div>
+
+<p>The pickling will work if the H2O.ai version is downgraded to 3.32.1.7 or older.</p>
+
+<h3 id="resources">Resources</h3>
+
+<ul>
+  <li>Python script: <a href="https://openscoring.io/resources/2022-11-11/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>
+</ul>
+
+</div>
+
+
+
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring.IO</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring.IO">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring.IO on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+  <script>
+    var sc_project = 11704106;
+    var sc_security = "a7d1bf16";
+    var sc_invisible = 1;
+    var scJsHost = (("https:" == document.location.protocol) ?
+      "https://secure." : "http://www.");
+  </script>
+
+  <script src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+
+  <noscript>
+    <div class="statcounter">
+      <a title="web analytics" href="https://statcounter.com/">
+        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics">
+      </a>
+    </div>
+  </noscript>
+
+  <script src="/assets/js/script.js" defer></script>
+</body>
+
+</html>
