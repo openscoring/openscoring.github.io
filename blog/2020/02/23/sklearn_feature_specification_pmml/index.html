@@ -98,15 +98,15 @@ JPMML family conversion tools and libraries aim to capture, systematize and stor
 <p>Every model element holds the description of its data interface:</p>
 
 <ul>
-  <li>Functional description of feature domains - the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html"><code class="language-plaintext highlighter-rouge">MiningSchema</code></a> element.</li>
-  <li>Functional description of the prediction range - <a href="http://dmg.org/pmml/v4-4-1/Targets.html"><code class="language-plaintext highlighter-rouge">Targets</code></a> and <a href="http://dmg.org/pmml/v4-4-1/Output.html"><code class="language-plaintext highlighter-rouge">Output</code></a> elements.</li>
-  <li>Simple statistics about feature domains - the <a href="http://dmg.org/pmml/v4-4-1/Statistics.html"><code class="language-plaintext highlighter-rouge">ModelStats</code></a> element.</li>
-  <li>Complex statistics about feature domains partitioned by the prediction range - the <a href="http://dmg.org/pmml/v4-4-1/ModelExplanation.html"><code class="language-plaintext highlighter-rouge">ModelExplanation</code></a> element.</li>
+  <li>Functional description of feature domains - the <a href="https://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdElement_MiningSchema"><code class="language-plaintext highlighter-rouge">MiningSchema</code></a> element.</li>
+  <li>Functional description of the prediction range - <a href="https://dmg.org/pmml/v4-4-1/Targets.html#xsdElement_Targets"><code class="language-plaintext highlighter-rouge">Targets</code></a> and <a href="https://dmg.org/pmml/v4-4-1/Output.html#xsdElement_Output"><code class="language-plaintext highlighter-rouge">Output</code></a> elements.</li>
+  <li>Simple statistics about feature domains - the <a href="https://dmg.org/pmml/v4-4-1/Statistics.html#xsdElement_ModelStats"><code class="language-plaintext highlighter-rouge">ModelStats</code></a> element.</li>
+  <li>Complex statistics about feature domains partitioned by the prediction range - the <a href="https://dmg.org/pmml/v4-4-1/ModelExplanation.html#xsdElement_ModelExplanation"><code class="language-plaintext highlighter-rouge">ModelExplanation</code></a> element.</li>
 </ul>
 
 <p>Value preparation is a two stage process.</p>
 
-<p>In the first stage, the user value is converted to a PMML value according to the <a href="http://dmg.org/pmml/v4-4-1/DataDictionary.html"><code class="language-plaintext highlighter-rouge">DataField</code></a> element.</p>
+<p>In the first stage, the user value is converted to a PMML value according to the <a href="https://dmg.org/pmml/v4-4-1/DataDictionary.html#xsdElement_DataField"><code class="language-plaintext highlighter-rouge">DataField</code></a> element.</p>
 
 <p>The user value is cast or parsed into the correct data type, restricted to the correct operational type (one of continuous, categorical or ordinal), and assigned to the value space (one of valid, invalid or missing).
 The resulting PMML value can be regarded as a value in a three-dimensional space <code class="language-plaintext highlighter-rouge">&lt;data type&gt;-&lt;operational type&gt;-&lt;value space type&gt;</code>.</p>
@@ -175,12 +175,12 @@ The resulting PMML value can be regarded as a value in a three-dimensional space
   </tbody>
 </table>
 
-<p>In the second stage, the PMML value undergoes one or more value space-dependent treatments according to the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html"><code class="language-plaintext highlighter-rouge">MiningField</code></a> element.</p>
+<p>In the second stage, the PMML value undergoes one or more value space-dependent treatments according to the <a href="https://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdElement_MiningField"><code class="language-plaintext highlighter-rouge">MiningField</code></a> element.</p>
 
 <p><strong>Valid values pass by default</strong>.
-The domain of continuous values can be restricted by changing the value of the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_OUTLIER-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">outliers</code></a> attribute from <code class="language-plaintext highlighter-rouge">asIs</code> to <code class="language-plaintext highlighter-rouge">asMissingValues</code> or <code class="language-plaintext highlighter-rouge">asExtremeValues</code>, plus adding <code class="language-plaintext highlighter-rouge">lowValue</code> and <code class="language-plaintext highlighter-rouge">highValue</code> attributes.</p>
+The domain of continuous values can be restricted by changing the value of the <a href="https://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_OUTLIER-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">outliers</code></a> attribute from <code class="language-plaintext highlighter-rouge">asIs</code> to <code class="language-plaintext highlighter-rouge">asMissingValues</code> or <code class="language-plaintext highlighter-rouge">asExtremeValues</code>, plus adding <code class="language-plaintext highlighter-rouge">lowValue</code> and <code class="language-plaintext highlighter-rouge">highValue</code> attributes.</p>
 
-<p><strong>Invalid values <em>do not</em> pass by default</strong>, because the default value of the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_INVALID-VALUE-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">invalidValueTreatment</code></a> attribute is <code class="language-plaintext highlighter-rouge">returnInvalid</code>.</p>
+<p><strong>Invalid values <em>do not</em> pass by default</strong>, because the default value of the <a href="https://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_INVALID-VALUE-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">invalidValueTreatment</code></a> attribute is <code class="language-plaintext highlighter-rouge">returnInvalid</code>.</p>
 
 <p>The behaviour where the model actively refuses to compute a prediction can be surprising to Scikit-Learn users.
 However, this should be seen as a feature, not a bug, because the objetive is to inform upstream agents about data correctness and/or consistency issues (eg. feature drift) and prevent downstream agents from taking action on dubious results.</p>
@@ -194,7 +194,7 @@ However, as every invalid value is “broken” in its own way, the computation 
 Alternatively, they may be replaced with a missing value by changing the value of the <code class="language-plaintext highlighter-rouge">invalidValueTreatment</code> attribute to <code class="language-plaintext highlighter-rouge">asMissing</code>.</p>
 
 <p><strong>Missing values pass by default</strong>.
-By analogy with invalid value treatment, missing values can be rejected by changing the value of the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_MISSING-VALUE-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">missingValueTreatment</code></a> attribute to <code class="language-plaintext highlighter-rouge">(x-)returnInvalid</code>, or replaced with a predefined valid value by adding the <code class="language-plaintext highlighter-rouge">missingValueReplacement</code> attribute.</p>
+By analogy with invalid value treatment, missing values can be rejected by changing the value of the <a href="https://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdType_MISSING-VALUE-TREATMENT-METHOD"><code class="language-plaintext highlighter-rouge">missingValueTreatment</code></a> attribute to <code class="language-plaintext highlighter-rouge">(x-)returnInvalid</code>, or replaced with a predefined valid value by adding the <code class="language-plaintext highlighter-rouge">missingValueReplacement</code> attribute.</p>
 
 <p><strong>Important</strong>: The IEEE 754 constant NaN (“Not a Number”) is assigned to invalid value space (not to missing value space).</p>
 

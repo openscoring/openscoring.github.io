@@ -336,8 +336,8 @@ The dataset is a loose collection of columns. Each stage pulls in a subset of ex
 Created columns stay in place until replaced or removed.</p>
 
 <p>Logistic regression models can be represented using two different PMML model elements.
-The <a href="http://dmg.org/pmml/v4-4-1/GeneralRegression.html"><code class="language-plaintext highlighter-rouge">GeneralRegressionModel</code></a> element is more flexible (eg. contrast matrices, parameterizable link functions), but is encoded in a matrix-oriented way that is rather difficult to parse and follow for humans.
-The <a href="http://dmg.org/pmml/v4-4-1/Regression.html"><code class="language-plaintext highlighter-rouge">RegressionModel</code></a> elements loses in functionality but makes it up in human-friendliness.</p>
+The <a href="https://dmg.org/pmml/v4-4-1/GeneralRegression.html#xsdElement_GeneralRegressionModel"><code class="language-plaintext highlighter-rouge">GeneralRegressionModel</code></a> element is more flexible (eg. contrast matrices, parameterizable link functions), but is encoded in a matrix-oriented way that is rather difficult to parse and follow for humans.
+The <a href="https://dmg.org/pmml/v4-4-1/Regression.html#xsdElement_RegressionModel"><code class="language-plaintext highlighter-rouge">RegressionModel</code></a> elements loses in functionality but makes it up in human-friendliness.</p>
 
 <p>The JPMML-SparkML library allows the end user to choose between them by setting the value of the <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.model.HasRegressionTableOptions#OPTION_REPRESENTATION</code> conversion option to <code class="language-plaintext highlighter-rouge">GeneralRegressionModel</code> or <code class="language-plaintext highlighter-rouge">RegressionModel</code> string literals, respectively.</p>
 

@@ -85,10 +85,10 @@
 <p>There are three main attachment points:</p>
 
 <ul>
-  <li>The <a href="http://www.dmg.org/v4-3/Header.html"><code class="language-plaintext highlighter-rouge">Annotation</code></a> element. Document modification history.</li>
-  <li>The <a href="http://www.dmg.org/v4-3/GeneralStructure.html#extension"><code class="language-plaintext highlighter-rouge">Extension</code></a> element. Element-specific vendor extensions. Vendor extensions are suitable for adding “depth” to the target element. For example, persisting non-standard data and metadata, which could come in handy during various stages of model life-cycle.
+  <li>The <a href="https://dmg.org/pmml/v4-4-1/Header.html#xsdElement_Annotation"><code class="language-plaintext highlighter-rouge">Annotation</code></a> element. Document modification history.</li>
+  <li>The <a href="https://dmg.org/pmml/v4-4-1/GeneralStructure.html#xsdElement_Extension"><code class="language-plaintext highlighter-rouge">Extension</code></a> element. Element-specific vendor extensions. Vendor extensions are suitable for adding “depth” to the target element. For example, persisting non-standard data and metadata, which could come in handy during various stages of model life-cycle.
 Vendor extensions should not be critical for the successful use of the PMML document. The behaviour of a PMML engine should not change (at least, materially) if they are filtered out.</li>
-  <li>The <a href="http://www.dmg.org/v4-3/Taxonomy.html"><code class="language-plaintext highlighter-rouge">InlineTable</code></a> element. Free-form data tables.</li>
+  <li>The <a href="https://dmg.org/pmml/v4-4-1/Taxonomy.html#xsdElement_InlineTable"><code class="language-plaintext highlighter-rouge">InlineTable</code></a> element. Free-form data tables.</li>
 </ul>
 
 <p>The <a href="https://github.com/jpmml/jpmml-model">JPMML-Model</a> library represents attachment points as List-type fields whose element type is <code class="language-plaintext highlighter-rouge">java.lang.Object</code>. For example, the <code class="language-plaintext highlighter-rouge">Extension#content</code> field and the corresponding <code class="language-plaintext highlighter-rouge">Extension#getContent()</code> getter method are defined as follows:</p>

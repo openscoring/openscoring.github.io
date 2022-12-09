@@ -186,7 +186,7 @@ If it does, then it is expected to hold a Numpy array of shape <code class="lang
 
 <h3 id="pmml">PMML</h3>
 
-<p>The <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html"><code class="language-plaintext highlighter-rouge">MiningField</code></a> element specifies an <code class="language-plaintext highlighter-rouge">importance</code> attribute for recording field importance values.</p>
+<p>The <a href="https://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdElement_MiningField"><code class="language-plaintext highlighter-rouge">MiningField</code></a> element specifies an <code class="language-plaintext highlighter-rouge">importance</code> attribute for recording field importance values.</p>
 
 <p>The PMML term “field” is incompatible with the Scikit-Learn term “feature”.
 The former corresponds to <strong>raw feature</strong> (data before the first pre-processing step), whereas the latter corresponds to <strong>fully-developed feature</strong> (data after the last pre-processing step).
@@ -195,7 +195,7 @@ They are functionally equivalent only when the pipeline does not contain any dat
 <p>Thanks to the relative nature of Scikit-Learn feature importances it is possible to reduce them to PMML field importances via simple summation.
 If a feature is derived from two or more columns, then its importance value is split between them in equal proportions.</p>
 
-<p>The JPMML family of conversion tools and libraries preserves native feature importance information by attaching an <code class="language-plaintext highlighter-rouge">X-FeatureImportances</code> extension element to the <a href="http://dmg.org/pmml/v4-4-1/MiningSchema.html"><code class="language-plaintext highlighter-rouge">MiningSchema</code></a> element. 
+<p>The JPMML family of conversion tools and libraries preserves native feature importance information by attaching an <code class="language-plaintext highlighter-rouge">X-FeatureImportances</code> extension element to the <a href="https://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdElement_MiningSchema"><code class="language-plaintext highlighter-rouge">MiningSchema</code></a> element. 
 This extension element contains a table of feature names mapped to their importance values.
 In the table header, there is a quick summary (the number and the sum of non-zero importance values, extreme non-zero importance values, etc.) to facilitate data parsing and interpreration.</p>
 

@@ -134,7 +134,7 @@
 
 <p>This doubt can be somewhat alleviated by manual inspection of the PMML document. For example, making sure that all “raw” input fields are correctly defined under the <code class="language-plaintext highlighter-rouge">/PMML/DataDictionary</code> element (name, type and the value domain), and all “derived” values under the <code class="language-plaintext highlighter-rouge">/PMML/TransformationDictionary</code> element.</p>
 
-<p>It is possible to remove all doubts about the PMML model executability and correctness using the <a href="http://dmg.org/pmml/v4-4-1/ModelVerification.html">model verification</a> mechanism:</p>
+<p>It is possible to remove all doubts about the PMML model executability and correctness using the <a href="https://dmg.org/pmml/v4-4-1/ModelVerification.html">model verification</a> mechanism:</p>
 
 <div class="language-r highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">library</span><span class="p">(</span><span class="s2">"dplyr"</span><span class="p">)</span><span class="w">
 </span><span class="n">library</span><span class="p">(</span><span class="s2">"r2pmml"</span><span class="p">)</span><span class="w">

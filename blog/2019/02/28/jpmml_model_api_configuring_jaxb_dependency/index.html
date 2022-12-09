@@ -90,7 +90,7 @@ The core set of JPMML-Model classes have been generated based on the PMML XML Sc
 
 <p>The second option is seen as cleaner and safer. Meddling with Java/JVM startup options just to please one application is bad style. Furthermore, there remains uncertainty about the JAXB runtime version, and if all transitive dependencies (internal APIs for power users) are available and sufficiently up to date.</p>
 
-<p>The JPMML-Model library declares a compile-time dependency (“provided” Apache Maven scope) on <a href="https://metro.java.net">GlassFish Metro</a> and <a href="https://www.eclipse.org/eclipselink">EclipseLink MOXy</a> runtimes.</p>
+<p>The JPMML-Model library declares a compile-time dependency (“provided” Apache Maven scope) on <a href="https://javaee.github.io/metro/">GlassFish Metro</a> and <a href="https://www.eclipse.org/eclipselink/">EclipseLink MOXy</a> runtimes.</p>
 
 <p>If a Java application declares a run-time dependency (“compile” and “runtime” Apache Maven scopes) only on the JPMML-Model library, then it is limited to the first deployment scenario.
 However, if the Java application declares a run-time dependency on the JPMML-Model library <strong>plus</strong> one or more JAXB runtimes, then it can follow either development scenario.</p>

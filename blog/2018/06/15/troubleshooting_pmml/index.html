@@ -168,7 +168,7 @@
 <span class="nt">&lt;/PMML&gt;</span>
 </code></pre></div></div>
 
-<p>The parent construct is the <code class="language-plaintext highlighter-rouge">PMML</code> element. According to the <a href="http://dmg.org/pmml/v4-4-1/GeneralStructure.html">general structure</a>, the first child element of the <code class="language-plaintext highlighter-rouge">PMML</code> element must be a <a href="http://dmg.org/pmml/v4-4-1/Header.html#xsdElement_Header"><code class="language-plaintext highlighter-rouge">Header</code></a> element, which provides a general description of the model.</p>
+<p>The parent construct is the <code class="language-plaintext highlighter-rouge">PMML</code> element. According to the <a href="https://dmg.org/pmml/v4-4-1/GeneralStructure.html">general structure</a>, the first child element of the <code class="language-plaintext highlighter-rouge">PMML</code> element must be a <a href="https://dmg.org/pmml/v4-4-1/Header.html#xsdElement_Header"><code class="language-plaintext highlighter-rouge">Header</code></a> element, which provides a general description of the model.</p>
 
 <p>The easiest way to satisfy the above requirement is inserting a dummy <code class="language-plaintext highlighter-rouge">Header</code> element:</p>
 
@@ -214,7 +214,7 @@ SEVERE: [severity=ERROR,message=unexpected element (uri:"http://www.dmg.org/PMML
 
 <p>These two errors are both reported against the same location (line 211, column 40), which suggests that they are related/indicative of the same problem.</p>
 
-<p>The parent construct is the <a href="http://dmg.org/pmml/v4-4-1/Scorecard.html#xsdElement_Characteristic"><code class="language-plaintext highlighter-rouge">Characteristic</code></a> element, which belongs to the <a href="http://dmg.org/pmml/v4-4-1/Scorecard.html#xsdElement_Characteristic"><code class="language-plaintext highlighter-rouge">Scorecard</code></a> element.</p>
+<p>The parent construct is the <a href="https://dmg.org/pmml/v4-4-1/Scorecard.html#xsdElement_Characteristic"><code class="language-plaintext highlighter-rouge">Characteristic</code></a> element, which belongs to the <a href="https://dmg.org/pmml/v4-4-1/Scorecard.html#xsdElement_Scorecard"><code class="language-plaintext highlighter-rouge">Scorecard</code></a> element.</p>
 
 <p>According to the PMML specification, the content of a scorecard model is represented by a sequence of <code class="language-plaintext highlighter-rouge">Characteristic</code> elements. However, when opening the PMML document in a text editor, then it is possible to find that around line 211 there is a <code class="language-plaintext highlighter-rouge">Characteristic</code> element nested inside an <code class="language-plaintext highlighter-rouge">Attribute</code> element (of another <code class="language-plaintext highlighter-rouge">Characteristic</code> element), which is not permitted:</p>
 
