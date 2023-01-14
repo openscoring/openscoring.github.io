@@ -129,7 +129,7 @@ For example, the predicted probabilities for the first data record of the “sen
 
 <p>The situation cannot be definitively cleared up by making more predictions, or exploring the documentation and Python source code of relevant classes and methods.</p>
 
-<p>Converting the pipeline to Predictive Model Markup Language (PMML) data format, and making predictions using a PMML engine provides an objective (ie. first-principles) second opinion.</p>
+<p>Converting the pipeline to the Predictive Model Markup Language (PMML) representation, and making predictions using a PMML engine provides an objective (ie. first-principles) second opinion.</p>
 
 <p>Converting using the <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package:</p>
 
@@ -177,7 +177,7 @@ In plain english, these interpretations read like “I do not know if the docume
 <p>Scikit-Learn estimators typically error out when they encounter <code class="language-plaintext highlighter-rouge">NaN</code> values.
 In contrast, XGBoost estimators treat <code class="language-plaintext highlighter-rouge">NaN</code> values as special-purpose missing value indicator values, and grow missing value-aware decision trees.</p>
 
-<p>When comparing XGBoost estimators between the first and the second pipeline, then they are structurally different (overall vocabulary, the time and location of invoking individual terms, etc).
+<p>When comparing XGBoost estimators between the first and the second pipeline, then they are structurally different (overall vocabulary, the time and location of invoking individual terms, etc.).
 The former incorrectly believes that it was dealing with massive amounts of missing values during training, and all its internals are thus systematically off.</p>
 
 <p>A data scientist may evaluate such a biased TF(-IDF) plus XGBoost pipeline with a validation dataset, and decide that its raw numeric performance is still good enough for productionization.

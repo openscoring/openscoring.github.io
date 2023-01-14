@@ -3,6 +3,21 @@
   
     
     <url>
+      <loc>https://openscoring.io/blog/2023/01/12/converting_sklearn_pycaret3_pipeline_pmml/</loc>
+      
+        <lastmod>2023-01-12T00:00:00+02:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
       <loc>https://openscoring.io/blog/2022/11/11/sklearn_h2o_pipeline/</loc>
       
         <lastmod>2022-11-11T00:00:00+02:00</lastmod>
@@ -531,7 +546,7 @@
     <url>
       <loc>https://openscoring.io/404.html</loc>
       
-        <lastmod>2022-11-12T22:50:35+02:00</lastmod>
+        <lastmod>2023-01-14T10:15:07+02:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -546,7 +561,7 @@
     <url>
       <loc>https://openscoring.io/blog/</loc>
       
-        <lastmod>2022-11-12T22:50:35+02:00</lastmod>
+        <lastmod>2023-01-14T10:15:07+02:00</lastmod>
       
       
         <changefreq>weekly</changefreq>
@@ -561,7 +576,7 @@
     <url>
       <loc>https://openscoring.io/</loc>
       
-        <lastmod>2022-11-12T22:50:35+02:00</lastmod>
+        <lastmod>2023-01-14T10:15:07+02:00</lastmod>
       
       
         <changefreq>monthly</changefreq>

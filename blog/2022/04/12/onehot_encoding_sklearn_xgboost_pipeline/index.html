@@ -118,7 +118,7 @@ If the solution appears to reside in the hardware or meatware parts of the stack
 
 <p>XGBoost C++ algorithms operate with a specialized <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> data structure only.</p>
 
-<p>In Python environment, the training data exists in Python-specifc data structures such as Numpy arrays or Pandas’ data frames.
+<p>In Python environment, the training data exists in Python-specifc data structures such as Pandas’ data frames or Numpy arrays.
 When the Python Learning API layer passes data to the XGBoost API layer, then Python data structures get left behind into the Python environment, and a new and detached <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> object is created in the C++ environment.</p>
 
 <p>Typical data flow:</p>
@@ -405,7 +405,7 @@ However, while appropriate with Scikit-Learn estimators, it should be generally 
 The sparsity of the <code class="language-plaintext highlighter-rouge">Xt</code> dataset is around 87.8 percent (78’347 cells out of 47 * 1’899 = 89’253 cells), which gives it excellent compressibility properties.</p>
 
 <p>An <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> object that is constructed based on a sparse Python matrix appears to transfer data into a sparse C++ matrix as well.
-Interestingly enough, XGBoost is able to find a data layout that reduces memory usage significantly.</p>
+Interestingly enough, XGBoost can find a data layout that reduces memory usage significantly.</p>
 
 <h3 id="modern-workflow-model-internal-ohe">Modern workflow: model-internal OHE</h3>
 
