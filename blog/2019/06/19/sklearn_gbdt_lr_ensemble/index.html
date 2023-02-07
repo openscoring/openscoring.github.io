@@ -195,8 +195,8 @@ For example, switching from <code class="language-plaintext highlighter-rouge">G
 One of its major selling points is proper support for categorical features.
 If the training dataset contains a significant number of (high-cardinality-) categorical features, then the above <code class="language-plaintext highlighter-rouge">make_fit_gbdtlr</code> utility function should be tailored to maintain this information.</p>
 
-<p>As discussed in <a href="https://openscoring.io/blog/2019/04/07/converting_sklearn_lightgbm_pipeline_pmml/">a recent blog post</a>, the fit method of LightGBM estimators takes an optional <code class="language-plaintext highlighter-rouge">categorical_feature</code> fit parameter.
-The problem is passing this parameter to a <code class="language-plaintext highlighter-rouge">LGBMClassifier</code> object, which is contained in the <code class="language-plaintext highlighter-rouge">GBDTLRClassifier</code> object, which is in turn contained in the <code class="language-plaintext highlighter-rouge">(PMML)Pipeline</code> object.
+<p>As discussed in <a href="/blog/2019/04/07/converting_sklearn_lightgbm_pipeline_pmml/">a recent blog post</a>, the fit method of LightGBM estimators takes an optional <code class="language-plaintext highlighter-rouge">categorical_feature</code> fit parameter.
+The next challenge is about passing this parameter to a <code class="language-plaintext highlighter-rouge">LGBMClassifier</code> object, which is contained in the <code class="language-plaintext highlighter-rouge">GBDTLRClassifier</code> object, which is in turn contained in the <code class="language-plaintext highlighter-rouge">(PMML)Pipeline</code> object.
 The solution follows Scikit-Learn conventions.
 Namely, the fit method of the <code class="language-plaintext highlighter-rouge">GBDTLRClassifier</code> class also takes fit parameters, which are passed on to the correct component based on the prefix.</p>
 

@@ -174,7 +174,7 @@ For example, the following exception is thrown when JPMML-SparkML version 1.4(.1
 $ $SPARK_HOME/bin/spark-shell --packages org.jpmml:jpmml-sparkml:${version}
 </code></pre></div></div>
 
-<p><strong>Important</strong>: this library JAR file is not directly usable with Apache Spark versions 2.0 through 2.2 due to the <a href="https://issues.apache.org/jira/browse/SPARK-15526">SPARK-15526</a> classpath conflict.</p>
+<p><strong>Important</strong>: This library JAR file is not directly usable with Apache Spark versions 2.0 through 2.2 due to the <a href="https://issues.apache.org/jira/browse/SPARK-15526">SPARK-15526</a> classpath conflict.</p>
 
 <p>This classpath conflict typically manifests itself during the conversion work, in the form of some obscure <code class="language-plaintext highlighter-rouge">java.lang.NoSuchFieldError</code> or <code class="language-plaintext highlighter-rouge">java.lang.NoSuchMethodError</code>:</p>
 

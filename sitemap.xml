@@ -2,15 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://openscoring.io/blog/</loc>
-    <lastmod>2023-01-29T18:14:45+02:00</lastmod>
+    <lastmod>2023-02-07T22:26:18+02:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://openscoring.io/</loc>
-    <lastmod>2023-01-29T18:14:45+02:00</lastmod>
+    <lastmod>2023-02-07T22:26:18+02:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>
+    https://openscoring.io/blog/2023/02/06/upgrading_sklearn_xgboost_pipeline_pmml/</loc>
+    <lastmod>2023-02-06T00:00:00+02:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>
