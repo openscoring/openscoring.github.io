@@ -2,6 +2,16 @@
 <html lang="en">
 
 <head>
+  <script src="https://www.googletagmanager.com/gtag/js?id=G-1XC1KCZX17" async></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'G-1XC1KCZX17');
+</script>
+
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -14,20 +24,20 @@
   <meta name="keywords" content="scikit-learn lightgbm xgboost sklearn2pmml data-categorical">
   <meta name="author" content="vruusmann">
 
-  <title>Extending Scikit-Learn with GBDT plus LR ensemble (GBDT+LR) model type - Openscoring</title>
+  <title>Extending Scikit-Learn with GBDT+LR ensemble models - Openscoring</title>
 
   <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
   <link rel="canonical" href="https://openscoring.io/blog/2019/06/19/sklearn_gbdt_lr_ensemble/">
   <meta property="og:locale" content="en_US">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Extending Scikit-Learn with GBDT plus LR ensemble (GBDT+LR) model type - Openscoring">
+  <meta property="og:title" content="Extending Scikit-Learn with GBDT+LR ensemble models - Openscoring">
   <meta property="og:url" content="/blog/2019/06/19/sklearn_gbdt_lr_ensemble/">
   <meta property="og:site_name" content="Openscoring">
   <meta property="og:updated_time" content="2019-06-19 00:00:00 +0300">
   <meta property="article:published_time" content="2019-06-19 00:00:00 +0300">
   <meta property="article:modified_time" content="2019-06-19 00:00:00 +0300">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Extending Scikit-Learn with GBDT plus LR ensemble (GBDT+LR) model type - Openscoring">
+  <meta name="twitter:title" content="Extending Scikit-Learn with GBDT+LR ensemble models - Openscoring">
   <meta name="twitter:label1" content="Written by">
   <meta name="twitter:data1" content="Villu Ruusmann">
   <meta name="twitter:label2" content="Time to read">
@@ -50,7 +60,7 @@
     <nav class="nav--main">
       <a class="logo" href="/" aria-label="home">
         <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
-        <span>Openscoring.IO</span>
+        <span>Openscoring</span>
       </a>
 
       <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
@@ -73,7 +83,7 @@
 </header>
 
   <main class="container mt-26">
-    <h1>Extending Scikit-Learn with GBDT plus LR ensemble (GBDT+LR) model type</h1>
+    <h1>Extending Scikit-Learn with GBDT+LR ensemble models</h1>
   
 <div class="post">
   <p>Logistic regression (LR) is often the go-to choice for binary classification.
@@ -101,7 +111,7 @@ For example, discovering cliffs and other anomalies in the decision space by obs
 
 <h3 id="scikit-learn-perspective">Scikit-Learn perspective</h3>
 
-<p>Scikit-Learn documentation dedicates a separate page to GBDT plus LR ensemble models: <a href="https://scikit-learn.org/stable/auto_examples/ensemble/plot_feature_transformation.html">Feature transformations with ensembles of trees</a></p>
+<p>Scikit-Learn documentation dedicates a separate page to GBDT plus LR (GBDT+LR) ensemble models: <a href="https://scikit-learn.org/stable/auto_examples/ensemble/plot_feature_transformation.html">Feature transformations with ensembles of trees</a></p>
 
 <p>While the concept and its implementation are discussed in great detail, there is no reusable GBDT+LR estimator available within Scikit-Learn.
 Interested parties are either expected to copy-paste the example code, or rely on third-party libraries.</p>
@@ -117,7 +127,7 @@ The answer is a definite yes. Better yet, the PMML representation of a GBDT+LR m
 
 <p>The reduction is based on the realization that GBDT+LR is a mechanism for replacing original GBDT leaf node scores with LR coefficients (and the GBDT base score with the LR intercept).
 Scikit-Learn does not provide an API for modifying fitted decision trees.
-The workaround is to make individual leaf nodes addressable using the one-hot-encoding approach (the <code class="language-plaintext highlighter-rouge">OneHotEncoder.categories</code> attribute is a list of arrays; the size of the list equals the number of decision trees in the GBDT; the size of each array equals the number of leaf nodes in the corresponding decision tree), and then assigning a new score to each address (the <code class="language-plaintext highlighter-rouge">LogisticRegression.coef_</code> attribute is an array whose size equals the flat-mapped size of the <code class="language-plaintext highlighter-rouge">OneHotEncoder.categories</code> attribute).</p>
+The workaround is to make individual leaf nodes addressable using the one-hot encoding approach (the <code class="language-plaintext highlighter-rouge">OneHotEncoder.categories</code> attribute is a list of arrays; the size of the list equals the number of decision trees in the GBDT; the size of each array equals the number of leaf nodes in the corresponding decision tree), and then assigning a new score to each address (the <code class="language-plaintext highlighter-rouge">LogisticRegression.coef_</code> attribute is an array whose size equals the flat-mapped size of the <code class="language-plaintext highlighter-rouge">OneHotEncoder.categories</code> attribute).</p>
 
 <p>The PMML representation does not need such layer of indirection, because it is possible to replace leaf node scores in place.</p>
 
@@ -246,18 +256,18 @@ When working with sparse datasets, then it is possible to make <code class="lang
 
   <footer class="footer">
   <div class="container">
-    <div class="mb-6">© 2022 - Openscoring.IO</div>
+    <div class="mb-6">© 2022 - Openscoring</div>
 
     <div class="mb-6">
       <ul class="flex gap-4 list-none">
         <li>
           <a href="mailto:info@openscoring.io" aria-label="email">
-            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring.IO">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring">
           </a>
         </li>
         <li>
           <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
-            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring.IO on Twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring on Twitter">
           </a>
         </li>
       </ul>
@@ -266,24 +276,19 @@ When working with sparse datasets, then it is possible to make <code class="lang
 </footer>
 
   <script>
-    var sc_project = 11704106;
-    var sc_security = "a7d1bf16";
-    var sc_invisible = 1;
-    var scJsHost = (("https:" == document.location.protocol) ?
-      "https://secure." : "http://www.");
-  </script>
+  var sc_project=11704106;
+  var sc_security="a7d1bf16"; 
+  var sc_invisible=1; 
+  var sc_remove_link=1; 
+</script>
 
-  <script src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+<script src="https://www.statcounter.com/counter/counter.js" async></script>
 
-  <noscript>
-    <div class="statcounter">
-      <a title="web analytics" href="https://statcounter.com/">
-        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics">
-      </a>
-    </div>
-  </noscript>
-
-  <script src="/assets/js/script.js" defer></script>
+<noscript>
+  <div class="statcounter">
+    <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="Web Analytics Made Easy - Statcounter" referrerPolicy="no-referrer-when-downgrade">
+  </div>
+</noscript>
 </body>
 
 </html>

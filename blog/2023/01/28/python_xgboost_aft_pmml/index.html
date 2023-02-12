@@ -2,6 +2,16 @@
 <html lang="en">
 
 <head>
+  <script src="https://www.googletagmanager.com/gtag/js?id=G-1XC1KCZX17" async></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'G-1XC1KCZX17');
+</script>
+
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
@@ -14,20 +24,20 @@
   <meta name="keywords" content="scikit-learn xgboost sklearn2pmml data-categorical data-missing">
   <meta name="author" content="vruusmann">
 
-  <title>Training Python-based XGBoost accelerated failure time (AFT) models - Openscoring</title>
+  <title>Training Python-based XGBoost accelerated failure time models - Openscoring</title>
 
   <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
   <link rel="canonical" href="https://openscoring.io/blog/2023/01/28/python_xgboost_aft_pmml/">
   <meta property="og:locale" content="en_US">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="Training Python-based XGBoost accelerated failure time (AFT) models - Openscoring">
+  <meta property="og:title" content="Training Python-based XGBoost accelerated failure time models - Openscoring">
   <meta property="og:url" content="/blog/2023/01/28/python_xgboost_aft_pmml/">
   <meta property="og:site_name" content="Openscoring">
   <meta property="og:updated_time" content="2023-01-28 00:00:00 +0200">
   <meta property="article:published_time" content="2023-01-28 00:00:00 +0200">
   <meta property="article:modified_time" content="2023-01-28 00:00:00 +0200">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Training Python-based XGBoost accelerated failure time (AFT) models - Openscoring">
+  <meta name="twitter:title" content="Training Python-based XGBoost accelerated failure time models - Openscoring">
   <meta name="twitter:label1" content="Written by">
   <meta name="twitter:data1" content="Villu Ruusmann">
   <meta name="twitter:label2" content="Time to read">
@@ -50,7 +60,7 @@
     <nav class="nav--main">
       <a class="logo" href="/" aria-label="home">
         <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
-        <span>Openscoring.IO</span>
+        <span>Openscoring</span>
       </a>
 
       <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
@@ -73,7 +83,7 @@
 </header>
 
   <main class="container mt-26">
-    <h1>Training Python-based XGBoost accelerated failure time (AFT) models</h1>
+    <h1>Training Python-based XGBoost accelerated failure time models</h1>
   
 <div class="post">
   <p>Survival analysis is a subtype of regression analysis, which models time durations (eg. time to an event of interest).</p>
@@ -202,7 +212,7 @@ This limitation can be tracked as <a href="https://github.com/dmlc/xgboost/issue
 <p>XGBoost versions 1.5 and newer can work with the canonicalized “lung” dataset as-is.
 There is no longer any technical reason for imputing missing values or encoding categorical values.</p>
 
-<p>In fact, this is a welcome development, as Scikit-Learn is rather inept at transforming sparse categorical features into legacy XGBoost-compatible representation, as discussed in detail in an earlier blog post about <a href="/blog/2022/04/12/onehot_encoding_sklearn_xgboost_pipeline/">one-hot-encoding (OHE) categorical features in Scikit-Learn based XGBoost pipelines</a>.</p>
+<p>In fact, this is a welcome development, as Scikit-Learn is rather inept at transforming sparse categorical features into legacy XGBoost-compatible representation, as discussed in detail in an earlier blog post about <a href="/blog/2022/04/12/onehot_encoding_sklearn_xgboost_pipeline/">one-hot encoding categorical features in Scikit-Learn XGBoost pipelines</a>.</p>
 
 <p>The only data pre-processing action that is needed is casting the data type of <code class="language-plaintext highlighter-rouge">inst</code> and <code class="language-plaintext highlighter-rouge">sex</code> columns from integer to <a href="https://pandas.pydata.org/docs/reference/api/pandas.CategoricalDtype.html"><code class="language-plaintext highlighter-rouge">pandas.CategoricalDtype</code></a>:</p>
 
@@ -427,18 +437,18 @@ The main difference is terminological, as relative tolerance and absolute tolera
 
   <footer class="footer">
   <div class="container">
-    <div class="mb-6">© 2022 - Openscoring.IO</div>
+    <div class="mb-6">© 2022 - Openscoring</div>
 
     <div class="mb-6">
       <ul class="flex gap-4 list-none">
         <li>
           <a href="mailto:info@openscoring.io" aria-label="email">
-            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring.IO">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring">
           </a>
         </li>
         <li>
           <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
-            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring.IO on Twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring on Twitter">
           </a>
         </li>
       </ul>
@@ -447,24 +457,19 @@ The main difference is terminological, as relative tolerance and absolute tolera
 </footer>
 
   <script>
-    var sc_project = 11704106;
-    var sc_security = "a7d1bf16";
-    var sc_invisible = 1;
-    var scJsHost = (("https:" == document.location.protocol) ?
-      "https://secure." : "http://www.");
-  </script>
+  var sc_project=11704106;
+  var sc_security="a7d1bf16"; 
+  var sc_invisible=1; 
+  var sc_remove_link=1; 
+</script>
 
-  <script src="https://secure.statcounter.com/counter/counter.js" async=""></script>
+<script src="https://www.statcounter.com/counter/counter.js" async></script>
 
-  <noscript>
-    <div class="statcounter">
-      <a title="web analytics" href="https://statcounter.com/">
-        <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="web analytics">
-      </a>
-    </div>
-  </noscript>
-
-  <script src="/assets/js/script.js" defer></script>
+<noscript>
+  <div class="statcounter">
+    <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="Web Analytics Made Easy - Statcounter" referrerPolicy="no-referrer-when-downgrade">
+  </div>
+</noscript>
 </body>
 
 </html>
