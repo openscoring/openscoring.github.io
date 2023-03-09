@@ -96,7 +96,7 @@
   <li>Is the content logically valid PMML?</li>
 </ol>
 
-<h3 id="structural-validation-as-xml">Structural validation as XML</h3>
+<h2 id="structural-validation-as-xml">Structural validation as XML</h2>
 
 <p>Open the PMML document for inspection in an XML-aware text editor. Most text editors should be able to detect XML content and switch to XML editing mode.</p>
 
@@ -139,7 +139,7 @@
   at com.sun.org.apache.xerces.internal.impl.XMLScanner.reportFatalError(XMLScanner.java:1472)
 </code></pre></div></div>
 
-<h3 id="structural-validation-as-pmml">Structural validation as PMML</h3>
+<h2 id="structural-validation-as-pmml">Structural validation as PMML</h2>
 
 <p>The JPMML-Model library provides an <code class="language-plaintext highlighter-rouge">org.jpmml.model.ValidationExample</code> command-line application, which validates the content of a PMML document against the built-in PMML schema definition (XSD) file. This XSD file is based on the latest PMML schema version (at the time of writing this, 4.3), and includes a limited number JPMML vendor extension elements and attributes. Nevertheless, it is suitable for validating all PMML schema version 3.X and 4.X documents, as the PMML standard is fully backwards- and forwards-compatible in this schema version range.</p>
 
@@ -160,7 +160,7 @@
 
 <p>Examples of warnings and errors, and their fixes.</p>
 
-<h5 id="missing-elements-and-attributes">Missing elements and attributes</h5>
+<h3 id="missing-elements-and-attributes">Missing elements and attributes</h3>
 
 <p>Validation log:</p>
 
@@ -213,7 +213,7 @@
 <span class="nt">&lt;/PMML&gt;</span>
 </code></pre></div></div>
 
-<h5 id="invalid-andor-misplaced-elements-and-attributes">Invalid and/or misplaced elements and attributes</h5>
+<h3 id="invalid-andor-misplaced-elements-and-attributes">Invalid and/or misplaced elements and attributes</h3>
 
 <p>Validation log:</p>
 
@@ -256,7 +256,7 @@ SEVERE: [severity=ERROR,message=unexpected element (uri:"http://www.dmg.org/PMML
 <span class="nt">&lt;/Characteristics&gt;</span>
 </code></pre></div></div>
 
-<h3 id="logical-validation-as-pmml">Logical validation as PMML</h3>
+<h2 id="logical-validation-as-pmml">Logical validation as PMML</h2>
 
 <p>The above two structural validation stages should ensure that a PMML document can be loaded by a PMML engine, but they offer no guarantee that the PMML document can be used for prediction, and more importantly, that the predictions will be correct.</p>
 

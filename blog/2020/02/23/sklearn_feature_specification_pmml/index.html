@@ -101,7 +101,7 @@ JPMML family conversion tools and libraries aim to capture, systematize and stor
 
 <p>This blog post demonstrates how Scikit-Learn users should approach the “model-data fit” problematics.</p>
 
-<h3 id="overview">Overview</h3>
+<h2 id="overview">Overview</h2>
 
 <p>The Predictive Model Markup Language (PMML) defines data structures for representing most common model types.</p>
 
@@ -114,7 +114,7 @@ JPMML family conversion tools and libraries aim to capture, systematize and stor
   <li>Complex statistics about feature domains partitioned by the prediction range - the <a href="https://dmg.org/pmml/v4-4-1/ModelExplanation.html#xsdElement_ModelExplanation"><code class="language-plaintext highlighter-rouge">ModelExplanation</code></a> element.</li>
 </ul>
 
-<p>Value preparation is a two stage process.</p>
+<p>Value preparation is a two-stage process.</p>
 
 <p>In the first stage, the user value is converted to a PMML value according to the <a href="https://dmg.org/pmml/v4-4-1/DataDictionary.html#xsdElement_DataField"><code class="language-plaintext highlighter-rouge">DataField</code></a> element.</p>
 
@@ -208,7 +208,7 @@ By analogy with invalid value treatment, missing values can be rejected by chang
 
 <p><strong>Important</strong>: The IEEE 754 constant NaN (“Not a Number”) is assigned to invalid value space (not to missing value space).</p>
 
-<h3 id="sklearn2pmml-domain-decorators">SkLearn2PMML domain decorators</h3>
+<h2 id="sklearn2pmml-domain-decorators">SkLearn2PMML domain decorators</h2>
 
 <p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides several domain decorators for customizing the content of <code class="language-plaintext highlighter-rouge">DataField</code> and <code class="language-plaintext highlighter-rouge">MiningField</code> elements:</p>
 
@@ -260,11 +260,11 @@ Parameter names and values are derived from PMML attribute names and values by c
 
 <p>The <code class="language-plaintext highlighter-rouge">Domain.transform(X)</code> method uses all this information to prepare the dataset exactly the same way as any standards-compliant PMML engine would do.</p>
 
-<h3 id="scikit-learn-examples">Scikit-Learn examples</h3>
+<h2 id="scikit-learn-examples">Scikit-Learn examples</h2>
 
 <p>Domain decorators bring most value when working with heterogeneous datasets.</p>
 
-<p>The simplest way to go about such workflows is to assemble a two-step pipeline, where the first step is either a <code class="language-plaintext highlighter-rouge">sklearn_pandas.DataFrameMapper</code> or <code class="language-plaintext highlighter-rouge">sklearn.compose.ColumnTransformer</code> meta-transformer for performing column-oriented feature engineering work, and the second step is an estimator:</p>
+<p>The simplest way to go about such workflows is to assemble a two-step pipeline, where the first step is either a <code class="language-plaintext highlighter-rouge">sklearn_pandas.DataFrameMapper</code> or <code class="language-plaintext highlighter-rouge">sklearn.compose.ColumnTransformer</code> meta-transformer for performing column-oriented data pre-processing work, and the second step is an estimator:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
 <span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span>
@@ -365,7 +365,7 @@ These decisions do not carry any weight (eg. “weak left” vs. “strong right
 <p>Invalid and missing value spaces are often merged for convenience reasons.
 No matter if the “Employment” column contains an invalid value or a missing value, it will be replaced with “Private” (the most frequent value in the training dataset).</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

@@ -115,7 +115,7 @@ $ $JAVA_HOME/bin/java -cp target/jaxb_demo-executable-1.0-SNAPSHOT.jar jaxb_demo
 $ $JAVA_HOME/bin/java -cp target/jaxb_demo-executable-1.0-SNAPSHOT.jar jaxb_demo.UnmarshalDemo &lt; /tmp/jaxb_demo.pmml
 </code></pre></div></div>
 
-<h3 id="java-se-180_162">Java SE 1.8(.0_162)</h3>
+<h2 id="java-se-180_162">Java SE 1.8(.0_162)</h2>
 
 <p>The project can be built and deployed without any formal GlassFish Metro dependency.</p>
 
@@ -128,11 +128,11 @@ $ $JAVA_HOME/bin/java -cp target/jaxb_demo-executable-1.0-SNAPSHOT.jar jaxb_demo
 <span class="nt">&lt;/dependency&gt;</span>
 </code></pre></div></div>
 
-<h3 id="java-se-904-and-1002">Java SE 9(.0.4) and 10(.0.2)</h3>
+<h2 id="java-se-904-and-1002">Java SE 9(.0.4) and 10(.0.2)</h2>
 
 <p>Apache Maven activates all Java EE modules (including the <code class="language-plaintext highlighter-rouge">java.xml.bind</code> module) during compilation, so the project can again be built without any formal GlassFish Metro dependency.</p>
 
-<p>However, now and in the future, the <code class="language-plaintext highlighter-rouge">org.glassfish.jaxb:jaxb-runtime</code> library has become a required run-time dependency. If missing, then any attempt to make use of some JAXB class or interface will result in a <code class="language-plaintext highlighter-rouge">java.lang.ClassNotFoundException</code>:</p>
+<p>However, now and in the future, the <code class="language-plaintext highlighter-rouge">org.glassfish.jaxb:jaxb-runtime</code> library has become a required run-time dependency. If missing, then any attempt to make use of some JAXB class or interface shall fail with the following <code class="language-plaintext highlighter-rouge">java.lang.ClassNotFoundException</code>:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Exception in thread "main" java.lang.NoClassDefFoundError: javax/xml/bind/JAXBContext
   at jaxb_demo.MarshalDemo.main(MarshalDemo.java:16)
@@ -196,7 +196,7 @@ Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext
 
 <p>These three exclusions reduce the size of the <code class="language-plaintext highlighter-rouge">jaxb_demo</code> uber-JAR file a bit over 400 kB.</p>
 
-<h3 id="java-se-1102">Java SE 11(.0.2)</h3>
+<h2 id="java-se-1102">Java SE 11(.0.2)</h2>
 
 <p><a href="https://blog.codefx.org/java/java-11-migration-guide/#Removal-Of-Java-EE-Modules">Java SE 11 removed all Java EE modules</a>, including the <code class="language-plaintext highlighter-rouge">java.xml.bind</code> module. Since Apache Maven is unable to provide Java XML Binding classes on its own, the project becomes non-buildable:</p>
 
@@ -217,7 +217,7 @@ Caused by: java.lang.ClassNotFoundException: javax.xml.bind.JAXBContext
 
 <p>After declaring the minimal GlassFish Metro dependency, the project can be built and deployed as before.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>Java application: <a href="https://openscoring.io/resources/2019-02-28/jaxb_demo.zip">“jaxb_demo.zip”</a></li>

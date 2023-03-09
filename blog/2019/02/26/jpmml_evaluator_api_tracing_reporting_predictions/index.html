@@ -92,7 +92,7 @@
 
 <p>This problem has an easy two-step solution. First, the model or pipeline should be converted from the low-level ML framework representation to the high-level Predictive Model Markup Language (PMML) representation, which makes it human-readable and -interpretable in the original feature space. Second, all the tracing and reporting work should be automated using a PMML engine.</p>
 
-<h3 id="reporting-java-api">Reporting Java API</h3>
+<h2 id="reporting-java-api">Reporting Java API</h2>
 
 <p>The <a href="https://github.com/jpmml/jpmml-evaluator">JPMML-Evaluator</a> library is probably the most capable and versatile PMML engine for the Java/JVM platform. It provides different API levels and hooks for interacting with deployed models, including a special-purpose Value API for capturing all operations that are made when computing a prediction.</p>
 
@@ -153,7 +153,7 @@
 <span class="o">}</span>
 </code></pre></div></div>
 
-<h3 id="reporting-pmml-vendor-extension">Reporting PMML vendor extension</h3>
+<h2 id="reporting-pmml-vendor-extension">Reporting PMML vendor extension</h2>
 
 <p>After successfully designing and implementing the reporting Value API, the authors made a suggestion to Data Mining Group (DMG.org) that the PMML standard should incorporate similar functionality in the form of a <a href="http://mantis.dmg.org/view.php?id=184"><code class="language-plaintext highlighter-rouge">report</code> result feature</a>. Unfortunately, DMG.org decided against doing so, which leaves everything into the status of a vendor extension.</p>
 
@@ -180,7 +180,7 @@
 
 <p>The ordering of <code class="language-plaintext highlighter-rouge">OutputField</code> elements is not significant, except for the common sense requirement that the declaration of the base output field must precede the declaration of the reporting output field that references it.</p>
 
-<h3 id="python-workflow">Python workflow</h3>
+<h2 id="python-workflow">Python workflow</h2>
 
 <p>Training a minimalistic XGBoost model for the “audit” dataset:</p>
 
@@ -309,7 +309,7 @@ For example, the value of the “report(xgbValue)” output field stays in “bo
 <p>The above report shows that the boosted value -2.1023297 is obtained by summing 17 member values that range from -0.17968129 to -0.09484299. As is typically the case with gradient boosting methods, the magnitude of member values decreases with each iteration.
 The probability of the positive scenario 0.1088706 is obtained by applying the inverse of the logit function to -2.1023297. The probability of the negative scenario 0.8911294 is obtained by subtracting the probability of the positive scenario from 1.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

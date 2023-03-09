@@ -101,7 +101,7 @@ Namely, stacking estimators are “active” as they learn optimal weights auton
 In the default non-passthrough mode, the parent estimator is limited to seeing only the predictions of child estimators (<code class="language-plaintext highlighter-rouge">predict_proba</code> for classifiers and <code class="language-plaintext highlighter-rouge">predict</code> for regressors).
 In the passthrough mode, the parent estimator also sees the input dataset.</p>
 
-<h3 id="stacking-homogeneous-estimators">Stacking homogeneous estimators</h3>
+<h2 id="stacking-homogeneous-estimators">Stacking homogeneous estimators</h2>
 
 <p>The pipeline is very simple and straightforward when dealing with homogeneous estimators.</p>
 
@@ -152,7 +152,7 @@ Owing to this discrepany, linear models and decision tree models (and ensembles 
 <p>It is often possible to simplify a “heterogeneous” collection of estimators to a “homogeneous” one by performing data pre-processing following the strictest requirements.
 Linear models and decision tree models become compatible with each other after all continuous features have been scaled (ie. a requirement of linear models, which does not make any difference for decision tree models).</p>
 
-<h3 id="stacking-heterogeneous-estimators">Stacking heterogeneous estimators</h3>
+<h2 id="stacking-heterogeneous-estimators">Stacking heterogeneous estimators</h2>
 
 <p>The pipeline needs considerable redesign when dealing with heterogeneous estimators.</p>
 
@@ -165,7 +165,7 @@ XGBoost does not have such capabilities, and therefore expects categorical featu
 However, this reduces the predictive performance of LightGBM.
 For more information, please refer to the blog post about <a href="/blog/2019/04/07/converting_sklearn_lightgbm_pipeline_pmml/">converting Scikit-Learn LightGBM pipelines to PMML</a>.</p>
 
-<p>The solution is to perform feature engineering for each child estimator (and in the passthrough mode, also for the parent estimator) separately:</p>
+<p>The solution is to perform data pre-processing for each child estimator (and in the passthrough mode, also for the parent estimator) separately:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
 <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">StackingClassifier</span>
@@ -186,7 +186,7 @@ For more information, please refer to the blog post about <a href="/blog/2019/04
 <span class="p">])</span>
 </code></pre></div></div>
 
-<p>If all child pipelines perform common feature engineering work, then it should be extracted into the first step of the pipeline.
+<p>If all child pipelines perform common data pre-processing work, then it should be extracted into the first step of the pipeline.
 In this exercise, it is limited to capturing domain of features using <code class="language-plaintext highlighter-rouge">CategoricalDomain</code> and <code class="language-plaintext highlighter-rouge">ContinuousDomain</code> decorators.</p>
 
 <p>The initial column transformer changes the representation of the dataset from <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> to 2-D Numpy array, which is lacking adequate column-level metadata (eg. names, data types) for setting up subsequent column transformers.
@@ -308,7 +308,7 @@ However, it is highly advisable to first enhance it with verification data (for 
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"StackingEnsemble.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit-NA” dataset: <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>

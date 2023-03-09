@@ -96,7 +96,7 @@
   <li>Term score estimation.</li>
 </ol>
 
-<h3 id="scikit-learn">Scikit-Learn</h3>
+<h2 id="scikit-learn">Scikit-Learn</h2>
 
 <p>Typical implementation:</p>
 
@@ -133,7 +133,7 @@ For better interpretability, it is advisable to keep sentences short and uniform
 The sentence score is the value associated with a decision path like “sentence contains term A, and does not contain terms B and C”.
 Decision trees can be ensembled either via bagging (random forest) or boosting (XGBoost, LightGBM), which gives them scoring properties that are more similar to linear models.</p>
 
-<h3 id="pmml">PMML</h3>
+<h2 id="pmml">PMML</h2>
 
 <p>The Predictive Model Markup Language (PMML) provides a <a href="https://dmg.org/pmml/v4-4-1/Transformations.html#xsdElement_TextIndex"><code class="language-plaintext highlighter-rouge">TextIndex</code></a> element for representing TF(-IDF) operations.
 In brief, this tranformation takes a string input value, normalizes it, and then counts the occurrences of the specified term.

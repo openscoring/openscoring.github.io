@@ -98,7 +98,7 @@ It aims to demonstrate how things have evolved over the past 3.5 years, so that 
   <li>Using Python client library to work with Openscoring REST web service.</li>
 </ol>
 
-<h3 id="importing-jpmml-sparkml-into-apache-spark">Importing JPMML-SparkML into Apache Spark</h3>
+<h2 id="importing-jpmml-sparkml-into-apache-spark">Importing JPMML-SparkML into Apache Spark</h2>
 
 <p>The <a href="https://github.com/jpmml/jpmml-sparkml">JPMML-SparkML</a> library converts Apache Spark ML pipeline models to the standardized Predictive Model Markup Language (PMML) representation.</p>
 
@@ -128,9 +128,9 @@ $ $SPARK_HOME/bin/pyspark --packages org.jpmml:jpmml-sparkml:1.5.7
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ pip install --upgrade pyspark2pmml
 </code></pre></div></div>
 
-<h3 id="assembling-fitting-and-converting-pipeline-models">Assembling, fitting and converting pipeline models</h3>
+<h2 id="assembling-fitting-and-converting-pipeline-models">Assembling, fitting and converting pipeline models</h2>
 
-<p>The JPMML-SparkML library supports most common Apache Spark ML model and transformer types.</p>
+<p>The JPMML-SparkML library supports most common Apache Spark ML transformer and model types.</p>
 
 <p>Selected highlights:</p>
 
@@ -139,7 +139,7 @@ $ $SPARK_HOME/bin/pyspark --packages org.jpmml:jpmml-sparkml:1.5.7
   <li>Feature engineering via <a href="https://spark.apache.org/docs/latest/api/java/org/apache/spark/ml/feature/SQLTransformer.html"><code class="language-plaintext highlighter-rouge">feature.SQLTransformer</code></a>.</li>
   <li>Hyperparameter selection and tuning via <a href="https://spark.apache.org/docs/latest/api/java/org/apache/spark/ml/tuning/CrossValidator.html"><code class="language-plaintext highlighter-rouge">tuning.CrossValidator</code></a> and <a href="https://spark.apache.org/docs/latest/api/java/org/apache/spark/ml/tuning/TrainValidationSplit.html"><code class="language-plaintext highlighter-rouge">tuning.TrainValidationSplit</code></a>.</li>
   <li>Third-party ML framework model types such as XGBoost and LightGBM (MMLSpark).</li>
-  <li>Custom model and transformer types.</li>
+  <li>Custom transformer and model types.</li>
 </ul>
 
 <p>The exercise starts with training two separate classification-type decision tree models for the “red” and “white” subsets of the <a href="https://archive.ics.uci.edu/ml/datasets/Wine+Quality">“wine quality”</a> dataset.</p>
@@ -190,7 +190,7 @@ It is possible to use <code class="language-plaintext highlighter-rouge">PMMLBui
 <p>Unlike any other ML persistence or serialization data format, the PMML data format is text based and designed to be human-readable.
 It is possible to open the resulting <code class="language-plaintext highlighter-rouge">RedWineQuality.pmml</code> and <code class="language-plaintext highlighter-rouge">WhiteWineQuality.pmml</code> files in a text editor and follow the splitting logic of the learned decision tree models in terms of the original feature space.</p>
 
-<h3 id="starting-openscoring-rest-web-service">Starting Openscoring REST web service</h3>
+<h2 id="starting-openscoring-rest-web-service">Starting Openscoring REST web service</h2>
 
 <p>The quickest way to have something happening is to download the latest Openscoring server executable uber-JAR file from the <a href="https://github.com/openscoring/openscoring/releases">GitHub releases</a> page, and run it.</p>
 
@@ -205,7 +205,7 @@ The default user authorization logic is implemented by the <code class="language
 
 <p>When looking to upgrade to a more production-like setup, then <a href="https://github.com/openscoring/openscoring-docker">Openscoring-Docker</a> and <a href="https://github.com/openscoring/openscoring-elastic-beanstalk">Openscoring-Elastic-Beanstalk</a> projects provide good starting points.</p>
 
-<h3 id="using-python-client-library-to-work-with-openscoring-rest-web-service">Using Python client library to work with Openscoring REST web service</h3>
+<h2 id="using-python-client-library-to-work-with-openscoring-rest-web-service">Using Python client library to work with Openscoring REST web service</h2>
 
 <p>The <a href="https://github.com/openscoring/openscoring#rest-api">Openscoring REST API</a> is simple and straightforward.</p>
 
@@ -278,7 +278,7 @@ Openscoring uses the <a href="https://github.com/jpmml/jpmml-evaluator">JPMML-Ev
 <span class="n">os</span><span class="p">.</span><span class="n">undeploy</span><span class="p">(</span><span class="s">"WhiteWineQuality"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Wine quality” dataset: <a href="https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv"><code class="language-plaintext highlighter-rouge">winequality-red.csv</code></a> and <a href="https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-white.csv"><code class="language-plaintext highlighter-rouge">winequality-white.csv</code></a></li>

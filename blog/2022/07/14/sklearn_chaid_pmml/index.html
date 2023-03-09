@@ -91,7 +91,7 @@ This choice is driven by high conceptual compatibility between the two (preferen
 
 <p>The CART algorithm is so ingrained into the current code and data structures of the <a href="https://scikit-learn.org/stable/modules/classes.html#module-sklearn.tree"><code class="language-plaintext highlighter-rouge">sklearn.tree</code></a> module, that adding support for alternative algorithms has effectively been ruled out of the project roadmap.</p>
 
-<h3 id="cart-limitations">CART limitations</h3>
+<h2 id="cart-limitations">CART limitations</h2>
 
 <p>Scikit-Learn decision trees suffer from several functional issues:</p>
 
@@ -112,7 +112,7 @@ It performs best with dense continuous features, and worst with sparse categoric
 
 <p>If the dataset is rich in complex features, then it will be smart to explore alternative algorithms such as CHAID, C4.5 or C5.0.</p>
 
-<h3 id="chaid-implementation">CHAID implementation</h3>
+<h2 id="chaid-implementation">CHAID implementation</h2>
 
 <p>At the time of writing this (July 2022), there are no suitable Scikit-Learn extension packages available.
 The workaround is to choose a Python-based algorithm package, and then integrate it with Scikit-Learn by ourselves.</p>
@@ -137,7 +137,7 @@ However, its API is rather uncommon and is lacking some key interactions points.
 
 <p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.84 provides <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDClassifier</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDRegressor</code> estimators, which make the <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class embeddable into Scikit-Learn pipelines, and commandable via familiar <code class="language-plaintext highlighter-rouge">fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">predict(X)</code> methods.</p>
 
-<h3 id="training">Training</h3>
+<h2 id="training">Training</h2>
 
 <p>The <code class="language-plaintext highlighter-rouge">CHAIDEstimator.fit(X, y)</code> method assumes that all columns of the <code class="language-plaintext highlighter-rouge">X</code> dataset are categorical features.
 If the <code class="language-plaintext highlighter-rouge">X</code> dataset contains continuous features (eg. a <code class="language-plaintext highlighter-rouge">float</code> or <code class="language-plaintext highlighter-rouge">double</code> column, with many distinct values) then they shall be automatically casted to categorical features.</p>
@@ -205,7 +205,7 @@ If the <code class="language-plaintext highlighter-rouge">X</code> dataset conta
 </code></pre></div></div>
 
 <p>The category levels that are listed under a <code class="language-plaintext highlighter-rouge">DataField</code> element fully define the valid value space for that field.
-Any attempt to evaluate a model with an unlisted input value shall raise an error.</p>
+Any attempt to evaluate a model with an unlisted input value shall fail with a value error.</p>
 
 <p>If the goal is to preserve the “normalcy” of continuous features, and even allow for some interpolation and extrapolation, then they should be binned into (temporary-) categorical features.
 Scikit-Learn provides the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html"><code class="language-plaintext highlighter-rouge">slearn.preprocessing.KBinsDiscretizer</code></a> transformer, which can learn bin edges based on common statistical procedures.</p>
@@ -242,7 +242,7 @@ The suggested workaround is to emulate its statistical procedure(s) in a missing
   <span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="prediction">Prediction</h3>
+<h2 id="prediction">Prediction</h2>
 
 <p>The <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class is a data exploration and mining tool. It does not provide any Python API for making predictions on new datasets (see <a href="https://github.com/Rambatino/CHAID/issues/128">Issue 128</a>).</p>
 
@@ -341,7 +341,7 @@ The deployment environment only needs to declare a <code class="language-plainte
 </span><span class="n">df_pred</span><span class="p">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">"output.csv"</span><span class="p">,</span> <span class="n">sep</span> <span class="o">=</span> <span class="s">"</span><span class="se">\t</span><span class="s">"</span><span class="p">,</span> <span class="n">index</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

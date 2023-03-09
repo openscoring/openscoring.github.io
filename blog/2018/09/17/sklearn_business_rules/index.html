@@ -86,7 +86,7 @@
     <h1>Extending Scikit-Learn with business rules model</h1>
   
 <div class="post">
-  <h3 id="machine-learning-vs-business-rules">Machine Learning vs. Business Rules</h3>
+  <h2 id="machine-learning-vs-business-rules">Machine Learning vs. Business Rules</h2>
 
 <p>Predictive analytics applications can be equally well served by algorithmically learned “machine learning” models or manually crafted “business rules” models.
 In fact, some of the most robust and successful models are hybrids between the two, where machine generated candidates are filtered, reviewed and refactored by a human domain expert.</p>
@@ -105,7 +105,7 @@ Different ML frameworks and classification algorithms are able to propose a larg
 <span class="o">}</span>
 </code></pre></div></div>
 
-<h3 id="ml-framework-perspective">ML framework perspective</h3>
+<h2 id="ml-framework-perspective">ML framework perspective</h2>
 
 <p>Popular ML frameworks such as R, Scikit-Learn and Apache Spark disregard the “business rules” use case.
 The solution is to develop a custom model type, which has the following behaviour:</p>
@@ -121,7 +121,7 @@ First and foremost, they should be easy for the data scientist to compose and ma
 
 <p>There are many third-party business rules solutions available for the Python platform. After some tinkering they were all pushed aside in favour of Python predicates. The reasoning goes that data scientists are well versed with the language, and would prefer programming in Python to programming in some obscure dialect, or learning a completely new tool.</p>
 
-<h3 id="pmml-perspective">PMML perspective</h3>
+<h2 id="pmml-perspective">PMML perspective</h2>
 
 <p>The PMML specification provides two model elements for representing business rules models.
 The <a href="https://dmg.org/pmml/v4-4-1/TreeModel.html#xsdElement_TreeModel"><code class="language-plaintext highlighter-rouge">TreeModel</code></a> element can be used if the decision path is well determined (ie. unique), which means that a data record can and shall be matched by a single business rule only.
@@ -137,15 +137,15 @@ The <a href="https://dmg.org/pmml/v4-4-1/RuleSet.html#xsdElement_RuleSetModel"><
 
 <p>The expressive power of primary predicates seems rather limiting at first glance. For example, they require the right-hand side of the expression to be a value literal (rather than another field reference or expression/predicate), which rules out direct comparisons between fields (<code class="language-plaintext highlighter-rouge">&lt;Field&gt; &lt;Operator&gt; &lt;Field&gt;</code>). The workaround is to extract such complex logic into a standalone <code class="language-plaintext highlighter-rouge">DerivedField</code> element, and re-express the primary predicate in terms of this derived field and its possible value range. For example, a comparison expression <code class="language-plaintext highlighter-rouge">x1 &lt; x2</code> can be re-expressed as <code class="language-plaintext highlighter-rouge">(x1 - x2) &lt; 0</code> or <code class="language-plaintext highlighter-rouge">(x1 / x2) &lt; 1</code>.</p>
 
-<h3 id="rulesetclassifier-model-type"><code class="language-plaintext highlighter-rouge">RuleSetClassifier</code> model type</h3>
+<h2 id="rulesetclassifier-model-type"><code class="language-plaintext highlighter-rouge">RuleSetClassifier</code> model type</h2>
 
-<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.38.0 introduced the <a href="https://github.com/jpmml/sklearn2pmml/blob/master/sklearn2pmml/ruleset/__init__.py"><code class="language-plaintext highlighter-rouge">sklearn2pmml.ruleset.RuleSetClassifier</code></a> model type, which allows data scientists to implement a business rules model as a regular Scikit-Learn classifier.</p>
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.38.0 introduced the <a href="https://github.com/jpmml/sklearn2pmml/blob/master/sklearn2pmml/ruleset/__init__.py"><code class="language-plaintext highlighter-rouge">sklearn2pmml.ruleset.RuleSetClassifier</code></a> class, which allows data scientists to implement a business rules model as a regular Scikit-Learn classifier.</p>
 
 <p>The complete set of user-specified business rules is presented as an iterable of tuples. The first element is a Python predicate, and the second element is the associated (ie. to be predicted) class label. It is likely that future <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package versions add support for more elements, such as the associated class probability distribution.</p>
 
 <p>The search for a matching business rule takes place using the simplest “first hit” strategy. If there is no match, then the default class label (could be <code class="language-plaintext highlighter-rouge">None</code> to indicate a missing result) is returned instead.</p>
 
-<p>The Python side evaluates business rules using Python’s built-in <a href="https://docs.python.org/3/library/functions.html#eval"><code class="language-plaintext highlighter-rouge">eval()</code></a> function. The data record is presented as <code class="language-plaintext highlighter-rouge">X</code> row array (ie. the shape is <code class="language-plaintext highlighter-rouge">(1, )</code>). Depending on the backing Scikit-Learn workflow, the cells of this row array may be referentiable by name and/or by position. Wherever technically feasible, name-based cell references should be preferred over positional ones. They are easier to read and write, and do not break if the workflow is reorganized.</p>
+<p>The Python side evaluates business rules using Python’s built-in <a href="https://docs.python.org/3/library/functions.html#eval"><code class="language-plaintext highlighter-rouge">eval(expr)</code></a> function. The data record is presented as <code class="language-plaintext highlighter-rouge">X</code> row array (ie. the shape is <code class="language-plaintext highlighter-rouge">(1, )</code>). Depending on the backing Scikit-Learn workflow, the cells of this row array may be referentiable by name and/or by position. Wherever technically feasible, name-based cell references should be preferred over positional ones. They are easier to read and write, and do not break if the workflow is reorganized.</p>
 
 <p>Python predicates involving continuous features:</p>
 
@@ -164,7 +164,7 @@ The <a href="https://dmg.org/pmml/v4-4-1/RuleSet.html#xsdElement_RuleSetModel"><
 
 <p>If the <code class="language-plaintext highlighter-rouge">RuleSetClassifier</code> model will be used only in Scikit-Learn environment, then Python predicates may take advantage of full language and library/platform functionality. However, if the <code class="language-plaintext highlighter-rouge">RuleSetClassifier</code> model needs to be converted to the PMML representation, then some limitations and restrictions apply. A great deal of them are temporary, and will be lifted as the Python-to-PMML <a href="https://github.com/jpmml/jpmml-python/blob/master/pmml-python/src/main/javacc/expression.jj">expression</a> and <a href="https://github.com/jpmml/jpmml-python/blob/master/pmml-python/src/main/javacc/predicate.jj">predicate translation components</a> of the JPMML-SkLearn library evolve.</p>
 
-<h3 id="example-workflow">Example workflow</h3>
+<h2 id="example-workflow">Example workflow</h2>
 
 <p>The “iris” dataset is loaded using the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.datasets.load_iris.html"><code class="language-plaintext highlighter-rouge">sklearn.datasets.load_iris()</code></a> utility function. However, the default representation of Scikit-Learn datasets (instance of <code class="language-plaintext highlighter-rouge">sklearn.utils.Bunch</code>) is too cumbersome for actual work, and needs to be re-packaged.</p>
 
@@ -221,7 +221,7 @@ The <code class="language-plaintext highlighter-rouge">RuleSetClassifier.fit(X, 
 <span class="nt">&lt;/RuleSet&gt;</span>
 </code></pre></div></div>
 
-<p>Real-life workflows tend to include feature engineering steps that revert the <code class="language-plaintext highlighter-rouge">DataFrame</code> object back to a Numpy array, thereby enforcing positional cell references.
+<p>Real-life workflows tend to include data pre-processing steps that revert the <code class="language-plaintext highlighter-rouge">DataFrame</code> object back to a Numpy array, thereby enforcing positional cell references.
 For example, the following <code class="language-plaintext highlighter-rouge">sklearn_pandas.DataFrameMapper</code> step transforms the “named” four-fimensional feature space into an “anonymized” two-dimensional feature space (average flower dimensions), which must be addressed using <code class="language-plaintext highlighter-rouge">X[&lt;column&gt;]</code>-style field references:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>

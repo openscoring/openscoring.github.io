@@ -2,15 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://openscoring.io/blog/</loc>
-    <lastmod>2023-02-12T19:59:14+02:00</lastmod>
+    <lastmod>2023-03-09T22:53:27+02:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://openscoring.io/</loc>
-    <lastmod>2023-02-12T19:59:14+02:00</lastmod>
+    <lastmod>2023-03-09T22:53:27+02:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>
+    https://openscoring.io/blog/2023/03/09/sklearn_udf_expression_transformer/</loc>
+    <lastmod>2023-03-09T00:00:00+02:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>

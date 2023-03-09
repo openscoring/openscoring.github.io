@@ -89,7 +89,7 @@
   <p>Logistic regression (LR) is often the go-to choice for binary classification.
 Owing to extreme simplicity, LR models are fast to train and easy to deploy, and readily lend themselves for human interpretation.</p>
 
-<p>The predictive performance of LR models depends on the quality and sophistication of feature engineering.
+<p>The predictive performance of LR models depends on the quality and sophistication of data pre-processing, specifically feature engineering.
 There are two major work areas.
 First, delineating and generating the intended feature space. LR algorithms operate on the feature space they are given.
 They are not designed to independently discover non-linearities along individual dimensions, or interactions between multiple dimensions.
@@ -109,7 +109,7 @@ Random forest (RF) algorithms typically grow much deeper decision trees.
 Longer decision paths lead to more complex derived features (eg. interactions between multiple non-linearly transformed features), which lose in interpretability but gain in information content.
 For example, discovering cliffs and other anomalies in the decision space by observing which derived features become associated with extreme node scores.</p>
 
-<h3 id="scikit-learn-perspective">Scikit-Learn perspective</h3>
+<h2 id="scikit-learn-perspective">Scikit-Learn perspective</h2>
 
 <p>Scikit-Learn documentation dedicates a separate page to GBDT plus LR (GBDT+LR) ensemble models: <a href="https://scikit-learn.org/stable/auto_examples/ensemble/plot_feature_transformation.html">Feature transformations with ensembles of trees</a></p>
 
@@ -118,7 +118,7 @@ Interested parties are either expected to copy-paste the example code, or rely o
 
 <p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.47.0 introduced <code class="language-plaintext highlighter-rouge">sklearn2pmml.ensemble.GBDTLRClassifier</code> and  <code class="language-plaintext highlighter-rouge">sklearn2pmml.ensemble.GBDTLMRegressor</code> ensemble models to address this deficiency.</p>
 
-<h3 id="pmml-perspective">PMML perspective</h3>
+<h2 id="pmml-perspective">PMML perspective</h2>
 
 <p>The Predictive Model Markup Language (PMML) provides standardized data structures for representing all common data pre- and post-processing operations and model types, including the GBDT model type and the LR model type.</p>
 
@@ -134,7 +134,7 @@ The workaround is to make individual leaf nodes addressable using the one-hot en
 <p>The <a href="https://github.com/jpmml/jpmml-model">JPMML-Model</a> library provides Visitor API for traversing, updating and transforming PMML class model objects.
 In the current case, the Visitor API is used to transform the GBDT side of the GBDT+LR model to a regression-type boosting model. All leaf nodes are assigned new score values as extracted from the LR side.</p>
 
-<h3 id="example-workflow">Example workflow</h3>
+<h2 id="example-workflow">Example workflow</h2>
 
 <p>The GBDT+LR workflow is much simpler than traditional workflows.
 Specifically, there is no need to perform dedicated feature engineering work, because the GBDT+LR estimator will do it automatically and in a very thorough manner.</p>
@@ -241,7 +241,7 @@ Namely, the fit method of the <code class="language-plaintext highlighter-rouge"
 <p>Both XGBoost and LightGBM classifiers support missing values.
 When working with sparse datasets, then it is possible to make <code class="language-plaintext highlighter-rouge">make_fit_gbdtlr</code> and <code class="language-plaintext highlighter-rouge">make_fit_lgbmlr</code> utility functions missing value-aware by replacing the default <code class="language-plaintext highlighter-rouge">LabelBinarizer</code> and <code class="language-plaintext highlighter-rouge">LabelEncoder</code> transformers with <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.PMMLLabelBinarizer</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.PMMLLabelEncoder</code> transformers, respectively.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

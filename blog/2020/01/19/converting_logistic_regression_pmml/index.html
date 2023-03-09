@@ -88,14 +88,14 @@
 <div class="post">
   <p>Logistic regression is often the go-to algorithm for binary classification problems.</p>
 
-<p>This blog post demonstrates how to perform feature engineering and train a logistic regression model in a way that allows for quick productionization using the Predective Model Markup Language (PMML) standard.
+<p>This blog post demonstrates how to perform data pre-processing and train a logistic regression model in a way that allows for quick productionization using the Predective Model Markup Language (PMML) standard.
 The same workflow is implemented using Scikit-Learn, R and Apache Spark frameworks to demostrate their particularities.</p>
 
 <p>Summary of the workflow:</p>
 
 <ul>
   <li>Ingesting the raw dataset.</li>
-  <li>Feature engineering:
+  <li>Data pre-processing:
     <ul>
       <li>Capturing and refining feature information.</li>
       <li>Applying transformations to individual continuous and categorical features.</li>
@@ -107,7 +107,7 @@ The same workflow is implemented using Scikit-Learn, R and Apache Spark framewor
   <li>Converting the model to a PMML document using JPMML family conversion tools and libraries.</li>
 </ul>
 
-<h3 id="scikit-learn">Scikit-Learn</h3>
+<h2 id="scikit-learn">Scikit-Learn</h2>
 
 <p>Scikit-Learn follows object-oriented programming (OOP) paradigm.
 The <a href="https://scikit-learn.org/stable/modules/classes.html#module-sklearn.linear_model">Linear Models</a> module provides a <code class="language-plaintext highlighter-rouge">LinearModel</code> base class, which is subclassed and mixed with <code class="language-plaintext highlighter-rouge">RegressorMixin</code> and <code class="language-plaintext highlighter-rouge">ClassifierMixin</code> traits to provide algorithm-specific model base classes.
@@ -226,13 +226,13 @@ The <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> objec
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"SkLearnAudit.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="r">R</h3>
+<h2 id="r">R</h2>
 
 <p>R follows functional programming paradigm.
 The built-in <code class="language-plaintext highlighter-rouge">stats</code> package provides a <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/glm"><code class="language-plaintext highlighter-rouge">glm()</code></a> function for training generalized linear models.
 The logistic regression mode is activated by setting the <code class="language-plaintext highlighter-rouge">family</code> argument to binomial value (either as a string literal or a <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/family"><code class="language-plaintext highlighter-rouge">family</code></a> object).</p>
 
-<p>If the goal is to perform feature engineering in a PMML compatible manner, then the <code class="language-plaintext highlighter-rouge">glm()</code> function must be called using “formula interface”.
+<p>If the goal is to perform data pre-processing in a PMML compatible manner, then the <code class="language-plaintext highlighter-rouge">glm()</code> function must be called using “formula interface”.
 Simple formulas can be specified inline (eg. <code class="language-plaintext highlighter-rouge">glm(Adjusted ~ ., family = "binomial", data = audit.df)</code>).
 Complex formulas should be assembled step by step from stringified terms, and then compiled into a standalone <a href="https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula"><code class="language-plaintext highlighter-rouge">formula</code></a> object:</p>
 
@@ -306,7 +306,7 @@ The <code class="language-plaintext highlighter-rouge">audit.glm</code> variable
 </span><span class="n">r2pmml</span><span class="o">::</span><span class="n">r2pmml</span><span class="p">(</span><span class="n">audit.glm</span><span class="p">,</span><span class="w"> </span><span class="s2">"RExpAudit.pmml"</span><span class="p">)</span><span class="w">
 </span></code></pre></div></div>
 
-<h3 id="apache-spark">Apache Spark</h3>
+<h2 id="apache-spark">Apache Spark</h2>
 
 <p>Apache Spark allows the end user to choose between programming paradigms.
 The prevailing DataFrame-based API called Apache Spark ML is built around transformers and models that are almost identical to their Scikit-Learn namesakes.
@@ -364,7 +364,7 @@ The <a href="https://dmg.org/pmml/v4-4-1/Regression.html#xsdElement_RegressionMo
 <span class="n">pmmlBuilder</span><span class="p">.</span><span class="n">buildFile</span><span class="p">(</span><span class="s">"PySparkAudit.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

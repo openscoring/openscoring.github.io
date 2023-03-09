@@ -96,7 +96,7 @@
 
 <p>The choice between these three approaches depends on various technical and organizational considerations. Fundamentally, direct and intermediated SQL execution approaches are about <strong>moving the model to where data are located</strong>, whereas the external execution approach is about <strong>moving data to where the model is located</strong>. SQL execution approaches can operate in real-time on any amount of data. The external execution approach is penalized by the REST web service overhead and network round-trip times. This penalty scales sublinearly. Therefore, it becomes less of an issue if the evaluation operations are less frequent (real-time vs. batch queries) and deal with larger amounts of data (single data record vs. collection of data records). The main advantage of the external execution approach is that is easily applicable to any database backend.</p>
 
-<h3 id="overview">Overview</h3>
+<h2 id="overview">Overview</h2>
 
 <p>This blog post demonstrates how to use the <a href="https://github.com/openscoring/openscoring">Openscoring REST web service</a> from within PostgreSQL database.</p>
 
@@ -114,7 +114,7 @@
   <li>Importing data from a CSV document <code class="language-plaintext highlighter-rouge">/tmp/iris_response.csv</code> back to database.</li>
 </ol>
 
-<h3 id="data-schema">Data schema</h3>
+<h2 id="data-schema">Data schema</h2>
 
 <p>The data about iris flowers is separated into two tables based on their origin. First, the table <code class="language-plaintext highlighter-rouge">iris</code> contains experimentally determined data. It is populated with 150 data records from the example file <code class="language-plaintext highlighter-rouge">/tmp/input.csv</code>. Second, the table <code class="language-plaintext highlighter-rouge">iris_decisiontree</code> contains predicted data:</p>
 
@@ -140,7 +140,7 @@
 
 <p>This separation makes it straightforward to scale the application from one model to many models. For example, if it becomes necessary to deploy an alternative model <code class="language-plaintext highlighter-rouge">RandomForestIris</code>, then these predicted data will be stored in another table <code class="language-plaintext highlighter-rouge">iris_randomforest</code>. A random forest model is a collection of decision tree models. The results take longer to compute, but should be more accurate.</p>
 
-<h3 id="export-of-model-argument-data">Export of model argument data</h3>
+<h2 id="export-of-model-argument-data">Export of model argument data</h2>
 
 <p>The table <code class="language-plaintext highlighter-rouge">iris</code> is (periodically-) monitored for data records that do not have a counterpart in the table <code class="language-plaintext highlighter-rouge">iris_decisiontree</code>. All such unclassified data records are exported to a CSV document <code class="language-plaintext highlighter-rouge">/tmp/iris_request.csv</code> using the <code class="language-plaintext highlighter-rouge">COPY .. TO</code> command:</p>
 
@@ -157,7 +157,7 @@
   <li>Two consecutive separator characters (<code class="language-plaintext highlighter-rouge">,,</code>) indicate a missing field value. An empty string can be represented using two consecutive double quote characters (<code class="language-plaintext highlighter-rouge">,"",</code>).</li>
 </ul>
 
-<h3 id="model-evaluation">Model evaluation</h3>
+<h2 id="model-evaluation">Model evaluation</h2>
 
 <p>The evaluation is handled by the Openscoring web service over the CSV evaluation REST API endpoint. In brief, this REST API endpoint is bound to the HTTP POST method. The request body is a CSV document with model arguments. The request is processed synchronously. For better responsiveness, application clients can perform the evaluation in parallel, where one big request is split into several smaller requests. The response body is another CSV document with model results.</p>
 
@@ -186,7 +186,7 @@ rm /tmp/iris_response.csv
 <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="n">evaluate_iris</span><span class="p">();</span>
 </code></pre></div></div>
 
-<h3 id="import-of-model-result-data">Import of model result data</h3>
+<h2 id="import-of-model-result-data">Import of model result data</h2>
 
 <p>Class labels and associated probabilities are imported from the file <code class="language-plaintext highlighter-rouge">/tmp/iris_response.csv</code> to the table <code class="language-plaintext highlighter-rouge">iris_decisiontree</code> using the already familiar <code class="language-plaintext highlighter-rouge">COPY .. FROM</code> command.</p>
 
@@ -211,7 +211,7 @@ rm /tmp/iris_response.csv
 <span class="k">SELECT</span> <span class="n">clean_iris</span><span class="p">();</span>
 </code></pre></div></div>
 
-<h3 id="making-use-of-classification-results">Making use of classification results</h3>
+<h2 id="making-use-of-classification-results">Making use of classification results</h2>
 
 <p>Displaying all iris flowers where the experimentally determined species (column <code class="language-plaintext highlighter-rouge">iris.Species</code>) and the predicted species (column <code class="language-plaintext highlighter-rouge">iris_decisiontree.Predicted_Species</code>) are not equal:</p>
 

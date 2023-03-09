@@ -94,7 +94,7 @@ This limitation can be tracked as <a href="https://github.com/dmlc/xgboost/issue
 
 <p>The solution is to train XGBoost survival models using the Python Learning API, and then migrate them to the Scikit-Learn API for the eventual productionization.</p>
 
-<h3 id="data-canonicalization">Data canonicalization</h3>
+<h2 id="data-canonicalization">Data canonicalization</h2>
 
 <p>Loading the <a href="https://lifelines.readthedocs.io/en/latest/lifelines.datasets.html#lifelines.datasets.load_lung">“lung” dataset</a>:</p>
 
@@ -207,7 +207,7 @@ This limitation can be tracked as <a href="https://github.com/dmlc/xgboost/issue
   <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">].</span><span class="n">astype</span><span class="p">(</span><span class="n">Int64Dtype</span><span class="p">()</span> <span class="k">if</span> <span class="n">has_missing</span> <span class="k">else</span> <span class="nb">int</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="data-pre-processing">Data pre-processing</h3>
+<h2 id="data-pre-processing">Data pre-processing</h2>
 
 <p>XGBoost versions 1.5 and newer can work with the canonicalized “lung” dataset as-is.
 There is no longer any technical reason for imputing missing values or encoding categorical values.</p>
@@ -222,7 +222,7 @@ There is no longer any technical reason for imputing missing values or encoding 
 
 <p>However, the above code is not suitable for productionization!</p>
 
-<p>A quick cast using the <code class="language-plaintext highlighter-rouge">category</code> data type alias creates a new <code class="language-plaintext highlighter-rouge">CategoricalDtype</code> object on each and every invocation.
+<p>A quick cast using the <code class="language-plaintext highlighter-rouge">category</code> data type alias creates a new <code class="language-plaintext highlighter-rouge">CategoricalDtype</code> object on each and every call.
 Its “business state” is a mapping from category levels to category indices.
 If a testing dataset does not have exactly the same set of unique category levels as the training dataset, then the mapping will be different, and along with it all the predictions.</p>
 
@@ -281,7 +281,7 @@ This is needed for preserving the original column names.</p>
 
 <p>According to XGBoost conventions, uncensored labels are encoded as <code class="language-plaintext highlighter-rouge">(&lt;value&gt;, &lt;value&gt;)</code>, whereas right-censored labels are encoded as <code class="language-plaintext highlighter-rouge">(&lt;value&gt;, +Inf)</code>.</p>
 
-<h3 id="training-via-python-learning-api">Training via Python Learning API</h3>
+<h2 id="training-via-python-learning-api">Training via Python Learning API</h2>
 
 <p>Constructing an <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#xgboost.DMatrix"><code class="language-plaintext highlighter-rouge">xgboost.DMatrix</code></a> object:</p>
 
@@ -324,7 +324,7 @@ XGBoost does not issue any warnings about the fallback.</p>
 With categorical features around, one would expect to see a healthy proportion of non-empty list values.
 It would be a clear cause for concern if they were all empty.</p>
 
-<h3 id="making-predictions-via-scikit-learn-api">Making predictions via Scikit-Learn API</h3>
+<h2 id="making-predictions-via-scikit-learn-api">Making predictions via Scikit-Learn API</h2>
 
 <p>Scikit-Learn pipeline is a composite of transformers and estimators.
 It provides atomic pickling, and unified <code class="language-plaintext highlighter-rouge">fit_transform(X)</code> and <code class="language-plaintext highlighter-rouge">fit_predict(X, y)</code> API methods for dealing with arbitrary complexity workflows.</p>
@@ -345,16 +345,16 @@ It provides atomic pickling, and unified <code class="language-plaintext highlig
 </code></pre></div></div>
 
 <p>As noted earlier, survival analysis is a subtype of regression analysis.
-This makes it possible to wrap an AFT booster object into an <code class="language-plaintext highlighter-rouge">xgboost.XGBRegressor</code> object, and have it directly respond to <code class="language-plaintext highlighter-rouge">XGBRegressor.predict(X)</code> method invocations.</p>
+This makes it possible to wrap an AFT booster object into an <code class="language-plaintext highlighter-rouge">xgboost.XGBRegressor</code> object, and have it directly respond to <code class="language-plaintext highlighter-rouge">XGBRegressor.predict(X)</code> method calls.</p>
 
-<h3 id="pipeline-verification">Pipeline verification</h3>
+<h2 id="pipeline-verification">Pipeline verification</h2>
 
 <p>Typically, a <code class="language-plaintext highlighter-rouge">Pipeline</code> object is constructed using unfitted components, and fitted right thereafter. This is convenient and makes a very strong guarantee that all pipeline steps work together harmoniously.
 However, there are still plenty of situations where one or more pipeline steps defy the unified API, or make use of extra information or functionality that is not available within the <code class="language-plaintext highlighter-rouge">Pipeline.fit(X, y)</code> method scope.</p>
 
 <p>When a <code class="language-plaintext highlighter-rouge">Pipeline</code> object is constructed from pre-fitted components, then there are no guarantees in place. For example, the <code class="language-plaintext highlighter-rouge">Pipeline</code> constructor does not even check if the output dimensions of one step match the input dimensions of the next step.</p>
 
-<p>The correctness of unknown origin and unknown status <code class="language-plaintext highlighter-rouge">Pipeline</code> objects can only be assessed empirically, by invoking their predict methods (eg. <code class="language-plaintext highlighter-rouge">predict(X)</code>, <code class="language-plaintext highlighter-rouge">predict_proba(X)</code>) with adequate verification datasets, and comparing actual results against expected results.</p>
+<p>The correctness of unknown origin and unknown status <code class="language-plaintext highlighter-rouge">Pipeline</code> objects can only be assessed empirically, by calling their predict methods (eg. <code class="language-plaintext highlighter-rouge">predict(X)</code>, <code class="language-plaintext highlighter-rouge">predict_proba(X)</code>) with adequate verification datasets, and comparing actual results against expected results.</p>
 
 <p>Asserting equivalence between Python Learning API and Scikit-Learn API predictions:</p>
 
@@ -383,8 +383,8 @@ If there were any discrepancies between their predictions, then it would be natu
 <p>Arrays of floating-point numeric values can be compared element-wise for equivalence using the <a href="https://numpy.org/doc/stable/reference/generated/numpy.isclose.html"><code class="language-plaintext highlighter-rouge">numpy.isclose</code></a> utility function.</p>
 
 <p>The algorithm is controlled by two parameters.
-First, relative tolerance (the <code class="language-plaintext highlighter-rouge">rtol</code> argument) is a property of the ML workflow (the precision of the default numeric data type, plus the order of “mathematical complexity” of transformations).
-Second, absolute tolerance (the <code class="language-plaintext highlighter-rouge">atol</code> argument) is a property of the dataset.</p>
+First, relative tolerance (the <code class="language-plaintext highlighter-rouge">rtol</code> argument) is a workflow property (the precision of the default numeric data type, plus the order of “mathematical complexity” of transformations).
+Second, absolute tolerance (the <code class="language-plaintext highlighter-rouge">atol</code> argument) is a dataset property.</p>
 
 <p>The XGBoost algorithm is based on <code class="language-plaintext highlighter-rouge">float32</code> data type, which limits the relative tolerance to about <code class="language-plaintext highlighter-rouge">1E-6 .. 1E-7</code> range.</p>
 
@@ -393,7 +393,7 @@ The absolute tolerance value of <code class="language-plaintext highlighter-roug
 
 <p>In other words, two survival times are considered to be equivalent, if they agree with each other in the order of “full minutes or better”.</p>
 
-<h3 id="pmml">PMML</h3>
+<h2 id="pmml">PMML</h2>
 
 <p>Wrapping the pipeline object into a <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object:</p>
 
@@ -416,14 +416,14 @@ The absolute tolerance value of <code class="language-plaintext highlighter-roug
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pmml_pipeline</span><span class="p">,</span> <span class="s">"XGBoostAFTLung.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>It is advisable to use the <code class="language-plaintext highlighter-rouge">sklearn2pmml.make_pmml_pipeline()</code> utility function for constructing a <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object from pre-fitted components, because it is programmed to perform exactly the same extra object initialization work as the <code class="language-plaintext highlighter-rouge">PMMLPipeline.fit(X, y)</code> method is doing.
+<p>It is advisable to use the <code class="language-plaintext highlighter-rouge">sklearn2pmml.make_pmml_pipeline(obj)</code> utility function for constructing a <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object from pre-fitted components, because it is programmed to perform exactly the same extra object initialization work as the <code class="language-plaintext highlighter-rouge">PMMLPipeline.fit(X, y)</code> method is doing.
 For example, setting the <code class="language-plaintext highlighter-rouge">PMMLPipeline.active_fields</code> and <code class="language-plaintext highlighter-rouge">PMMLPipeline.target_fields</code> attributes.</p>
 
 <p>The <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object is enhanced with verification data in order to auto-discover any regressions that might arise from migration from Python platform to other language platforms.
 PMML implements <a href="https://dmg.org/pmml/v4-4-1/ModelVerification.html">model verification</a> similarly to the <code class="language-plaintext highlighter-rouge">numpy.isclose</code> utility function.
 The main difference is terminological, as relative tolerance and absolute tolerance are called “precision” and “zero threshold”, respectively.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>Python script: <a href="https://openscoring.io/resources/2023-01-28/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>

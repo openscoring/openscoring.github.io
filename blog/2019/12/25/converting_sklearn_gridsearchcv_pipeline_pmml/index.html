@@ -105,7 +105,7 @@ The latter is a mapping between parameter names and parameter value ranges (a li
 If the dimensionality of the hyperparameter space is low, and the gradation of all individual dimensions is directly enumerable, then it is possible to perform exhaustive search using the <code class="language-plaintext highlighter-rouge">GridSearchCV</code> meta-estimator.
 In all other cases, it is possible to perform random sampling using the <code class="language-plaintext highlighter-rouge">RandomizedSearchCV</code> meta-estimator.</p>
 
-<h3 id="single-estimator-aka-local-tuning">Single estimator (aka local) tuning</h3>
+<h2 id="single-estimator-aka-local-tuning">Single estimator (aka local) tuning</h2>
 
 <p>If the pipeline contains just one tuneable estimator, then the tuning work should be performed locally, by wrapping this estimator in its current place into a search meta-estimator:</p>
 
@@ -143,7 +143,7 @@ As a result, the fit method of the tuneable estimator is exposed to less data re
 For example, in the above Python code, the <code class="language-plaintext highlighter-rouge">LogisticRegression.fit(X, y)</code> method is called with roughly 80% of data records (the training subset of the original dataset), whereas <code class="language-plaintext highlighter-rouge">LabelBinarizer.fit(X)</code> and <code class="language-plaintext highlighter-rouge">StandardScaler.fit(X)</code> methods are called with 100% of data records (full original dataset).
 Data scientists may want to compensate for this effect, especially when working with smaller and more heterogeneous datasets.</p>
 
-<h3 id="pipeline-aka-global-tuning">Pipeline (aka global) tuning</h3>
+<h2 id="pipeline-aka-global-tuning">Pipeline (aka global) tuning</h2>
 
 <p>If the pipeline contains multiple tuneable estimators, then the tuning work should be performed globally, by wrapping the complete pipeline into a search meta-estimator:</p>
 
@@ -187,7 +187,7 @@ They are kept separate from one another logically by prefixing parameter names w
 <p>The search meta-estimator is still splitting the original dataset into two subsets.
 However, the split happens before the workflow execution enters the <code class="language-plaintext highlighter-rouge">(PMML)Pipeline.fit(X, y)</code> method, so all estimators in the pipeline are exposed to the same number of data records.</p>
 
-<p>If the span of a validation subset exceeds that of a training subset, then the corresponding cross-validation fold fails with a value error:</p>
+<p>If the span of a validation subset exceeds that of a training subset, then the corresponding cross-validation fold shall fail with a value error:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Traceback (most recent call last):
   File "train-global.py", line 41, in &lt;module&gt;
@@ -216,7 +216,7 @@ ValueError: Employment: Data contains 1 invalid values
 
 <p>It is possible to suppress this sanity check by changing the value of the <code class="language-plaintext highlighter-rouge">Domain.invalid_value_treatment</code> attribute from <code class="language-plaintext highlighter-rouge">return_invalid</code> to <code class="language-plaintext highlighter-rouge">as_is</code>.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

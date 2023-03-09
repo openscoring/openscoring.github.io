@@ -102,7 +102,7 @@ The <a href="https://github.com/microsoft/LightGBM/issues/909">suggested route</
   <li>Deploying the model in “PMML interpretation” and “PMML to Java bytecode transpilation” modes.</li>
 </ol>
 
-<h3 id="model-training">Model training</h3>
+<h2 id="model-training">Model training</h2>
 
 <p>LightGBM has built-in support for categorical features and missing values.
 This functionality often remains unused, because end users simply do not know about it, or cannot find a way to implement it in practice.
@@ -152,7 +152,7 @@ It is possible to force any column to become categorical by casting its data typ
 <p>The indices of categorical features (in the mapper output) must be passed to the <code class="language-plaintext highlighter-rouge">LGBMModel.fit(X, y, **fit_params)</code> method as the <code class="language-plaintext highlighter-rouge">categorical_feature</code> fit parameter.
 By Scikit-Learn conventions, if the fit method is called via the <code class="language-plaintext highlighter-rouge">(PMML)Pipeline.fit(X, y, **fit_params)</code> method, then fit parameters need to be prefixed with the name of the step followed by two underscore characters.</p>
 
-<h3 id="model-conversion">Model conversion</h3>
+<h2 id="model-conversion">Model conversion</h2>
 
 <p>The PMML representation of LightGBM models relies on PMML markup and idioms that have been firmly in place since the PMML schema version 3.0.
 This coupled with the fact that the PMML standard is designed with backward compatibility in mind makes for a very convincing argument that LightGBM models that have been converted to the PMML representation shall be usable for years and even decades with zero or very little maintenance.</p>
@@ -186,7 +186,7 @@ Replacing static data structures with dynamic code leads to coupling with fairly
 
 <p>The recommended approach is to use PMML XML files for long-term storage, and perform the transpilation to PMML service provider JAR files at the deployment time.</p>
 
-<h3 id="model-deployment">Model deployment</h3>
+<h2 id="model-deployment">Model deployment</h2>
 
 <p>The model should be evaluatable using any moderately capable PMML engine.
 Java users are advised to head straight to the <a href="https://github.com/jpmml/jpmml-evaluator">JPMML-Evaluator</a> library.</p>
@@ -270,7 +270,7 @@ This can be regarded as the “baseline prediction” for this particular model 
 Most PMML documents can be verified and deployed without any external supporting documentation.
 It is virtually impossible to make programming mistakes (eg. accidentally swapping the order of input fields), and the integration work does not need to be touched when updating model versions or upgrading from one model type to another.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit-NA” dataset: <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>

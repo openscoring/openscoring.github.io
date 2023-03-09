@@ -104,7 +104,7 @@ Such machine-generated pipelines are identical to human-generated pipelines in a
 For more sophisticated application scenarios, the fitted pipeline can be accessed directly as the <code class="language-plaintext highlighter-rouge">fitted_pipeline_</code> attribute, or converted to Python application code using the <code class="language-plaintext highlighter-rouge">export(path)</code> method.</p>
 
 <p>Fitted <a href="https://github.com/EpistasisLab/tpot/issues/520">TPOT estimators cannot be pickled</a> by design.
-This poses a serious problem for the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package, which operates on Pickle files rather than on in-memory Python objects.</p>
+This poses a serious problem for the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package, which operates on pickle files rather than on in-memory Python objects.</p>
 
 <p>For example, attempting to fit and convert an estimator-only <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object:</p>
 
@@ -123,7 +123,7 @@ This poses a serious problem for the <code class="language-plaintext highlighter
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pmml_pipeline</span><span class="p">,</span> <span class="s">"TPOTIris.pmml"</span><span class="p">,</span> <span class="n">with_repr</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>This attempt fails with a pickling error inside the <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml(Pipeline: pipeline, str: pmml_output_path)</code> utility function:</p>
+<p>This attempt raises a pickling error inside the <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml(Pipeline: pipeline, str: pmml_output_path)</code> utility function:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Generation 1 - Current best internal CV score: 0.9733333333333334               
 Generation 2 - Current best internal CV score: 0.9733333333333334               
@@ -159,7 +159,7 @@ Traceback (most recent call last):
 _pickle.PicklingError: Can't pickle &lt;class 'tpot.operator_utils.LogisticRegression__C'&gt;: it's not found as tpot.operator_utils.LogisticRegression__C
 </code></pre></div></div>
 
-<p>The workaround is to fit <code class="language-plaintext highlighter-rouge">TPOTClassifier</code> in standalone mode, and create a <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object off the <code class="language-plaintext highlighter-rouge">TPOTClassifier.fitted_pipeline_</code> attribute using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.make_pmml_pipeline(Pipeline: pipeline)</code> utility function:</p>
+<p>The workaround is to fit <code class="language-plaintext highlighter-rouge">TPOTClassifier</code> in standalone mode, and create a <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object off the <code class="language-plaintext highlighter-rouge">TPOTClassifier.fitted_pipeline_</code> attribute using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.make_pmml_pipeline(obj)</code> utility function:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
 <span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span><span class="p">,</span> <span class="n">make_pmml_pipeline</span>
@@ -181,7 +181,7 @@ _pickle.PicklingError: Can't pickle &lt;class 'tpot.operator_utils.LogisticRegre
 
 <p>Working with real-life datasets is only a little bit more complicated.</p>
 
-<h3 id="feature-engineering">Feature engineering</h3>
+<h2 id="data-pre-processing">Data pre-processing</h2>
 
 <p>TPOT estimators require that the <code class="language-plaintext highlighter-rouge">X</code> argument of the <code class="language-plaintext highlighter-rouge">fit(X, y)</code> method is a numeric matrix.</p>
 
@@ -194,11 +194,11 @@ For example, if the domain knowledge suggests that feature ratios might be signi
 
 <p>An AutoML algorithm should have no problem going through arbitrary size data matrices by applying feature selection.</p>
 
-<p>The suggested approach is to split the workflow into two parts.
-First, there is a feature engineering part, which accepts a raw data matrix, and transforms it to a 2-D Numpy array.
-Second, there is a TPOT part, which performs the magic.</p>
+<p>The suggested approach is to split the workflow into two stages.
+First, there is a data pre-processing stage, which accepts a raw data matrix, and transforms it to a 2-D Numpy array.
+Second, there is a TPOT stage, which performs the magic.</p>
 
-<p>These two parts are executed one after another.
+<p>These two stages are executed one after another.
 They produce fitted “child” <code class="language-plaintext highlighter-rouge">Pipeline</code> objects, which are joined programmatically into a fitted “parent” <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object for a quick and easy conversion to the PMML representation.</p>
 
 <p>Sample usage:</p>
@@ -246,7 +246,7 @@ They produce fitted “child” <code class="language-plaintext highlighter-roug
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pmml_pipeline</span><span class="p">,</span> <span class="s">"TPOTAudit.pmml"</span><span class="p">,</span> <span class="n">with_repr</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="configuring-tpot-search-space">Configuring TPOT search space</h3>
+<h2 id="configuring-tpot-search-space">Configuring TPOT search space</h2>
 
 <p>The <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library (that powers the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package) must recognize and support all pipeline steps for the conversion to succeed.</p>
 
@@ -278,7 +278,7 @@ If the goal is to obtain human-interpretable models, then it is easy to disable 
 <span class="k">del</span> <span class="n">tpot_pmml_config</span><span class="p">[</span><span class="s">"sklearn.neighbors.KNeighborsClassifier"</span><span class="p">]</span>
 </code></pre></div></div>
 
-<h3 id="interpreting-results">Interpreting results</h3>
+<h2 id="interpreting-results">Interpreting results</h2>
 
 <p>TPOT defines and uses the <code class="language-plaintext highlighter-rouge">tpot.builtins.StackingEstimator</code> meta-estimator to chain multiple estimators together.</p>
 
@@ -338,7 +338,7 @@ When fitted models are converted to the PMML representation, then it becomes pos
 <p>Good PMML converters such as all JPMML-family conversion libraries can run static analyses on PMML class model objects and correct many such issues.
 Corrected PMML documents have lower resource requirements and perform significantly better.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

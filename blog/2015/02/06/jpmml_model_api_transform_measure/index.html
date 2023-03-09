@@ -88,7 +88,7 @@
 <div class="post">
   <p>Java (programming language-) agent is a JVM service that is based on the <a href="https://docs.oracle.com/javase/8/docs/api/java/lang/instrument/package-summary.html">Java Instrumentation API</a>. Java agents are loaded into the JVM and activated before any application code is loaded. Therefore, Java agents have the unique ability to monitor and/or control the complete life-cycle of Java applications. This is typically achieved by modifying the definitions of Java class files.</p>
 
-<h3 id="sax-locator-information">SAX Locator information</h3>
+<h2 id="sax-locator-information">SAX Locator information</h2>
 
 <p>The <a href="https://github.com/jpmml/jpmml-model">JPMML-Model</a> library provides a class model that is rooted at the <code class="language-plaintext highlighter-rouge">org.dmg.pmml.PMMLObject</code> class. This class declares a sole <code class="language-plaintext highlighter-rouge">locator</code> field, whose responsibility is to hold SAX Locator information. Different JAXB runtimes are able to discover and initialize this field in a completely automated fashion, because it is marked with appropriate proprietary annotations (eg. <code class="language-plaintext highlighter-rouge">com.sun.xml.bind.annotation.XmlLocation</code> for <a href="https://javaee.github.io/metro/">GlassFish Metro</a>, <code class="language-plaintext highlighter-rouge">org.eclipse.persistence.oxm.annotations.XmlLocation</code> for <a href="https://www.eclipse.org/eclipselink/">EclipseLink MOXy</a>).</p>
 
@@ -114,7 +114,7 @@
 
 <p>This leads to the conclusion that, more often than not, it would be desirable to get rid of the <code class="language-plaintext highlighter-rouge">locator</code> field in a safe and easy manner. The main benefit of doing so is that it reduces the memory consumption by 25-30%. Given that RAM is cheap and plentiful nowadays, this optimization becomes reasonable to pursue when the application needs to deploy a large number of ensemble models (eg. Random Forest models) in parallel. The added benefit is that the unmarshalling time is reduced in the same proportion.</p>
 
-<h3 id="activating-the-jpmml-agent">Activating the JPMML agent</h3>
+<h2 id="activating-the-jpmml-agent">Activating the JPMML agent</h2>
 
 <p>JPMML agent is part of the JPMML-Model library project. JPMML agent depends on the <a href="https://www.javassist.org">Javassist</a> library for its Java class file transformation functionality. Both the JPMML agent JAR file and the Javassist JAR file can be downloaded from the Maven Central repository:</p>
 
@@ -144,7 +144,7 @@
 
 <p>If the JAR file <code class="language-plaintext highlighter-rouge">myapplication.jar</code> does not contain Javassist classes, then they need to be added to the application classpath by other means. The JVM ignores the <code class="language-plaintext highlighter-rouge">-cp</code> option when the <code class="language-plaintext highlighter-rouge">-jar</code> option is set. Therefore, in the last command, the application classpath is crafted manually by prepending the Javassist JAR file to the application JAR file, and the name of the main class is spelled out in full.</p>
 
-<h3 id="transformation">Transformation</h3>
+<h2 id="transformation">Transformation</h2>
 
 <p>Transformation is performed by the <code class="language-plaintext highlighter-rouge">org.jpmml.agent.PMMLObjectTransformer</code> class. The current implementation is naive, because the SAX Locator information is omitted simply by deleting the <code class="language-plaintext highlighter-rouge">locator</code> field. A more sophisticated implementation could perform a series of “push down” refactorings, so that this field is preserved for subclasses that are associated with more error-prone PMML content.</p>
 
@@ -199,7 +199,7 @@
 
 <p>This transformation should be completely safe and undetectable from the Java application perspective.</p>
 
-<h3 id="memory-measurement">Memory measurement</h3>
+<h2 id="memory-measurement">Memory measurement</h2>
 
 <p>Memory measurement is performed by the <code class="language-plaintext highlighter-rouge">org.jpmml.model.visitors.MemoryMeasurer</code> class that traverses a class model object first by JPMML-Model Visitor API and then by Java Reflection API. This Visitor maintains a set of distinct objects that are reachable from the specified “root” object. The size of individual objects is approximated using the <code class="language-plaintext highlighter-rouge">java.lang.instrument.Instrumentation#getObjectSize(Object)</code> method. The total size of the class model object is calculated by summing the sizes of set members.</p>
 

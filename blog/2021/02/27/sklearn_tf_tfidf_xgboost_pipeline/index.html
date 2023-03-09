@@ -86,7 +86,7 @@
     <h1>Training Scikit-Learn TF(-IDF) plus XGBoost pipelines</h1>
   
 <div class="post">
-  <h3 id="you-have-been-doing-it-wrong">You have been doing it wrong</h3>
+  <h2 id="you-have-been-doing-it-wrong">You have been doing it wrong</h2>
 
 <p>Consider the simplest TF(-IDF) plus XGBoost pipeline:</p>
 
@@ -135,7 +135,7 @@ For example, the predicted probabilities for the first data record of the “sen
 
 <p>Clearly, one of the two pipelines must be incorrect.</p>
 
-<h3 id="untangling-the-mess">Untangling the mess</h3>
+<h2 id="untangling-the-mess">Untangling the mess</h2>
 
 <p>The situation cannot be definitively cleared up by making more predictions, or exploring the documentation and Python source code of relevant classes and methods.</p>
 
@@ -187,13 +187,13 @@ In plain english, these interpretations read like “I do not know if the docume
 <p>Scikit-Learn estimators typically error out when they encounter <code class="language-plaintext highlighter-rouge">NaN</code> values.
 In contrast, XGBoost estimators treat <code class="language-plaintext highlighter-rouge">NaN</code> values as special-purpose missing value indicator values, and grow missing value-aware decision trees.</p>
 
-<p>When comparing XGBoost estimators between the first and the second pipeline, then they are structurally different (overall vocabulary, the time and location of invoking individual terms, etc.).
+<p>When comparing XGBoost estimators between the first and the second pipeline, then they are structurally different (overall vocabulary, the time and location of individual term invocations, etc.).
 The former incorrectly believes that it was dealing with massive amounts of missing values during training, and all its internals are thus systematically off.</p>
 
 <p>A data scientist may evaluate such a biased TF(-IDF) plus XGBoost pipeline with a validation dataset, and decide that its raw numeric performance is still good enough for productionization.
 It would be okay. The Pipeline API provides adequate guarantees that all biases survive and are consistently applied throughout the pipeline life-cycle.</p>
 
-<h3 id="doing-it-right">Doing it right</h3>
+<h2 id="doing-it-right">Doing it right</h2>
 
 <p>As of XGBoost 1.3(.3), the <code class="language-plaintext highlighter-rouge">missing</code> constructor parameter has no effect:</p>
 
@@ -231,7 +231,7 @@ However, it is prohibitively expensive in real-life situations where the dimensi
 
 <p>The above TF(-IDF) plus XGBoost sequence is correct in a sense that unset cell values are interpreted as zero count values.</p>
 
-<p>The only problem is that this sequence cannot be “formatted” as a <code class="language-plaintext highlighter-rouge">Pipeline</code> object, because there is no reusable (pseudo-)transformer that would implement the intermediate <code class="language-plaintext highlighter-rouge">DataFrame.sparse.from_spmatrix(data)</code> method invocation.</p>
+<p>The only problem is that this sequence cannot be “formatted” as a <code class="language-plaintext highlighter-rouge">Pipeline</code> object, because there is no reusable (pseudo-)transformer that would implement the intermediate <code class="language-plaintext highlighter-rouge">DataFrame.sparse.from_spmatrix(data)</code> method call.</p>
 
 <p>However, fitted pipeline steps can be combined into a temporary pipeline for PMML conversion purposes:</p>
 
@@ -244,7 +244,7 @@ However, it is prohibitively expensive in real-life situations where the dimensi
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pmml_pipeline</span><span class="p">,</span> <span class="s">"XGBSentiment.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Sentiment” dataset: <a href="https://openscoring.io/resources/data/sentiment.csv"><code class="language-plaintext highlighter-rouge">sentiment.csv</code></a></li>

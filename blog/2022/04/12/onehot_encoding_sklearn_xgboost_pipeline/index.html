@@ -111,7 +111,7 @@ More sophisticated encoding schemes are expected to follow.</p>
   <li>Model-internal OHE for XGBoost version 1.4 and newer</li>
 </ul>
 
-<h3 id="categorical-data-in-xgboost">Categorical data in XGBoost</h3>
+<h2 id="categorical-data-in-xgboost">Categorical data in XGBoost</h2>
 
 <p>The results of optimization work depend on the correct identification of limiting steps (“bottlenecks”), and finding ways to overcome or bypass them.</p>
 
@@ -176,7 +176,7 @@ In the above example, all <code class="language-plaintext highlighter-rouge">X</
 
 <p>By eliminating a high-cost but low-value data transformation in the Python environment, it will be possible to run existing experiments much faster, or start running new and much bigger experiments.</p>
 
-<h3 id="legacy-workflow-external-ohe">Legacy workflow: external OHE</h3>
+<h2 id="legacy-workflow-external-ohe">Legacy workflow: external OHE</h2>
 
 <p>The legacy workflow implements OHE in the Scikit-Learn API layer, and therefore supports all XGBoost versions, including all the pre-1.0 ones.</p>
 
@@ -289,7 +289,7 @@ The best reference is canonical OHE results stored in a dense array.</p>
 </span><span class="n">numpy</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">yt_sparse</span><span class="p">,</span> <span class="n">yt_dense</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h5 id="dense-datasets">Dense datasets</h5>
+<h3 id="dense-datasets">Dense datasets</h3>
 
 <p>Standard Scikit-Learn transformers such as <code class="language-plaintext highlighter-rouge">sklearn.preprocessing.LabelBinarizer</code> and <code class="language-plaintext highlighter-rouge">sklearn.preprocessing.OneHotEncoder</code> are suitable for working with dense datasets only, because their output is inherently two-state (ie. binary).</p>
 
@@ -369,7 +369,7 @@ The resulting sparse matrix contains only <code class="language-plaintext highli
 </span><span class="n">dmat</span> <span class="o">=</span> <span class="n">DMatrix</span><span class="p">(</span><span class="n">data</span> <span class="o">=</span> <span class="n">Xt</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">missing</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h5 id="sparse-datasets">Sparse datasets</h5>
+<h3 id="sparse-datasets">Sparse datasets</h3>
 
 <p>There are no standard Scikit-Learn transformers suitable for working with sparse datasets as-is.
 The prevailing workaround is filling in missing values via imputation.
@@ -417,7 +417,7 @@ The sparsity of the <code class="language-plaintext highlighter-rouge">Xt</code>
 <p>An <code class="language-plaintext highlighter-rouge">xgboost::DMatrix</code> object that is constructed based on a sparse Python matrix appears to transfer data into a sparse C++ matrix as well.
 Interestingly enough, XGBoost can find a data layout that reduces memory usage significantly.</p>
 
-<h3 id="modern-workflow-model-internal-ohe">Modern workflow: model-internal OHE</h3>
+<h2 id="modern-workflow-model-internal-ohe">Modern workflow: model-internal OHE</h2>
 
 <p>XGBoost version 1.3 and newer support model-internal OHE.</p>
 
@@ -478,7 +478,7 @@ Therefore, the same Scikit-Learn pipeline can be used both with dense and sparse
   </tbody>
 </table>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

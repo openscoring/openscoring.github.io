@@ -86,7 +86,7 @@
     <h1>Analyzing Scikit-Learn feature importances via PMML</h1>
   
 <div class="post">
-  <h3 id="terminology">Terminology</h3>
+  <h2 id="terminology">Terminology</h2>
 
 <p><strong>Feature importance</strong> reflects which features are considered to be significant by the ML algorithm during model training.</p>
 
@@ -101,10 +101,10 @@ For example, the cost and complexity of models can be reduced by gradually elimi
 <p>Feature impact is calculated by substituting feature values into the model equation, and aggregating the partial scores of model terms feature-wise.
 This calculation is applicable to all data records, irrespective of their origin (ie. training, validation and testing datasets).</p>
 
-<h3 id="scikit-learn">Scikit-Learn</h3>
+<h2 id="scikit-learn">Scikit-Learn</h2>
 
 <p>Some model types have built-in feature importance estimation capabilities.
-For example, decision tree and decision tree ensemble models declare a <code class="language-plaintext highlighter-rouge">feature_importances_</code> property that yields Gini Impurities upon invocation.
+For example, decision tree and decision tree ensemble models declare a <code class="language-plaintext highlighter-rouge">feature_importances_</code> property that yields Gini Impurities.
 Similarly, it is not formalized as a linear model property, but all seasoned data scientists know that the beta coefficients of a linear model act as surrogate feature importances (assuming standardized data).</p>
 
 <p>Scikit-Learn version 0.24 and newer provide the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.inspection.permutation_importance.html"><code class="language-plaintext highlighter-rouge">sklearn.inspection.permutation_importance</code></a> utility function for calculating permutation-based importances for all model types.</p>
@@ -144,15 +144,15 @@ For example, optimizing feature encodings, exploring and generating feature inte
 <span class="k">print</span><span class="p">(</span><span class="n">imp_classifier</span><span class="p">.</span><span class="n">importances_mean</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="pickle">Pickle</h3>
+<h2 id="pickle">Pickle</h2>
 
-<p>The <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library can only work with this state of a Python object that is serializable in Pickle data format.
+<p>The <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library can only work with this state of a Python object that is serializable in pickle data format.
 A Python property does not have a persistent state. The workaround is to transfer its value into a new regular Python attribute.</p>
 
 <p>By convention, the JPMML-SkLearn library checks if the Python pipeline or model object has a <code class="language-plaintext highlighter-rouge">pmml_feature_importances_</code> attribute (the <code class="language-plaintext highlighter-rouge">pmml_</code> prefix prepended to the standard <code class="language-plaintext highlighter-rouge">feature_importances_</code> attribute name).
 If it does, then it is expected to hold a Numpy array of shape <code class="language-plaintext highlighter-rouge">(n_features, )</code>.</p>
 
-<p>Exposing the built-in feature importances of a decision tree:</p>
+<p>Exposing decision tree feature importances:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
 
@@ -164,9 +164,9 @@ If it does, then it is expected to hold a Numpy array of shape <code class="lang
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"DecisionTreeAudit.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>In case of ensemble models there are feature importances available at different aggregation levels.</p>
+<p>In case of ensemble models there could be feature importances available at different aggregation levels.</p>
 
-<p>Exposing the built-in feature importances of a decision tree ensemble, first at the root model level, and then at the member model level:</p>
+<p>Exposing decision tree ensemble feature importances, first at the root model level, and then at the member model level:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
 
@@ -194,7 +194,7 @@ If it does, then it is expected to hold a Numpy array of shape <code class="lang
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"LogisticRegressionAudit.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="pmml">PMML</h3>
+<h2 id="pmml">PMML</h2>
 
 <p>The <a href="https://dmg.org/pmml/v4-4-1/MiningSchema.html#xsdElement_MiningField"><code class="language-plaintext highlighter-rouge">MiningField</code></a> element specifies an <code class="language-plaintext highlighter-rouge">importance</code> attribute for recording field importance values.</p>
 
@@ -302,7 +302,7 @@ All field importance values are roughly of the same magnitude.</p>
 <p>The console print-out shows only 24 values this time.
 The first value <code class="language-plaintext highlighter-rouge">0.1445742412830531</code> corresponds to the root model. The following 23 values range from <code class="language-plaintext highlighter-rouge">0.00341113616139356</code> to <code class="language-plaintext highlighter-rouge">0.4084976807753639</code>, and correspond to member decision tree models; the “missing” eight field importances should be interpreted as <code class="language-plaintext highlighter-rouge">0.0</code> values.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

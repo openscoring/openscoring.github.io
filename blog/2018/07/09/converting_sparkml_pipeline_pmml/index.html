@@ -94,7 +94,7 @@ However, recent iterations have been gradually introducing new public API buildi
 
 <p>This blog post details this breaking API change, and all the new features and functionality that it entails.</p>
 
-<h3 id="api-overview">API overview</h3>
+<h2 id="api-overview">API overview</h2>
 
 <p>The old API was designed after Apache Spark MLlib’s <a href="https://spark.apache.org/docs/latest/api/java/org/apache/spark/mllib/pmml/PMMLExportable.html"><code class="language-plaintext highlighter-rouge">org.apache.spark.mllib.pmml.PMMLExportable</code></a> trait.
 The <code class="language-plaintext highlighter-rouge">ConverterUtil#toPMML(StructType, PipelineModel)</code> utility method was simply doing its best to emulates the non-existing <code class="language-plaintext highlighter-rouge">org.apache.spark.ml.PipelineModel#toPMML(StructType)</code> method.</p>
@@ -113,7 +113,7 @@ In contrast, JPMML-SparkML carefully collects and maintains (meta-)information a
 <p>Application code should treat <code class="language-plaintext highlighter-rouge">PMMLBuilder</code> objects as local throwaway objects.
 Due to the tight coupling to the Apache Spark environment, they are not suitable for persistence, or exchanging between applications and environments.</p>
 
-<h3 id="choosing-the-right-jpmml-sparkml-flavour-and-version">Choosing the right JPMML-SparkML flavour and version</h3>
+<h2 id="choosing-the-right-jpmml-sparkml-flavour-and-version">Choosing the right JPMML-SparkML flavour and version</h2>
 
 <p>JPMML-SparkML exists in two flavours:</p>
 
@@ -174,7 +174,7 @@ For example, the following exception is thrown when JPMML-SparkML version 1.4(.1
   ... 48 elided
 </code></pre></div></div>
 
-<h5 id="library-jar">Library JAR</h5>
+<h3 id="library-jar">Library JAR</h3>
 
 <p>The library JAR file can be imported into Apache Spark version 2.3.0 (and newer) using the <code class="language-plaintext highlighter-rouge">--packages</code> command-line option. Package coordinates must follow Apache Maven conventions <code class="language-plaintext highlighter-rouge">${groupId}:${artifactId}:${version}</code>, where the groupId and artifactId are fixed as <code class="language-plaintext highlighter-rouge">org.jpmml</code> and <code class="language-plaintext highlighter-rouge">jpmml-sparkml</code>, respectively.</p>
 
@@ -199,7 +199,7 @@ $ $SPARK_HOME/bin/spark-shell --packages org.jpmml:jpmml-sparkml:${version}
   ... 48 elided
 </code></pre></div></div>
 
-<h5 id="executable-uber-jar">Executable uber-JAR</h5>
+<h3 id="executable-uber-jar">Executable uber-JAR</h3>
 
 <p>The executable uber-JAR file can be imported into any Apache Spark version using the <code class="language-plaintext highlighter-rouge">--jars</code> command-line option.</p>
 
@@ -209,9 +209,9 @@ $ $SPARK_HOME/bin/spark-shell --packages org.jpmml:jpmml-sparkml:${version}
 $ $SPARK_HOME/bin/pyspark --jars /path/to/jpmml-sparkml-executable-${version}.jar
 </code></pre></div></div>
 
-<h3 id="updating-application-code">Updating application code</h3>
+<h2 id="updating-application-code">Updating application code</h2>
 
-<p>The <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.ConverterUtil</code> utility class is still part of JPMML-SparkML, but it has been marked as deprecated, and rendered dysfunctional - both <code class="language-plaintext highlighter-rouge">#toPMML(StructType, PipelineModel)</code> and <code class="language-plaintext highlighter-rouge">#toPMMLByteArray(StructType, PipelineModel)</code> utility methods throw an <code class="language-plaintext highlighter-rouge">java.lang.UnsupportedOperationException</code> when invoked:</p>
+<p>The <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.ConverterUtil</code> utility class is still part of JPMML-SparkML, but it has been marked as deprecated, and rendered dysfunctional - both <code class="language-plaintext highlighter-rouge">#toPMML(StructType, PipelineModel)</code> and <code class="language-plaintext highlighter-rouge">#toPMMLByteArray(StructType, PipelineModel)</code> utility methods always throw an <code class="language-plaintext highlighter-rouge">java.lang.UnsupportedOperationException</code>:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.UnsupportedOperationException: Replace "org.jpmml.sparkml.ConverterUtil.toPMMLByteArray(schema, pipelineModel)" with "new org.jpmml.sparkml.PMMLBuilder(schema, pipelineModel).buildByteArray()"
   at org.jpmml.sparkml.ConverterUtil.toPMMLByteArray(ConverterUtil.java:51)
@@ -249,9 +249,9 @@ $ $SPARK_HOME/bin/pyspark --jars /path/to/jpmml-sparkml-executable-${version}.ja
 However, most applications should be content with the JPMML-SparkML generated PMML document, and will be processing it as a generic blob.
 The choice between the last two options depends on the approximate size/complexity of the PMML document (eg. elementary models vs. ensemble models) and overall application architecture.</p>
 
-<h3 id="new-api-features-and-functionality">New API features and functionality</h3>
+<h2 id="new-api-features-and-functionality">New API features and functionality</h2>
 
-<h5 id="conversion-options">Conversion options</h5>
+<h3 id="conversion-options">Conversion options</h3>
 
 <p>The “business logic” of some Apache Spark ML transformer or model can often be converted to the PMML representation in more than one way. Some representations are easier to approach for humans (eg. interpretation and manual modification), whereas some other representations are more compact or faster to execute for machines.</p>
 
@@ -282,7 +282,7 @@ To discover and learn which conversion options are available (in a particular JP
   <li><code class="language-plaintext highlighter-rouge">#putOption(PipelineStage, String, Object)</code> - Sets the conversion option for the specified pipeline stage only.</li>
 </ul>
 
-<h5 id="verification">Verification</h5>
+<h3 id="verification">Verification</h3>
 
 <p>Every conversion operation raises concern, whether the JPMML-SparkML library was doing a good job or not. Say, the conversion operation appears to have succeeded (ie. there were no exceptions thrown, and no warning- or error-level log messages emitted), but how to be sure that the PMML representation of the fitted pipeline shall be making exactly the same predictions as the Apache Spark representation did?</p>
 
@@ -301,7 +301,7 @@ JPMML-SparkML integration tests indicate that the JPMML ecosystem (ie. JPMML-Spa
   <li><code class="language-plaintext highlighter-rouge">#verify(Dataset&lt;Row&gt;, double, double)</code> - Embeds the verification dataset with custom acceptance criteria (precision and zero threshold).</li>
 </ul>
 
-<h3 id="jpmml-sparkml-wrappers">JPMML-SparkML wrappers</h3>
+<h2 id="jpmml-sparkml-wrappers">JPMML-SparkML wrappers</h2>
 
 <p>The JPMML-SparkML library is written in Java. It is very easy to integrate into any Java or Scala application to give it Apache Spark ingestion capabilities.</p>
 
@@ -309,7 +309,7 @@ JPMML-SparkML integration tests indicate that the JPMML ecosystem (ie. JPMML-Spa
 
 <p>The JPMML ecosystem now includes Python and R wrapper libraries for the JPMML-SparkML library. The wrappers are kept as minimal and shallow as possible. Essentially, they provide a language-specific class that communicates with the underlying <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.PMMLBuilder</code> Java class, and handle the conversion of objects between the two environments (eg. converting Python and R strings to Java strings, and vice versa).</p>
 
-<h5 id="pyspark">PySpark</h5>
+<h3 id="pyspark">PySpark</h3>
 
 <p>The <a href="https://github.com/jpmml/pyspark2pmml"><code class="language-plaintext highlighter-rouge">pyspark2pmml</code></a> package works with the official <a href="https://spark.apache.org/docs/latest/api/python/index.html">PySpark</a> interface.</p>
 
@@ -343,7 +343,7 @@ JPMML-SparkML integration tests indicate that the JPMML ecosystem (ie. JPMML-Spa
 <span class="n">pmmlBuilder</span><span class="p">.</span><span class="n">buildFile</span><span class="p">(</span><span class="s">"pipeline.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h5 id="sparklyr">Sparklyr</h5>
+<h3 id="sparklyr">Sparklyr</h3>
 
 <p>There is no package for the official <a href="https://spark.apache.org/docs/latest/sparkr.html">SparkR</a> interface.
 However, the <a href="https://github.com/jpmml/sparklyr2pmml"><code class="language-plaintext highlighter-rouge">sparklyr2pmml</code></a> package works with RStudio’s <a href="https://spark.rstudio.com/">Sparklyr</a> interface.</p>

@@ -89,11 +89,11 @@
   <p>The centerpiece of ML pipelines is the model.
 Steps that precede the model are called “data pre-processing” aka “feature engineering” steps. Steps that follow the model are called “prediction post-processing” aka “decision engineering” steps.</p>
 
-<p>Overall, the feature engineering part is more appreciated and valued than the decision engineering part.
+<p>Overall, data pre-processing is more appreciated and valued than prediction post-processing.
 Feature transformations allow the data to be (re)presented in more nuanced and relevant ways, thereby leading to better models.
 However, even the best model is functionally compromised if its predictions are confusing or difficult to integrate with the host application.</p>
 
-<p>Scikit-Learn pipelines provide feature engineering support, but completely lack decision engineering support. Any attempt to insert a transformer step after the final estimator step shall be rejected by raising an error.</p>
+<p>Scikit-Learn pipelines provide data pre-processing support, but completely lack prediction post-processing support. Any attempt to insert a transformer step after the final estimator step shall fail with an error.</p>
 
 <p>Potential workarounds include wrapping an estimator into a post-processing meta-estimator (that overrides the <code class="language-plaintext highlighter-rouge">predict(X)</code> method), or performing post-processing computations outside of the Scikit-Learn pipeline using free-form Python code.</p>
 
@@ -101,7 +101,7 @@ However, even the best model is functionally compromised if its predictions are 
 
 <p>Performing computations using free-form Python code is the nuclear option. It allows reaching any goal, but sacrifices the main value proposition of ML pipelines, which is atomicity and ease of deployment across time and space.</p>
 
-<h3 id="pmmlpipeline-transformed-prediction-api">PMMLPipeline “transformed prediction” API</h3>
+<h2 id="pmmlpipeline-transformed-prediction-api">PMMLPipeline “transformed prediction” API</h2>
 
 <p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides a <code class="language-plaintext highlighter-rouge">sklearn2pmml.pipeline.PMMLPipeline</code> class, which extends the <code class="language-plaintext highlighter-rouge">sklearn.pipeline.Pipeline</code> class with prediction post-processing.</p>
 
@@ -153,7 +153,7 @@ If a business decision is a function of both model input and output, then it sti
 
 <p>Additionally, the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides a <code class="language-plaintext highlighter-rouge">sklearn2pmml.postprocessing.BusinessDecisionTransformer</code> transformer, which generates rich <code class="language-plaintext highlighter-rouge">OutputField</code> elements following the <a href="https://dmg.org/pmml/v4-4-1/Output.html#xsdElement_Decisions">“decision” result feature</a> conventions.</p>
 
-<h3 id="examples">Examples</h3>
+<h2 id="examples">Examples</h2>
 
 <p>The class label of the “audit” dataset is encoded as a binary integer, where the “0” value and the “1” value indicate non-productive and productive audits, respectively.
 Such internal encodings should be unwound before reaching higher application levels.</p>
@@ -252,7 +252,7 @@ This does not pose any problems, because all the relevant <code class="language-
 <p>By default, the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package does not collect and encode node identifiers, because that would prevent it from compacting and flattening the tree data structure.
 The default behaviour is suppressed by deactivating <code class="language-plaintext highlighter-rouge">compact</code> and <code class="language-plaintext highlighter-rouge">flat</code> conversion options, and activating the <code class="language-plaintext highlighter-rouge">winner_id</code> conversion option. The <code class="language-plaintext highlighter-rouge">numeric</code> conversion option controls the encoding of categorical splits, and can toggled freely.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

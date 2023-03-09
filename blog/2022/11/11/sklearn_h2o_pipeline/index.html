@@ -92,7 +92,7 @@ Scikit-Learn users may find H2O.ai interesting when working with datasets that e
 <p>Sure, it is often possible to ignore the problem for extended periods of time by renting a bigger and faster computer.
 But the fact remains that Scikit-Learn is not a “Big Data”-oriented ML framework by design, and some new tools and new ways of doing things are likely to yield much better results.</p>
 
-<h3 id="estimator-upgrade-from-scikit-learn-to-h2oai">Estimator upgrade from Scikit-Learn to H2O.ai</h3>
+<h2 id="estimator-upgrade-from-scikit-learn-to-h2oai">Estimator upgrade from Scikit-Learn to H2O.ai</h2>
 
 <p>H2O.ai is written in Java, and typically runs in a managed server (whether on-premise or “cloud”).
 Python users can interact with an H2O.ai server using the <a href="https://github.com/h2oai/h2o-3/tree/master/h2o-py"><code class="language-plaintext highlighter-rouge">h2o</code></a> package.</p>
@@ -162,7 +162,7 @@ Python users can interact with an H2O.ai server using the <a href="https://githu
 <span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">Pipeline()</code> constructor succeeds, but the subsequent <code class="language-plaintext highlighter-rouge">Pipeline.fit(X, y)</code> method invocation raises a rather obscure attribute error:</p>
+<p>The <code class="language-plaintext highlighter-rouge">Pipeline</code> constructor succeeds, but the subsequent <code class="language-plaintext highlighter-rouge">Pipeline.fit(X, y)</code> method call raises a rather obscure attribute error:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Traceback (most recent call last):
   File "train.py", line 23, in &lt;module&gt;
@@ -176,7 +176,7 @@ Python users can interact with an H2O.ai server using the <a href="https://githu
 AttributeError: 'DataFrame' object has no attribute 'cbind'
 </code></pre></div></div>
 
-<h3 id="manual-data-upload-to-h2oai-server">Manual data upload to H2O.ai server</h3>
+<h2 id="manual-data-upload-to-h2oai-server">Manual data upload to H2O.ai server</h2>
 
 <p>Closer inspection of the <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/modeling.html#h2o.estimators.estimator_base.H2OEstimator.fit"><code class="language-plaintext highlighter-rouge">H2OEstimator.fit(X, y)</code></a> method signature reveals that it expects both <code class="language-plaintext highlighter-rouge">X</code> and <code class="language-plaintext highlighter-rouge">y</code> arguments to be of <code class="language-plaintext highlighter-rouge">h2o.H2OFrame</code> type.</p>
 
@@ -220,7 +220,7 @@ However, these operations are rather slow, because they involve transmitting the
 <span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">h2o_X</span><span class="p">,</span> <span class="n">h2o_y</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="semi-automated-data-upload-to-h2oai-server">Semi-automated data upload to H2O.ai server</h3>
+<h2 id="semi-automated-data-upload-to-h2oai-server">Semi-automated data upload to H2O.ai server</h2>
 
 <p>If the pipeline contains any transformer steps, then the manual data upload approach will not work, because Scikit-Learn transformer classes do not support data container types other than <code class="language-plaintext highlighter-rouge">numpy.ndarray</code> and <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code>.</p>
 
@@ -242,9 +242,9 @@ This gap is filled by the <a href="https://github.com/jpmml/sklearn2pmml"><code 
 <span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">H2OFrame</span><span class="p">(</span><span class="n">y</span><span class="p">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">column_types</span> <span class="o">=</span> <span class="p">[</span><span class="s">"categorical"</span><span class="p">]))</span>
 </code></pre></div></div>
 
-<h3 id="h2oai-pipeline-persistence">H2O.ai pipeline persistence</h3>
+<h2 id="h2oai-pipeline-persistence">H2O.ai pipeline persistence</h2>
 
-<p>Scikit-Learn developers recommend using Python’s built-in Pickle data format for short-term persistence needs:</p>
+<p>Scikit-Learn developers recommend using Python’s built-in pickle data format for short-term persistence needs:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pickle</span>
 
@@ -254,7 +254,7 @@ This gap is filled by the <a href="https://github.com/jpmml/sklearn2pmml"><code 
 
 <p>Unfitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> objects can be pickled and unpickled freely.</p>
 
-<p>However, any attempt to pickle a fitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> object raises a pickling error in latest H2O.ai versions (at the time of writing this (November 2022), eg. 3.34.0.8, 3.36.1.5, 3.38.0.2):</p>
+<p>However, any attempt to pickle a fitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> object shall fail with the following pickling error in latest H2O.ai versions (at the time of writing this (November 2022), eg. 3.34.0.8, 3.36.1.5, 3.38.0.2):</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Traceback (most recent call last):
   File "main.py", line 4, in &lt;module&gt;
@@ -264,7 +264,7 @@ _pickle.PicklingError: Can't pickle &lt;class 'h2o.estimators.glm.H2OGeneralized
 
 <p>The pickling will work if the H2O.ai version is downgraded to 3.32.1.7 or older.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>Python script: <a href="https://openscoring.io/resources/2022-11-11/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>

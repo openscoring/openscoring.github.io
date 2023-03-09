@@ -116,7 +116,7 @@ Some outlier detector classes may additionally define a <code class="language-pl
 <span class="n">pipeline</span><span class="p">.</span><span class="n">fit_predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="anomaly-score-as-a-feature">Anomaly score as a feature</h3>
+<h2 id="anomaly-score-as-a-feature">Anomaly score as a feature</h2>
 
 <p>A data scientist may wish to enrich the dataset with the anomaly score feature in order to train models that exhibit improved predictive performance, and are safer to deploy.
 For example, implementing a row filterer based on anomaly score thresholding.</p>
@@ -197,7 +197,7 @@ It makes sense to pick the <code class="language-plaintext highlighter-rouge">sk
 <span class="p">])</span>
 </code></pre></div></div>
 
-<p>If the outlier detector is operated in “labelling mode” (by invoking the <code class="language-plaintext highlighter-rouge">predict(X)</code> method that returns a bi-valued categorical integer feature, see above), then it is advisable to explicitly encode it in order to avoid accidental type system violations.</p>
+<p>If the outlier detector is operated in “labelling mode” (by calling the <code class="language-plaintext highlighter-rouge">predict(X)</code> method that returns a bi-valued categorical integer feature, see above), then it is advisable to explicitly encode it in order to avoid accidental type system violations.</p>
 
 <p>For example, linear models accept a categorical integer feature, but cast it forcibly to a continuous float feature. During training, the categorical integer feature is associated with a single beta coefficient.
 Such beta coefficient lacks deeper meaning, because it suggests that the contribution and significance of outliers (ie. the <code class="language-plaintext highlighter-rouge">-1</code> category level) is the exact opposite of inliers (ie. the <code class="language-plaintext highlighter-rouge">+1</code> category level).</p>
@@ -216,7 +216,7 @@ Such beta coefficient lacks deeper meaning, because it suggests that the contrib
 <span class="p">])</span>
 </code></pre></div></div>
 
-<h3 id="conditional-execution-of-estimators">Conditional execution of estimators</h3>
+<h2 id="conditional-execution-of-estimators">Conditional execution of estimators</h2>
 
 <p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides <code class="language-plaintext highlighter-rouge">sklearn2pmml.ensemble.SelectFirstClassifier</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.ensemble.SelectFirstClassifier</code> ensemble models, which can be used to implement row filtering based on anomaly score.</p>
 
@@ -278,7 +278,7 @@ It is fine to dispatch the raw anomaly score to the “outlier” child estimato
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"SelectFirstAudit.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

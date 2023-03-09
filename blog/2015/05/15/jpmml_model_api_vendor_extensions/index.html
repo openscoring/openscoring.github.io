@@ -96,7 +96,7 @@
 
 <ul>
   <li>The <a href="https://dmg.org/pmml/v4-4-1/Header.html#xsdElement_Annotation"><code class="language-plaintext highlighter-rouge">Annotation</code></a> element. Document modification history.</li>
-  <li>The <a href="https://dmg.org/pmml/v4-4-1/GeneralStructure.html#xsdElement_Extension"><code class="language-plaintext highlighter-rouge">Extension</code></a> element. Element-specific vendor extensions. Vendor extensions are suitable for adding “depth” to the target element. For example, persisting non-standard data and metadata, which could come in handy during various stages of model life-cycle.
+  <li>The <a href="https://dmg.org/pmml/v4-4-1/GeneralStructure.html#xsdElement_Extension"><code class="language-plaintext highlighter-rouge">Extension</code></a> element. Element-specific vendor extensions. Vendor extensions are suitable for adding “depth” to the target element. For example, persisting non-standard data and metadata, which could come in handy during various model life-cycle stages.
 Vendor extensions should not be critical for the successful use of the PMML document. The behaviour of a PMML engine should not change (at least, materially) if they are filtered out.</li>
   <li>The <a href="https://dmg.org/pmml/v4-4-1/Taxonomy.html#xsdElement_InlineTable"><code class="language-plaintext highlighter-rouge">InlineTable</code></a> element. Free-form data tables.</li>
 </ul>
@@ -135,11 +135,11 @@ Vendor extensions should not be critical for the successful use of the PMML docu
 
 <p>The XML Schema Definition (XSD) for MathML version 3 is is readily available. It can be compiled to JAXB class model with the help of the XJC binding compiler. The generated MathML class model consists of a number of classes in the <code class="language-plaintext highlighter-rouge">org.wc3.math</code> package. By convention, the XML registry class is named <code class="language-plaintext highlighter-rouge">org.w3c.math.ObjectFactory</code>.</p>
 
-<h3 id="production">Production</h3>
+<h2 id="production">Production</h2>
 
-<h5 id="w3c-dom-approach">W3C DOM approach</h5>
+<h3 id="w3c-dom-approach">W3C DOM approach</h3>
 
-<p>The MathML content is captured as an <code class="language-plaintext highlighter-rouge">org.w3c.dom.Element</code> object. It is critical that the W3C DOM API is operated in an XML namespace-aware fashion. This involves calling the <code class="language-plaintext highlighter-rouge">javax.xml.parsers.DocumentBuilderFactory#setNamespaceAware(boolean)</code> method with <code class="language-plaintext highlighter-rouge">true</code> as an argument and using the <code class="language-plaintext highlighter-rouge">org.w3c.dom.Document#createElementNS(String, String)</code> method for creating <code class="language-plaintext highlighter-rouge">Element</code> nodes.</p>
+<p>The MathML content is captured as an <code class="language-plaintext highlighter-rouge">org.w3c.dom.Element</code> object. It is critical that the W3C DOM API is operated in an XML namespace-aware fashion. This involves invoking the <code class="language-plaintext highlighter-rouge">javax.xml.parsers.DocumentBuilderFactory#setNamespaceAware(boolean)</code> method with <code class="language-plaintext highlighter-rouge">true</code> as an argument and using the <code class="language-plaintext highlighter-rouge">org.w3c.dom.Document#createElementNS(String, String)</code> method for creating <code class="language-plaintext highlighter-rouge">Element</code> nodes.</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">DocumentBuilderFactory</span> <span class="n">documentBuilderFactory</span> <span class="o">=</span> <span class="nc">DocumentBuilderFactory</span><span class="o">.</span><span class="na">newInstance</span><span class="o">();</span>
 
@@ -194,7 +194,7 @@ Vendor extensions should not be critical for the successful use of the PMML docu
 <span class="nt">&lt;/PMML&gt;</span>
 </code></pre></div></div>
 
-<h5 id="jaxb-approach">JAXB approach</h5>
+<h3 id="jaxb-approach">JAXB approach</h3>
 
 <p>The MathML content is captured as a <code class="language-plaintext highlighter-rouge">org.w3c.math.Math</code> object. The JAXB class model classes are properly annotated with XML namespace information. Therefore, application developers can focus on high-level work with POJOs.</p>
 
@@ -228,7 +228,7 @@ Caused by: javax.xml.bind.JAXBException: class org.w3c.math.Math nor any of its 
 
 <p>Just like the exception message suggests, the solution is to make the MathML class model known to the JAXB runtime.</p>
 
-<p>A <code class="language-plaintext highlighter-rouge">javax.xml.bind.JAXBContext</code> objects can be created by calling the <code class="language-plaintext highlighter-rouge">JAXBContext#newInstance(Class...)</code> method with a list of XML registry classes as arguments. Currently, this list must include <code class="language-plaintext highlighter-rouge">org.dmg.pmml.ObjectFactory</code> and <code class="language-plaintext highlighter-rouge">org.w3c.math.ObjectFactory</code> classes.</p>
+<p>A <code class="language-plaintext highlighter-rouge">javax.xml.bind.JAXBContext</code> objects can be created by invoking the <code class="language-plaintext highlighter-rouge">JAXBContext#newInstance(Class...)</code> method with a list of XML registry classes as arguments. Currently, this list must include <code class="language-plaintext highlighter-rouge">org.dmg.pmml.ObjectFactory</code> and <code class="language-plaintext highlighter-rouge">org.w3c.math.ObjectFactory</code> classes.</p>
 
 <p>A custom <code class="language-plaintext highlighter-rouge">JAXBContext</code> object passes complete type information to its child <code class="language-plaintext highlighter-rouge">javax.xml.bind.Marshaller</code> and <code class="language-plaintext highlighter-rouge">javax.xml.bind.Unmarshaller</code> objects. The marshalling and unmarshalling behaviour can be further modified by adjusting generic as well as implementation-specific configuration options. For example, setting the generic <code class="language-plaintext highlighter-rouge">jaxb.formatted.output</code> configuration option to <code class="language-plaintext highlighter-rouge">true</code> will indentate the XML document to make it more human friendly:</p>
 
@@ -277,7 +277,7 @@ Caused by: javax.xml.bind.JAXBException: class org.w3c.math.Math nor any of its 
 <span class="nt">&lt;/PMML&gt;</span>
 </code></pre></div></div>
 
-<h3 id="consumption">Consumption</h3>
+<h2 id="consumption">Consumption</h2>
 
 <p>The “completeness” of unmarshalling operation depends on which JAXB class models are known to the JAXB runtime. In brief, known XML content is returned in the form of JAXB objects, whereas unknown XML content is returned in the form of W3C DOM nodes.</p>
 

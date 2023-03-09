@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://www.googletagmanager.com/gtag/js?id=G-1XC1KCZX17" async></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'G-1XC1KCZX17');
+</script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn sklearn2pmml jpmml-python jpmml-sklearn">
+  <meta name="author" content="vruusmann">
+
+  <title>Extending Scikit-Learn with UDF expression transformer - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
+  <link rel="canonical" href="https://openscoring.io/blog/2023/03/09/sklearn_udf_expression_transformer/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Extending Scikit-Learn with UDF expression transformer - Openscoring">
+  <meta property="og:url" content="/blog/2023/03/09/sklearn_udf_expression_transformer/">
+  <meta property="og:site_name" content="Openscoring">
+  <meta property="og:updated_time" content="2023-03-09 00:00:00 +0200">
+  <meta property="article:published_time" content="2023-03-09 00:00:00 +0200">
+  <meta property="article:modified_time" content="2023-03-09 00:00:00 +0200">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Extending Scikit-Learn with UDF expression transformer - Openscoring">
+  <meta name="twitter:label1" content="Written by">
+  <meta name="twitter:data1" content="Villu Ruusmann">
+  <meta name="twitter:label2" content="Time to read">
+  <meta name="twitter:data2" content="Less than a minute">
+
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32">
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/assets/images/fa.png">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png">
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog/" class="btn btn--small">Blog</a>
+    </nav>
+  </div>
+</header>
+
+  <main class="container mt-26">
+    <h1>Extending Scikit-Learn with UDF expression transformer</h1>
+  
+<div class="post">
+  <p>A canonical workflow can be segmented into three stages:</p>
+<ol>
+  <li>Data pre-processing. Transforming data from real-life schema to modeling algorithm schema.</li>
+  <li>Modeling. Establishing the (approximate-) mathematical relationship between features and the label.</li>
+  <li>Prediction post-processing. Transforming prediction from modeling algorithm schema back to real-life schema.</li>
+</ol>
+
+<p>Everyday workflows skip out on both ends.
+Typically, they start close to the modeling stage, and stop right after it.
+One reason why it happens is the lack of adequate feature engineering and decision engineering tools.</p>
+
+<h2 id="feature-engineering-vs-feature-transformation">Feature engineering vs feature transformation</h2>
+
+<p>Inside the data pre-processing stage, there are two sub-stages:</p>
+<ol>
+  <li>Feature engineering. Deriving new features based on existing features. Manual, ad hoc activity.</li>
+  <li>Feature transformation. Making features compliant with specific requirements. Automated activity.</li>
+</ol>
+
+<p>Feature engineering always precedes feature transformation.
+It acts on real-life data.
+For example, the values of a string column are accessible as Python strings, and they can be processed using Python’s built-in operators and functions.</p>
+
+<p>Feature transformation maps values from one value space to another value space following some mathematical or statistical procedure.
+The main use case is ensuring compliance with modeling algorithm requirements.
+For example, all the (numeric-) inputs to a linear model should be standardized. Otherwise, the convergence (towards the solution) will be hampered, and the estimated beta coefficients will be meaningless.</p>
+
+<p>The feature transformation needs of Tabular ML applications can be satisfied using a limited number of algorithms such as scaling, discretization and encoding.
+Most ML frameworks provide correct and efficient implementations right out of the box.
+There is rarely any reason for coding up something extra from scratch.</p>
+
+<p>The dichotomy between the two sub-stages is highly pronounced in AutoML.</p>
+
+<p>State-of-the-art AutoML tools are incapable of feature engineering, but are highly proficient in feature transformation.
+To illustrate, they lack the imagination to generate feature crosses or feature ratios.
+However, when such synthetic features are presented to them, they will aptly work out which statistical procedure(s) will amplify the signal further.</p>
+
+<h2 id="scikit-learn-perspective">Scikit-Learn perspective</h2>
+
+<p>Scikit-Learn collects all its data pre-processing tools into the <code class="language-plaintext highlighter-rouge">sklearn.preprocessing</code> module.
+The offering is narrow (at least when compared to the offering of modeling algorithms), but covers all the fundamentals.</p>
+
+<p>As of Scikit-Learn version 1.2(.0), there are 18 transformer classes available.
+Two of them can be used for feature engineering purposes. The remaining 16 cannot, because they are pure-blood feature transformers.</p>
+
+<p>First, the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html"><code class="language-plaintext highlighter-rouge">sklearn.preprocessing.PolynomialFeatures</code></a> class derives features using the multiplicative operator (<code class="language-plaintext highlighter-rouge">*</code>).
+A feature multiplied by itself yields a power feature.
+A feature multiplied by some other feature yields a so-called interaction feature.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">PolynomialFeatures</code> transformer generates new features using polynomial combination, which quickly exhausts all computational and memory resources.
+In the feature engineering mode, it should be applied to feature pairs or triplets, expressly suppressing the generation of unnecessary terms.</p>
+
+<p>For example, interacting a continuous feature with a categorical feature:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">OneHotEncoder</span><span class="p">,</span> <span class="n">PolynomialFeatures</span>
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="c1"># Prepare columns
+</span>  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="n">ColumnTransformer</span><span class="p">([</span>
+    <span class="p">(</span><span class="s">"cont"</span><span class="p">,</span> <span class="s">"passthrough"</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+    <span class="p">(</span><span class="s">"cat"</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">(),</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+  <span class="p">])),</span>
+  <span class="c1"># Interact prepared columns
+</span>  <span class="p">(</span><span class="s">"interactor"</span><span class="p">,</span> <span class="n">PolynomialFeatures</span><span class="p">(</span><span class="n">degree</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">interaction_only</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">include_bias</span> <span class="o">=</span> <span class="bp">False</span><span class="p">))</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>Second, the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html"><code class="language-plaintext highlighter-rouge">sklearn.preprocessing.FunctionTransformer</code></a> class derives features using the user-supplied function.</p>
+
+<p>Its API documentation advertises that the <code class="language-plaintext highlighter-rouge">func</code> argument can be any callable.
+However, in practice, only stateless (aka idempotent) functions will do.
+The reason behind this statelessness requirement is that the function transformer does not inform the callable whether it is being called in the <code class="language-plaintext highlighter-rouge">fit(X)</code> or <code class="language-plaintext highlighter-rouge">transform(X)</code> method context.</p>
+
+<p>For example, the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html"><code class="language-plaintext highlighter-rouge">sklearn.preprocessing.StandardScaler</code></a> transformer calculates the mean and variance of the training dataset during fitting, and persists them as <code class="language-plaintext highlighter-rouge">StandardScaler.mean_</code> and <code class="language-plaintext highlighter-rouge">StandardScaler.var_</code> attributes, respectively, for future transforms on testing datasets.</p>
+
+<p>At first glance, it appears that it should be possible to replace standard scaler with a function transformer, where the <code class="language-plaintext highlighter-rouge">func</code> argument is the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.scale.html"><code class="language-plaintext highlighter-rouge">sklearn.preprocessing.scale</code></a> utility function.</p>
+
+<p>The results between the two will be in perfect agreement when calling the <code class="language-plaintext highlighter-rouge">fit_transform(X)</code> method with the complete training dataset.
+However, the results will be completely different when calling the <code class="language-plaintext highlighter-rouge">transform(X)</code> method with individual data samples of the training dataset, or with a testing dataset, because the function transformer forgets the calculated mean and variance values right after returning.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">scale</span><span class="p">,</span> <span class="n">FunctionTransformer</span><span class="p">,</span> <span class="n">StandardScaler</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">()</span>
+<span class="n">func_scaler</span> <span class="o">=</span> <span class="n">FunctionTransformer</span><span class="p">(</span><span class="n">scale</span><span class="p">)</span>
+
+<span class="n">X_train</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">]])</span>
+
+<span class="c1"># Same results
+</span><span class="k">print</span><span class="p">(</span><span class="n">scaler</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">func_scaler</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X_train</span><span class="p">))</span>
+
+<span class="n">X_test</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">asarray</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]])</span>
+
+<span class="c1"># Different results
+</span><span class="k">print</span><span class="p">(</span><span class="n">scaler</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">func_scaler</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X_test</span><span class="p">))</span>
+</code></pre></div></div>
+
+<h2 id="scikit-learn-function-transformer">Scikit-Learn function transformer</h2>
+
+<p>Suppose that there is a stateless <strong>user-defined function</strong> (UDF).
+Does it mean that it can be integrated into a Scikit-Learn pipeline by simply wrapping it into a <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> object?
+By default, the answer is negative, because the two cannot be bound together in a persistent way.</p>
+
+<p>Scikit-Learn developers recommend using Python’s built-in pickle data format for short-term persistence needs.</p>
+
+<p>The persistent state of Python functions is their (fully qualified-) name.
+The persistent state of Python anonymous functions aka lambdas is undefined, and they get rejected.</p>
+
+<p>These claims are easy to verify by dumping function objects using <a href="https://docs.python.org/3/library/pickle.html#data-stream-format">pickle protocol version <code class="language-plaintext highlighter-rouge">0</code></a> (the original “human-readable” protocol):</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="k">def</span> <span class="nf">_udf</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">numpy</span><span class="p">.</span><span class="n">exp</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="n">udf_str</span> <span class="o">=</span> <span class="n">pickle</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">_udf</span><span class="p">,</span> <span class="n">protocol</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">udf_str</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Indeed, the print-out reads as <code class="language-plaintext highlighter-rouge">b'c__main__\n_udf\np0\n.'</code>.
+There is no trace of the function body, or the actual business logic contained therein.</p>
+
+<p>The pickling operation stores the function name, the inverse unpickling operation loads the name and attempts to resolve it in the current namespace.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> class does not interfere with this procedure.
+It is the application’s responsibility to ensure that the resolution succeeds, and yields the intended Python function.</p>
+
+<p>A failed name resolution operation raises an attribute error:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">FunctionTransformer</span>
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">FunctionTransformer</span><span class="p">(</span><span class="n">_udf</span><span class="p">)</span>
+
+<span class="c1"># Write into a string
+</span><span class="n">pkl_str</span> <span class="o">=</span> <span class="n">pickle</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">protocol</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Remove UDF from the current namespace
+</span><span class="k">del</span> <span class="n">_udf</span>
+
+<span class="c1"># Read back from the string
+# Raises an AttributeError: Can't get attribute '_udf' on &lt;module '__main__'&gt;
+</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">pickle</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">pkl_str</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Making guarantees about name resolution requires library approach.
+The <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> transformer is very suitable for working with stable, third-party library functions such as <a href="https://numpy.org/doc/stable/reference/ufuncs.html">Numpy universal functions</a>, where the only source of error can be a missing import statement.
+If the application has custom data pre-processing needs, then it should get started with its own supporting UDFs library.</p>
+
+<h2 id="optimal-programming-model">Optimal programming model</h2>
+
+<p>As of Scikit-Learn 1.2(.0), there are no formalized tools or guidelines for packaging supporting UDFs.
+In principle, persistence issues could be fixed by subclassing the <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> class, and overriding its shallow “function name”-based pickling behaviour with a deep “full function source code”-based one.</p>
+
+<p>Unfortunately, the <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> class suffers from a major conceptual issue that makes it unappealing as a feature engineering platform.
+Namely, this transformer (just like any other Scikit-Learn transformer or model) uses a 2-D matrix-oriented programming model, which promotes computational efficiency over flexibility.</p>
+
+<p>Feature engineerings deals with individual data samples.
+Therefore, it would be desirable to use a 1-D row-oriented programming model instead.</p>
+
+<p>The upside is improved productivity.
+Replacing Numpy functions with plain Python language constructs clarifies business logic, and rules out many categories of Numpy-related programming mistakes.
+For example, replacing the <a href="https://numpy.org/doc/stable/reference/generated/numpy.where.html"><code class="language-plaintext highlighter-rouge">numpy.where(...)</code></a> utility function with the <a href="https://peps.python.org/pep-0308/">conditional expression</a>, or replacing <a href="https://numpy.org/doc/stable/reference/generated/numpy.logical_and.html"><code class="language-plaintext highlighter-rouge">numpy.logical_and(...)</code></a> and <a href="https://numpy.org/doc/stable/reference/generated/numpy.logical_or.html#numpy.logical_or"><code class="language-plaintext highlighter-rouge">numpy.logical_or(...)</code></a>, etc. utility functions with boolean expressions.</p>
+
+<p>The downside is potential performance loss.
+Missing out on vectorized math operations is unfortunate.
+However, there should be no macroscopic effect to it, because in the grand scheme of things, the computational cost of the data pre-processing stage is low compared to the modeling stage.
+A few extra loops cannot shift this balance much.</p>
+
+<h2 id="sklearn2pmml-expression-transformer">SkLearn2PMML expression transformer</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.ExpressionTransformer</code> class since its early days.
+Starting from the SkLearn2PMML version 0.91, it has gained full UDF support, which makes it a viable replacement for the <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> class in all Scikit-Learn pipelines.</p>
+
+<p>Main advantages:</p>
+<ol>
+  <li>Fully persistable in pickle data format.</li>
+  <li>Isolated execution environment. Ability to audit third-party UDFs before their use.</li>
+  <li>Simplified programming model (1-D row or direct scalar variables).</li>
+  <li>PMML compatible.</li>
+</ol>
+
+<p>The <code class="language-plaintext highlighter-rouge">expr</code> argument is the evaluatable Python expression in one of the supported representations (see below).</p>
+
+<p>This expression is evaluated using Python’s built-in <a href="https://docs.python.org/3/library/functions.html#eval"><code class="language-plaintext highlighter-rouge">eval(expr)</code></a> function in a custom namespace, which contains <code class="language-plaintext highlighter-rouge">math</code>, <code class="language-plaintext highlighter-rouge">numpy</code> and <code class="language-plaintext highlighter-rouge">pandas</code> module imports, and a sole <code class="language-plaintext highlighter-rouge">X</code> variable that represents the current data sample.
+The <code class="language-plaintext highlighter-rouge">ExpressionTransformer.transform(X)</code> method creates and manages a separate custom namespace object during each call.</p>
+
+<p>Main call sequence:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">env</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+
+<span class="k">exec</span><span class="p">(</span><span class="s">"import math"</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+<span class="k">exec</span><span class="p">(</span><span class="s">"import numpy"</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+<span class="k">exec</span><span class="p">(</span><span class="s">"import pandas"</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+
+<span class="n">env</span><span class="p">[</span><span class="s">"X"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">]</span>
+
+<span class="n">result</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="s">"numpy.sign(X[0]) == numpy.sign(X[1])"</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The use of the <code class="language-plaintext highlighter-rouge">eval()</code> function is considered a major security risk.
+This should not be the case here, because these three module imports are assumed to be safe, and there is no way to access other namespaces.</p>
+
+<p>When facing an unknown or untrusted <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> object, then it is recommended to print out its <code class="language-plaintext highlighter-rouge">expr</code> attribute, and take note of any high-risk activity such as importing system modules.</p>
+
+<p>However, the best security guarantee can be obtained fully automatically, by attempting conversion into a Predictive Model Markup Language (PMML) document (see below).
+The PMML representation of models and transformers is absolutely safe and secure, because the language is Turing-incomplete, and relies on a small standard library for complex calculations.</p>
+
+<p>A PMML conversion error therefore signals that the expression was either syntactically incorrect or contained some instruction that went beyond the PMML scope.
+For example, the conversion fails if the expression references any Pandas’ IO-related utility functions such as <code class="language-plaintext highlighter-rouge">pandas.read_clipboard()</code>, <code class="language-plaintext highlighter-rouge">pandas.read_csv(path)</code>, <code class="language-plaintext highlighter-rouge">pandas.read_pickle(path)</code> etc.</p>
+
+<h3 id="inline-expression">Inline expression</h3>
+
+<p>The inline string representation is suitable for simple transformations, where the business logic fits conveniently on a single line.</p>
+
+<p>By convention, the data sample is mapped to the <code class="language-plaintext highlighter-rouge">X</code> variable.
+The syntax for accessing data sample elements depends on the type of the data matrix that was passed to the <code class="language-plaintext highlighter-rouge">ExpressionTransformer.transform(X)</code> method.
+Numpy arrays support only positional indexing, whereas Pandas’ data frames support both positional and label-based indexing.</p>
+
+<p>The expression must yield a scalar value.
+A missing result can be indicated by returning <code class="language-plaintext highlighter-rouge">numpy.NaN</code> for numeric types, and <code class="language-plaintext highlighter-rouge">None</code> for non-numeric types.</p>
+
+<p>For example, checking if two elements have the same <a href="https://en.wikipedia.org/wiki/Sign_function">sign</a> or not:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">ExpressionTransformer</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">([</span>
+  <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+  <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.5</span><span class="p">],</span>
+  <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="p">],</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"a"</span><span class="p">,</span> <span class="s">"b"</span><span class="p">])</span>
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">ExpressionTransformer</span><span class="p">(</span><span class="s">"numpy.sign(X['a']) == numpy.sign(X['b'])"</span><span class="p">)</span>
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="inline-udf">Inline UDF</h3>
+
+<p>The inline string representation is easy to develop, but not so easy to test and maintain.
+For example, the Python interpreter regards it as just another string literal, and does not perform any syntactic or semantic checks on its contents.
+If the expression is invalid, then it will typically go unnoticed until the <code class="language-plaintext highlighter-rouge">ExpressionTransformer.transform(X)</code> method is called for the first time.</p>
+
+<p>The robustness of the Python script can be improved by extracting the inline string expression into an UDF.</p>
+
+<p>This UDF must be formatted as a static top-level function in the current module.
+Its signature must declare a sole <code class="language-plaintext highlighter-rouge">X</code> parameter.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">inspect</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="k">def</span> <span class="nf">_row_eq_sign</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+  <span class="s">"""Checks if two elements have equal signs.
+
+  Parameters:
+  X -- a two-element list or list-like
+  """</span>
+  <span class="k">return</span> <span class="n">numpy</span><span class="p">.</span><span class="n">sign</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="s">'a'</span><span class="p">])</span> <span class="o">==</span> <span class="n">numpy</span><span class="p">.</span><span class="n">sign</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="s">'b'</span><span class="p">])</span>
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">ExpressionTransformer</span><span class="p">(</span><span class="n">inspect</span><span class="p">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">_row_eq_sign</span><span class="p">))</span>
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The expression can be refactored into a sequence of statements, and enriched with comments.</p>
+
+<p>UDFs that strive towards PMML compatibility must meet the following constraints:</p>
+
+<ul>
+  <li>Exactly one value statement per block. For example, cannot have two <code class="language-plaintext highlighter-rouge">if</code> statements one after another (ie. same indentation level), but can have one <code class="language-plaintext highlighter-rouge">if</code> statement nested inside another <code class="language-plaintext highlighter-rouge">if</code> statement (ie. different indentation levels).</li>
+  <li>All value statement branches must terminate with an explicit <code class="language-plaintext highlighter-rouge">return</code> statement.</li>
+  <li>No loops.</li>
+  <li>No raising or catching exceptions.</li>
+</ul>
+
+<h3 id="inline-expression-with-supporting-udfs">Inline expression with supporting UDFs</h3>
+
+<p>The inline string and UDF representations work fine with third-party library functions.
+However, due to the use of a custom namespace for expression evaluation, they cannot see and call any functions in their immediate vicinity.</p>
+
+<p>The solution exists in the form of the <code class="language-plaintext highlighter-rouge">sklearn2pmml.util.Evaluatable</code> class, which combines a string expression and its supporting UDFs into a single entity.</p>
+
+<p>This class has <code class="language-plaintext highlighter-rouge">Expression</code> and <code class="language-plaintext highlighter-rouge">Predicate</code> subclasses.
+All SkLearn2PMML transformer and estimator classes have been updated to accept such expression and predicate objects next to string expressions and predicates, respectively.</p>
+
+<p>The list of supporting UDFs must be collected manually.
+The order of elements is not important, and redundant elements are ignored.
+It is advisable to keep the list as short as possible, because all UDFs are translated into Python source code and persisted.</p>
+
+<p>Supporting UDFs must be once again formatted as static top-level functions in the current module.
+However, they are free to choose any signature they like.</p>
+
+<p>If the goal is to promote reusability, then the sole <code class="language-plaintext highlighter-rouge">X</code> row-vector parameter should be expanded into a list of scalar parameters, one for each relevant data sample element.
+The indexing logic stays put in the inline string expression, because this depends on the pipeline context.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.util</span> <span class="kn">import</span> <span class="n">Expression</span>
+
+<span class="k">def</span> <span class="nf">_sign</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+  <span class="k">elif</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">1</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">0</span>
+
+<span class="k">def</span> <span class="nf">_eq_sign</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">):</span>
+  <span class="k">return</span> <span class="p">(</span><span class="n">_sign</span><span class="p">(</span><span class="n">left</span><span class="p">)</span> <span class="o">==</span> <span class="n">_sign</span><span class="p">(</span><span class="n">right</span><span class="p">))</span>
+
+<span class="n">expr</span> <span class="o">=</span> <span class="n">Expression</span><span class="p">(</span><span class="s">"_eq_sign(X['a'], X['b'])"</span><span class="p">,</span> <span class="n">function_defs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_eq_sign</span><span class="p">,</span> <span class="n">_sign</span><span class="p">])</span>
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">ExpressionTransformer</span><span class="p">(</span><span class="n">inspect</span><span class="p">.</span><span class="n">getsource</span><span class="p">(</span><span class="n">_row_eq_sign</span><span class="p">))</span>
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Moving this idea forward, a UDF does not need to be coded up in the current module, as it can be imported from any trusted module or third-party library.
+The following assignment trick makes it visible in the current namespace:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">mylib</span>
+
+<span class="n">_sign</span> <span class="o">=</span> <span class="n">mylib</span><span class="p">.</span><span class="n">_sign</span>
+<span class="n">_eq_sign</span> <span class="o">=</span> <span class="n">mylib</span><span class="p">.</span><span class="n">_eq_sign</span>
+
+<span class="n">expr</span> <span class="o">=</span> <span class="n">Expression</span><span class="p">(</span><span class="s">"_eq_sign(X['a'], X['b'])"</span><span class="p">,</span> <span class="n">function_defs</span> <span class="o">=</span> <span class="p">[</span><span class="n">_eq_sign</span><span class="p">,</span> <span class="n">_sign</span><span class="p">])</span>
+</code></pre></div></div>
+
+<h2 id="pmml">PMML</h2>
+
+<h3 id="java">Java</h3>
+
+<p>The <a href="https://github.com/jpmml/jpmml-python">JPMML-Python</a> library provides low-level <code class="language-plaintext highlighter-rouge">org.jpmml.python.ExpressionTranslator</code> and <code class="language-plaintext highlighter-rouge">org.jpmml.python.PredicateTranslator</code> components for translating Python source code snippets into live <code class="language-plaintext highlighter-rouge">org.dmg.pmml.Expression</code> and <code class="language-plaintext highlighter-rouge">org.dmg.pmml.Predicate</code> class model objects, respectively.
+The <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library provides high-level utility functions for commanding them.</p>
+
+<p>For example, the JPMML-SkLearn library can unpickle and convert a <code class="language-plaintext highlighter-rouge">sklearn2pmml.util.Evaluatable</code> object in a couple lines of Java code:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">org.dmg.pmml.Expression</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.jpmml.model.JAXBUtil</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.jpmml.python.PickleUtil</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.jpmml.python.Scope</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.jpmml.python.Storage</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.jpmml.python.StorageUtil</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">org.jpmml.sklearn.SkLearnEncoder</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">sklearn2pmml.util.EvaluatableUtil</span><span class="o">;</span>
+
+<span class="nc">SkLearnEncoder</span> <span class="n">encoder</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SkLearnEncoder</span><span class="o">();</span>
+
+<span class="nc">Object</span> <span class="n">pyExpression</span><span class="o">;</span>
+
+<span class="c1">// Read pickle</span>
+<span class="k">try</span><span class="o">(</span><span class="nc">InputStream</span> <span class="n">is</span> <span class="o">=</span> <span class="o">...){</span>
+  <span class="nc">Storage</span> <span class="n">storage</span> <span class="o">=</span> <span class="nc">StorageUtil</span><span class="o">.</span><span class="na">createStorage</span><span class="o">(</span><span class="n">is</span><span class="o">);</span>
+
+  <span class="n">pyExpression</span> <span class="o">=</span> <span class="nc">PickleUtil</span><span class="o">.</span><span class="na">unpickle</span><span class="o">(</span><span class="n">storage</span><span class="o">);</span>
+<span class="o">}</span>
+
+<span class="c1">// Define the number and type of data sample elements</span>
+<span class="nc">Scope</span> <span class="n">scope</span> <span class="o">=</span> <span class="n">defineDataSample</span><span class="o">(</span><span class="n">encoder</span><span class="o">);</span>
+
+<span class="nc">Expression</span> <span class="n">pmmlExpression</span> <span class="o">=</span> <span class="nc">EvaluatableUtil</span><span class="o">.</span><span class="na">translateExpression</span><span class="o">(</span><span class="n">pyExpression</span><span class="o">,</span> <span class="n">scope</span><span class="o">);</span>
+
+<span class="c1">// Write PMML</span>
+<span class="k">try</span><span class="o">(</span><span class="nc">OutputStream</span> <span class="n">os</span> <span class="o">=</span> <span class="o">...){</span>
+  <span class="nc">JAXBUtil</span><span class="o">.</span><span class="na">marshal</span><span class="o">(</span><span class="n">pmmlExpression</span><span class="o">,</span> <span class="k">new</span> <span class="nc">StreamResult</span><span class="o">(</span><span class="n">os</span><span class="o">));</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="python">Python</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> class takes inspiration both from Python and PMML worlds.</p>
+
+<p>Specifically, in addition to Python-style <code class="language-plaintext highlighter-rouge">expr</code> and <code class="language-plaintext highlighter-rouge">dtype</code> attributes, it supports PMML-style <code class="language-plaintext highlighter-rouge">map_missing_to</code>, <code class="language-plaintext highlighter-rouge">default_value</code> and <code class="language-plaintext highlighter-rouge">invalid_value_treatment</code> attributes for extra controls over expression evaluation.
+Their role and effect follows the <a href="https://dmg.org/pmml/v4-4-1/Functions.html#xsdElement_Apply"><code class="language-plaintext highlighter-rouge">Apply</code></a> element specification.</p>
+
+<p>For example, the <code class="language-plaintext highlighter-rouge">map_missing_to</code> attribute activates a quick pre-check that all inputs (ie. data sample elements) are present, and the <code class="language-plaintext highlighter-rouge">default_value</code> does the same with the output.
+This eliminates boilerplate code, bringing the focus back on the actual business logic.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pandas</span> <span class="kn">import</span> <span class="n">DataFrame</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">ExpressionTransformer</span> 
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">([</span>
+  <span class="p">[</span><span class="s">"Alice"</span><span class="p">],</span>
+  <span class="p">[</span><span class="s">"Bob"</span><span class="p">],</span>
+  <span class="p">[</span><span class="s">"Carol"</span><span class="p">],</span>
+  <span class="p">[</span><span class="bp">None</span><span class="p">]</span>
+<span class="p">],</span> <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">"person"</span><span class="p">])</span>
+
+<span class="c1"># Manual missingness checks
+</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">ExpressionTransformer</span><span class="p">(</span><span class="s">"len(X['person']) if X['person'] is not None else -999"</span><span class="p">)</span>
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
+
+<span class="c1"># Automated missingness checks
+</span><span class="n">transformer</span> <span class="o">=</span> <span class="n">ExpressionTransformer</span><span class="p">(</span><span class="s">"len(X['person'])"</span><span class="p">,</span> <span class="n">map_missing_to</span> <span class="o">=</span> <span class="o">-</span><span class="mi">999</span><span class="p">)</span>
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">transformer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> class does not have API for dumping its contents in the PMML representation.</p>
+
+<p>The workaround is to construct and fit a single-step <code class="language-plaintext highlighter-rouge">sklearn2pmml.pipeline.PMMLPipeline</code> object, and convert it using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml</code> utility function as usual:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="n">transformer</span> <span class="o">=</span> <span class="n">ExpressionTransformer</span><span class="p">(...)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"transformer"</span><span class="p">,</span> <span class="n">transformer</span><span class="p">)</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="bp">None</span><span class="p">)</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"Expression.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>One may wonder that why does a pipeline that contains a sole stateless transformer need fitting?
+Strictly speaking, it does not.
+The <code class="language-plaintext highlighter-rouge">PMMLPipeline.fit(X, y)</code> method is simply used for initializing the <code class="language-plaintext highlighter-rouge">PMMLPipeline.active_fields</code> attribute that informs the converter about real-life feature names.
+If left unset, then <code class="language-plaintext highlighter-rouge">x1</code>, <code class="language-plaintext highlighter-rouge">x2</code>, .., <code class="language-plaintext highlighter-rouge">x{m_features}</code> is assumed.</p>
+
+</div>
+
+
+
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+  <script>
+  var sc_project=11704106;
+  var sc_security="a7d1bf16"; 
+  var sc_invisible=1; 
+  var sc_remove_link=1; 
+</script>
+
+<script src="https://www.statcounter.com/counter/counter.js" async></script>
+
+<noscript>
+  <div class="statcounter">
+    <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="Web Analytics Made Easy - Statcounter" referrerPolicy="no-referrer-when-downgrade">
+  </div>
+</noscript>
+</body>
+
+</html>

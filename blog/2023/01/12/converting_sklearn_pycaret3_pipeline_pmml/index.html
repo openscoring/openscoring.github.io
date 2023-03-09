@@ -92,7 +92,7 @@
 First, heavily refactored experiment API (see <a href="https://github.com/pycaret/pycaret/pull/2271">PyCaret-2271</a>). The OOP-style experiment setup and command interface is much more relatable than the functional programming-style interface.
 Second, replacing the majority of custom transformer classes with their Scikit-Learn equivalents, which improves interoperability with existing Scikit-Learn oriented tooling.</p>
 
-<h3 id="pycaret-3-fundamentals">PyCaret 3 fundamentals</h3>
+<h2 id="pycaret-3-fundamentals">PyCaret 3 fundamentals</h2>
 
 <p>Typical supervised learning workflow:</p>
 
@@ -121,7 +121,7 @@ Second, replacing the majority of custom transformer classes with their Scikit-L
 </ol>
 
 <p>The PyCaret pipeline class inherits from the Scikit-Learn pipeline class.
-It overrides all fit, transform and predict methods to enable caching, which is critical when invoking the same computation many times.</p>
+It overrides all fit, transform and predict methods to enable caching, which is critical when performing the same computation many times.</p>
 
 <p>PyCaret 3 relies on its own data management and data flow logic, which assumes <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> as the data matrix type, and where individual columns are identified by name, not by position.</p>
 
@@ -241,7 +241,7 @@ The manual construction and insertion of extra <code class="language-plaintext h
 <span class="n">pycaret_pipeline</span> <span class="o">=</span> <span class="n">exp</span><span class="p">.</span><span class="n">finalize_model</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
 </code></pre></div></div>
 
-<h3 id="classification-experiment">Classification experiment</h3>
+<h2 id="classification-experiment">Classification experiment</h2>
 
 <p>The “audit-NA” dataset contains three numeric columns and five categorical string columns. Roughly 25% of values are missing.</p>
 
@@ -340,7 +340,7 @@ A good data pre-processing pipeline would therefore need to perform imputation, 
 
 <p>The results reveal that the current configuration failed to achieve redundant feature elimination, because the <code class="language-plaintext highlighter-rouge">RemoveMulticollinearity</code> transformer draws 19 columns as input, and returns the same 19 columns as result.</p>
 
-<h3 id="regression-experiment">Regression experiment</h3>
+<h2 id="regression-experiment">Regression experiment</h2>
 
 <p>The “auto” dataset contains four numeric columns and three numeric-like columns. The latter are manually cast to categorical string columns.</p>
 
@@ -424,7 +424,7 @@ The first two (<code class="language-plaintext highlighter-rouge">catboost</code
 
 <p>Surprisingly enough, this competition is won by a linear model, well ahead of various decision tree ensemble models.</p>
 
-<h3 id="pmml">PMML</h3>
+<h2 id="pmml">PMML</h2>
 
 <p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml</code> utility function for converting Scikit-Learn pipelines to the Predictive Model Markup Language (PMML) representation.</p>
 
@@ -433,7 +433,7 @@ The first two (<code class="language-plaintext highlighter-rouge">catboost</code
 <p>The solution is to wrap the PyCaret pipeline object into a <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.pycaret.make_pmml_pipeline</code> utility method.
 This utility method differs from the generic <code class="language-plaintext highlighter-rouge">sklearn2pmml.make_pmml_pipeline</code> utility method by the fact that it knows about the <code class="language-plaintext highlighter-rouge">TransformerWrapper</code> meta-transformer class, and can perform proper escaping of its contents.</p>
 
-<p>The escaping is needed to ensure that the “business state” of all transformers and estimators is complete when dumped in Pickle data format.
+<p>The escaping is needed to ensure that the “business state” of all transformers and estimators is complete when dumped in pickle data format.
 The list of known troublemakers contains mostly Scikit-Learn selector classes (caused by the dynamic implementation of the <code class="language-plaintext highlighter-rouge">_get_support_mask()</code> method).
 If the escaping is not done, then the conversion succeeds with simpler pipelines, but may fail with more complex ones.</p>
 
@@ -449,9 +449,9 @@ If the escaping is not done, then the conversion succeeds with simpler pipelines
 They can be left to their default <code class="language-plaintext highlighter-rouge">None</code> values if the column names of the training dataset are fine.</p>
 
 <p>PMML documents are concise yet informative, and fully self-contained.
-In the two experiments above, if the PyCaret pipeline object is first saved in PMML data format (uncompressed text) and then in Pickle data format (compressed binary), then the size of the PMML file is actually smaller in both cases!</p>
+In the two experiments above, if the PyCaret pipeline object is first saved in PMML data format (uncompressed text) and then in pickle data format (compressed binary), then the size of the PMML file is actually smaller in both cases!</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit-NA” dataset: <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>

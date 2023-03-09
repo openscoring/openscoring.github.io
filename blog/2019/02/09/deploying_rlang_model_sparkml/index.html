@@ -90,7 +90,7 @@
 
 <p>This blog post demonstrates how to decouple a fitted R model from the R platform by converting it to the standardized Predictive Model Markup Language (PMML) representation. A PMML model is easy to achive and deploy across application environments. Here, the PMML model is turned into an Apache Spark ML transformer, which operates in Java/JVM memory space and can be easily dispatched to where the data resides.</p>
 
-<h3 id="r-side">R side</h3>
+<h2 id="r-side">R side</h2>
 
 <p>The exercise starts with training a logistic regression model for the “audit” dataset.</p>
 
@@ -115,9 +115,9 @@
 </span><span class="n">audit.glm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="p">(</span><span class="n">audit.formula</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">audit</span><span class="p">,</span><span class="w"> </span><span class="n">family</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"binomial"</span><span class="p">)</span><span class="w">
 </span></code></pre></div></div>
 
-<p>The R platform lacks the pipeline concept. Feature engineering can happen either as free-form R code (applying functions “step by step” to the dataset) or as model formula (combining functions to a master function and applying it “atomically” to the dataset).</p>
+<p>The R platform lacks the pipeline concept. Data pre-processing can happen either as free-form R code (applying functions “step by step” to the dataset) or as model formula (combining functions to a master function and applying it “atomically” to the dataset).</p>
 
-<p>The model formula approach requires a bit more experience and discipline to pull off. However, it has a clear and major advantage that the resulting R models are self-contained - all feature engineering logic is stored inside the model object, and is automatically executed whenever the model object is used with the standard <code class="language-plaintext highlighter-rouge">stats::predict(..)</code> function.</p>
+<p>The model formula approach requires a bit more experience and discipline to pull off. However, it has a clear and major advantage that the resulting R models are self-contained - all data pre-processing logic is stored inside the model object, and is automatically executed whenever the model object is used with the standard <code class="language-plaintext highlighter-rouge">stats::predict(..)</code> function.</p>
 
 <p>The <a href="https://github.com/jpmml/r2pmml"><code class="language-plaintext highlighter-rouge">r2pmml</code></a> package checks R models for model formula information, and if present, will analyze and convert it to the PMML representation as fully as possible.</p>
 
@@ -166,7 +166,7 @@
 </span><span class="n">r2pmml</span><span class="p">(</span><span class="n">audit.glm</span><span class="p">,</span><span class="w"> </span><span class="s2">"LogisticRegressionAudit.pmml"</span><span class="p">)</span><span class="w">
 </span></code></pre></div></div>
 
-<h3 id="apache-spark-side">Apache Spark side</h3>
+<h2 id="apache-spark-side">Apache Spark side</h2>
 
 <p>The <a href="https://github.com/jpmml/jpmml-evaluator">JPMML-Evaluator</a> library provides good all-purpose PMML engine for the Java/JVM platform. This library operates on individual data records, which must be translated back and forth to the <code class="language-plaintext highlighter-rouge">java.util.Map&lt;FieldName, ?&gt;</code> representation.</p>
 
@@ -217,7 +217,7 @@ For example, the probability distribution of a probabilistic classification mode
 
 <p>It should be pointed out that the JPMML-Evaluator-Spark library is developed in the Java language, and that its public API (eg. method signatures, return types) only makes use of Java types. This may necessitate extra type casts and/or conversions when working in other languages such as the Scala language.</p>
 
-<p>The <code class="language-plaintext highlighter-rouge">Transformer</code> object holds the complete “business logic” of the above R script, including all feature engineering, model execution and decision engineering functionality. It also takes full care of translating values between Apache Spark and PMML type systems.</p>
+<p>The <code class="language-plaintext highlighter-rouge">Transformer</code> object holds the complete “business logic” of the above R script, including all data pre-processing, model execution and prediction post-processing functionality. It also takes full care of translating values between Apache Spark and PMML type systems.</p>
 
 <div class="language-scala highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="n">inputDs</span> <span class="k">=</span> <span class="nv">spark</span><span class="o">.</span><span class="py">read</span><span class="o">.</span><span class="py">format</span><span class="o">(</span><span class="s">"csv"</span><span class="o">)</span> <span class="o">\</span>
   <span class="o">.</span><span class="py">option</span><span class="o">(</span><span class="s">"header"</span><span class="o">,</span> <span class="s">"true"</span><span class="o">)</span> <span class="o">\</span>
@@ -240,7 +240,7 @@ For example, the probability distribution of a probabilistic classification mode
 
 <p>Prediction columns are appended to the input dataset. Depending on the setting of the <code class="language-plaintext highlighter-rouge">TransformerBuilder#exploded(boolean)</code> configuration method, they are either appended collectively as a single <code class="language-plaintext highlighter-rouge">struct</code> column, or individually as many scalar columns.</p>
 
-<h3 id="resources">Resources</h3>
+<h2 id="resources">Resources</h2>
 
 <ul>
   <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>

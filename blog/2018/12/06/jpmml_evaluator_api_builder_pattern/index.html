@@ -97,7 +97,7 @@ The Factory pattern might be a great fit for dynamic programming languages, but 
 <p>The way forward is the <a href="https://en.wikipedia.org/wiki/Builder_pattern">Builder pattern</a>.
 A builder object proposes a sensible default configuration, which can be queried and incrementally updated using accessor methods. The object creation work happens inside the no-arguments <code class="language-plaintext highlighter-rouge">#build()</code> method. The builder object as a whole is typically reusable and serializable.</p>
 
-<h3 id="moving-from-modelevaluatorfactory-to-modelevaluatorbuilder">Moving from ModelEvaluatorFactory to ModelEvaluatorBuilder</h3>
+<h2 id="moving-from-modelevaluatorfactory-to-modelevaluatorbuilder">Moving from ModelEvaluatorFactory to ModelEvaluatorBuilder</h2>
 
 <p>JPMML-Evaluator versions 1.2.0 through 1.4.3 have been recommending the following boilerplate code for creating a <code class="language-plaintext highlighter-rouge">ModelEvaluator</code> object:</p>
 
@@ -132,7 +132,7 @@ However, it is possible to effectively “freeze” its instances by casting the
 
 <p>The <code class="language-plaintext highlighter-rouge">EvaluatorBuilder#build()</code> method can be invoked any number of times. It is up to the implementation class to decide if it creates a new <code class="language-plaintext highlighter-rouge">Evaluator</code> object for each invocation, or caches and keeps returning the same <code class="language-plaintext highlighter-rouge">Evaluator</code> object.</p>
 
-<h3 id="moving-from-modelevaluatorbuilder-onward">Moving from ModelEvaluatorBuilder onward</h3>
+<h2 id="moving-from-modelevaluatorbuilder-onward">Moving from ModelEvaluatorBuilder onward</h2>
 
 <p>In most common application scenarios, there is more application code involved in unmarshalling a PMML byte stream or a PMML file into into a live <code class="language-plaintext highlighter-rouge">org.dmg.pmml.PMML</code> object, than turning the latter into an <code class="language-plaintext highlighter-rouge">Evaluator</code> object.</p>
 
