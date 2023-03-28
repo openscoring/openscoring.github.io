@@ -164,7 +164,7 @@ The dataset does not need to consist of unique data records only. It is equally 
 
 <h3 id="dataset">Dataset</h3>
 
-<p>The “audit” dataset is loaded from a CSV document into a <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code>.
+<p>The “audit” dataset is loaded from a CSV document into a <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> object.
 Automatic data type detection and conversion results in two continuous integer features, one continuous float feature, and five categorical string features.
 The cardinality of string features is low, ranging from 2 to 16 category levels.</p>
 
@@ -464,7 +464,7 @@ There is a cliff between 0 and 1 batch sizes, then there is a slow and orderly d
 The descent corresponds to the JIT compilation of methods by the JVM. Methods are prioritized by their complexity and frequency of use. The JIT compilation starts with smaller and more popular methods, and proceeds until all JIT compilation-worthy methods have been processed.
 The second cliff corresponds to reaching the “hot” state. The scoring time has reached a plateau, which will change only if the running JVM is perturbed with new information.</p>
 
-<p>The JPMML-Evaluator library provides an <code class="language-plaintext highlighter-rouge">org.jpmml.evaluator.Evaluator#verify()</code> method, which evaluates the model with the embedded model verification dataset.
+<p>The JPMML-Evaluator library provides the <code class="language-plaintext highlighter-rouge">org.jpmml.evaluator.Evaluator#verify()</code> method, which evaluates the model with the embedded model verification dataset.
 The above results show that model verification is good for crossing the first cliff, but is typically not adequate for reaching and crossing the second cliff.</p>
 
 <p>Direct comparison of scoring times shows that JPMML-Evaluator outperforms Scikit-Learn with smaller batch sizes (below 1’000), but underperforms with larger batch sizes (over 10’000).
@@ -509,7 +509,7 @@ If the data resides in shared memory, then Python application components can sim
 The workaround is to deconstruct complex/language-specific data structures into simpler/language-agnostic data structures, which are adequately supported by both sides.</p>
 
 <p>The <code class="language-plaintext highlighter-rouge">jpmml_evaluator</code> package communicates between Python and Java environments using the pickle protocol.
-Since <code class="language-plaintext highlighter-rouge">DataFrame</code> is a complex data structure that does not have a Java equivalent, it is deconstructed into a list of dicts (data record-oriented API), which maps to a <code class="language-plaintext highlighter-rouge">List&lt;Map&lt;?, ?&gt;&gt;</code>.
+Since <code class="language-plaintext highlighter-rouge">DataFrame</code> is a complex data structure that does not have a Java equivalent, it is deconstructed into a list of dicts (data record-oriented API), which maps to <code class="language-plaintext highlighter-rouge">List&lt;Map&lt;?, ?&gt;&gt;</code>.
 Pickling uses native encoders on the Python side, and the <a href="https://github.com/irmen/pickle">Pickle</a> library on the Java side.</p>
 
 <h4 id="java-data-handler">Java data handler</h4>

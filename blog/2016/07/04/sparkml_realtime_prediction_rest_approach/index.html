@@ -97,7 +97,7 @@ Essentially, there is a lower bound (instead of an upper bound) to the effective
 
 <h2 id="converting-apache-spark-ml-pipeline-models-to-the-pmml-representation">Converting Apache Spark ML pipeline models to the PMML representation</h2>
 
-<p><a href="https://www.databricks.com/blog/2015/07/02/pmml-support-in-apache-spark-mllib.html">PMML support</a> was introduced in Apache Spark MLlib version 1.4.0 in the form of a <code class="language-plaintext highlighter-rouge">org.apache.spark.mllib.pmml.PMMLExportable</code> trait. The <code class="language-plaintext highlighter-rouge">PMMLExportable#toPMML()</code> method (or one of its overloaded variants) produces a PMML document which contains the symbolic description of the fitted model.</p>
+<p><a href="https://www.databricks.com/blog/2015/07/02/pmml-support-in-apache-spark-mllib.html">PMML support</a> was introduced in Apache Spark MLlib version 1.4.0 in the form of the <code class="language-plaintext highlighter-rouge">org.apache.spark.mllib.pmml.PMMLExportable</code> trait. The <code class="language-plaintext highlighter-rouge">PMMLExportable#toPMML()</code> method (or one of its overloaded variants) produces a PMML document which contains the symbolic description of the fitted model.</p>
 
 <p>Unfortunately, this solution is not very relevant anymore.
 First, Apache Spark ML is organized around the pipeline formalization. A pipeline can be regarded as a directed graph of data transformations and models. When converting a model, then it will be necessary to include all the preceding pipeline stages to the dump.

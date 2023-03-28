@@ -193,7 +193,7 @@ For example, switching from <code class="language-plaintext highlighter-rouge">G
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"RF+LR.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>The <a href="https://github.com/dmlc/xgboost">XGBoost</a> plugin library provides an <code class="language-plaintext highlighter-rouge">xgboost.XGBClassifier</code> model, which can be used as a drop-in replacement for Scikit-Learn classifier classes:</p>
+<p>The <a href="https://github.com/dmlc/xgboost">XGBoost</a> plugin library provides the <code class="language-plaintext highlighter-rouge">xgboost.XGBClassifier</code> model, which can be used as a drop-in replacement for Scikit-Learn classifier classes:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">xgboost</span> <span class="kn">import</span> <span class="n">XGBClassifier</span>
 
@@ -201,7 +201,7 @@ For example, switching from <code class="language-plaintext highlighter-rouge">G
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"XGB+LR.pmml"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>The <a href="https://github.com/microsoft/LightGBM">LightGBM</a> plugin library provides a <code class="language-plaintext highlighter-rouge">lightgbm.LGBMClassifier</code> model.
+<p>The <a href="https://github.com/microsoft/LightGBM">LightGBM</a> plugin library provides the <code class="language-plaintext highlighter-rouge">lightgbm.LGBMClassifier</code> model.
 One of its major selling points is proper support for categorical features.
 If the training dataset contains a significant number of (high-cardinality-) categorical features, then the above <code class="language-plaintext highlighter-rouge">make_fit_gbdtlr</code> utility function should be tailored to maintain this information.</p>
 

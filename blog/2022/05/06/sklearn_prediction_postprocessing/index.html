@@ -103,7 +103,7 @@ However, even the best model is functionally compromised if its predictions are 
 
 <h2 id="pmmlpipeline-transformed-prediction-api">PMMLPipeline “transformed prediction” API</h2>
 
-<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides a <code class="language-plaintext highlighter-rouge">sklearn2pmml.pipeline.PMMLPipeline</code> class, which extends the <code class="language-plaintext highlighter-rouge">sklearn.pipeline.Pipeline</code> class with prediction post-processing.</p>
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.pipeline.PMMLPipeline</code> class, which extends the <code class="language-plaintext highlighter-rouge">sklearn.pipeline.Pipeline</code> class with prediction post-processing.</p>
 
 <p>The idea is to attach a number of child transformers to the parent pipeline, one for each predict method:</p>
 
@@ -151,7 +151,7 @@ If a business decision is a function of both model input and output, then it sti
 
 <p>There is no limit to child transformer’s complexity, except that it cannot encapsulate a full-blown model.</p>
 
-<p>Additionally, the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides a <code class="language-plaintext highlighter-rouge">sklearn2pmml.postprocessing.BusinessDecisionTransformer</code> transformer, which generates rich <code class="language-plaintext highlighter-rouge">OutputField</code> elements following the <a href="https://dmg.org/pmml/v4-4-1/Output.html#xsdElement_Decisions">“decision” result feature</a> conventions.</p>
+<p>Additionally, the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.postprocessing.BusinessDecisionTransformer</code> transformer, which generates rich <code class="language-plaintext highlighter-rouge">OutputField</code> elements following the <a href="https://dmg.org/pmml/v4-4-1/Output.html#xsdElement_Decisions">“decision” result feature</a> conventions.</p>
 
 <h2 id="examples">Examples</h2>
 

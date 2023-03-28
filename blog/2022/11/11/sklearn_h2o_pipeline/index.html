@@ -144,7 +144,7 @@ Python users can interact with an H2O.ai server using the <a href="https://githu
 
 <p>According to <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/modeling.html">H2O.ai modeling documentation</a>, all these classes have Scikit-Learn style <code class="language-plaintext highlighter-rouge">fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">predict(X)</code> methods readily available.</p>
 
-<p>This suggests that it should be possible to insert H2O.ai estimator objects into standard Scikit-Learn pipelines:</p>
+<p>This suggests that it should be possible to insert H2O.ai models into standard Scikit-Learn pipelines:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">h2o.estimators.glm</span> <span class="kn">import</span> <span class="n">H2OGeneralizedLinearEstimator</span>
 <span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
@@ -180,7 +180,7 @@ AttributeError: 'DataFrame' object has no attribute 'cbind'
 
 <p>Closer inspection of the <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/modeling.html#h2o.estimators.estimator_base.H2OEstimator.fit"><code class="language-plaintext highlighter-rouge">H2OEstimator.fit(X, y)</code></a> method signature reveals that it expects both <code class="language-plaintext highlighter-rouge">X</code> and <code class="language-plaintext highlighter-rouge">y</code> arguments to be of <code class="language-plaintext highlighter-rouge">h2o.H2OFrame</code> type.</p>
 
-<p>In spite of many API similarities, <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> and <code class="language-plaintext highlighter-rouge">h2o.H2OFrame</code> classes are not related in any way, and cannot be used interchangeably in Python application code.
+<p>In spite of many API similarities, <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> and <code class="language-plaintext highlighter-rouge">h2o.H2OFrame</code> classes are not related in any way, and cannot be used interchangeably in Python code.
 The former represents local data, which is stored in local computer memory as “live” NumPy arrays.
 The latter represents <strong>a reference</strong> to remote data, which is stored in H2O.ai server memory.</p>
 
@@ -230,7 +230,7 @@ It means that the <code class="language-plaintext highlighter-rouge">X</code> da
 <p>The <code class="language-plaintext highlighter-rouge">h2o</code> package does not provide a meta-transformer class for data uploading.
 This gap is filled by the <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package in the form of the <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.h2o.H2OFrameConstructor</code> class.</p>
 
-<p>The best place for inserting a data upload step is right before the final H2O estimator step:</p>
+<p>The best place for inserting a data upload step is right before the final H2O.ai model step:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing.h2o</span> <span class="kn">import</span> <span class="n">H2OFrameConstructor</span>
 

@@ -110,7 +110,7 @@ The same workflow is implemented using Scikit-Learn, R and Apache Spark framewor
 <h2 id="scikit-learn">Scikit-Learn</h2>
 
 <p>Scikit-Learn follows object-oriented programming (OOP) paradigm.
-The <a href="https://scikit-learn.org/stable/modules/classes.html#module-sklearn.linear_model">Linear Models</a> module provides a <code class="language-plaintext highlighter-rouge">LinearModel</code> base class, which is subclassed and mixed with <code class="language-plaintext highlighter-rouge">RegressorMixin</code> and <code class="language-plaintext highlighter-rouge">ClassifierMixin</code> traits to provide algorithm-specific model base classes.
+The <a href="https://scikit-learn.org/stable/modules/classes.html#module-sklearn.linear_model">Linear Models</a> module provides the <code class="language-plaintext highlighter-rouge">LinearModel</code> base class, which is subclassed and mixed with <code class="language-plaintext highlighter-rouge">RegressorMixin</code> and <code class="language-plaintext highlighter-rouge">ClassifierMixin</code> traits to provide algorithm-specific model base classes.
 The logistic regression algorithm is available as the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html"><code class="language-plaintext highlighter-rouge">LogisticRegression</code></a> model.</p>
 
 <p>Scikit-Learn estimators are trained by calling the <code class="language-plaintext highlighter-rouge">fit(X, y, **fit_params)</code> method.
@@ -332,7 +332,7 @@ For example, performing all data extraction, transformation and loading (ETL) wo
 
 <p>Apache Spark SQL supports most standard SQL constructs and functions.
 SQL and PMML are are conceptually rather close in their underlying data models (strongly typed, scalar values).
-The <a href="https://github.com/jpmml/jpmml-sparkml">JPMML-SparkML</a> library provides an <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.ExpressionTranslator</code> component for translating Catalyst expressions to PMML expressions.
+The <a href="https://github.com/jpmml/jpmml-sparkml">JPMML-SparkML</a> library provides the <code class="language-plaintext highlighter-rouge">org.jpmml.sparkml.ExpressionTranslator</code> component for translating Catalyst expressions to PMML expressions.
 This component currently supports around 45 expression types.
 If some expression is not supported, then it is often possible to work around it by re-expressing it in terms of other supported functions.</p>
 

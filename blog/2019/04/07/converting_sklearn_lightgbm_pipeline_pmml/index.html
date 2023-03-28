@@ -172,7 +172,7 @@ Continuous splits are encoded using the <code class="language-plaintext highligh
 <p>LightGBM uses a type system, where continuous and categorical features are represented using <code class="language-plaintext highlighter-rouge">double</code> and <code class="language-plaintext highlighter-rouge">integer</code> values, respectively.
 This is different from Scikit-Learn GBT algorithms, which do not use the notion of an operational type, and represent everything using <code class="language-plaintext highlighter-rouge">float</code> values.</p>
 
-<p>LightGBM has categorical feature detection capabilities, but since the output of a <code class="language-plaintext highlighter-rouge">DataFrameMapper</code> step is a 2-D Numpy array of <code class="language-plaintext highlighter-rouge">double</code> values, it does not fire correctly.
+<p>LightGBM has categorical feature detection capabilities, but since the output of the <code class="language-plaintext highlighter-rouge">DataFrameMapper</code> step is a 2-D Numpy array of <code class="language-plaintext highlighter-rouge">double</code> values, it does not fire correctly.
 The solution is to supply the indices of categorical features manually, by specifying a <code class="language-plaintext highlighter-rouge">categorical_feature</code> fit parameter to the <code class="language-plaintext highlighter-rouge">LGBMClassifier.fit(X, y, **fit_params)</code> method.
 Since the LightGBM classifier is contained inside a pipeline object and the interaction is intermediated by the <code class="language-plaintext highlighter-rouge">Pipeline.fit(X, y, **fit_params)</code> method, then the name of this fit parameter needs to be prefixed with the name of the step (ie. <code class="language-plaintext highlighter-rouge">categorical_feature</code> becomes <code class="language-plaintext highlighter-rouge">classifier__categorical_feature</code>):</p>
 
@@ -309,7 +309,7 @@ For example, both <code class="language-plaintext highlighter-rouge">Categorical
 
 <p>It really is a poor proposition to perform the missing value imputation and risk the data science experiment just to satisfy one component that performs a helper function. Therefore, it needs to go.</p>
 
-<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides a <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.PMMLLabelEncoder</code> transformer, which is essentially a missing value-aware replacement for the <code class="language-plaintext highlighter-rouge">LabelEncoder</code> transformer.</p>
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.PMMLLabelEncoder</code> transformer, which is essentially a missing value-aware replacement for the <code class="language-plaintext highlighter-rouge">LabelEncoder</code> transformer.</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing</span> <span class="kn">import</span> <span class="n">PMMLLabelEncoder</span>
 

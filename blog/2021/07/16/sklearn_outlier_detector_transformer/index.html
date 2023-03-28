@@ -240,7 +240,7 @@ The left-hand side <code class="language-plaintext highlighter-rouge">X[-1]</cod
 The extended right-hand side <code class="language-plaintext highlighter-rouge">&lt;= 0</code> reads “test if this value is negative”. This condition has been extracted from the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html#sklearn.ensemble.IsolationForest.predict"><code class="language-plaintext highlighter-rouge">IsolationForest.predict(X)</code></a> method, and is fairly specific to it.
 When using a different outlier detector, a different comparison operator and/or a different threshold value may be more appropriate.</p>
 
-<p>The predicate for the “inlier” subset is simply a <code class="language-plaintext highlighter-rouge">True</code> constant.
+<p>The predicate for the “inlier” subset is simply a <code class="language-plaintext highlighter-rouge">True</code> value.
 Its intention is to “match everything (that has not been matched by previous predicates)”.</p>
 
 <p>Child estimators see different rows but identical columns.

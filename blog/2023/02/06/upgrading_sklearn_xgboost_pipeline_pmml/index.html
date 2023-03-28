@@ -196,7 +196,7 @@ However, it involves a matrix densification operation, which can raise memory re
 </code></pre></div></div>
 
 <p>The XGBoost classifier performs label encoding and decoding during <code class="language-plaintext highlighter-rouge">XGBClassifier.fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">XGBClassifier.predict(X)</code> method calls similarly to Scikit-Learn classifiers.
-The learned encoding is stored in the <code class="language-plaintext highlighter-rouge">XGBClassifier._le</code> attribute as a <code class="language-plaintext highlighter-rouge">sklearn.preprocessing.LabelEncoder</code> transformer.</p>
+The learned encoding is stored in the <code class="language-plaintext highlighter-rouge">XGBClassifier._le</code> attribute as a <code class="language-plaintext highlighter-rouge">sklearn.preprocessing.LabelEncoder</code> object.</p>
 
 <p>Exporting the booster object:</p>
 

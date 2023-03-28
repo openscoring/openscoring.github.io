@@ -158,13 +158,10 @@ The resulting PMML documents will be identical (except for the conversion timest
 <p>Making predictions using the <a href="https://github.com/jpmml/jpmml-evaluator-python"><code class="language-plaintext highlighter-rouge">jpmml_evaluator</code></a> package:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">jpmml_evaluator</span> <span class="kn">import</span> <span class="n">make_evaluator</span>
-<span class="kn">from</span> <span class="nn">jpmml_evaluator.pyjnius</span> <span class="kn">import</span> <span class="n">jnius_configure_classpath</span><span class="p">,</span> <span class="n">PyJNIusBackend</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span>
 
-<span class="n">jnius_configure_classpath</span><span class="p">()</span>
-
-<span class="n">evaluator</span> <span class="o">=</span> <span class="n">make_evaluator</span><span class="p">(</span><span class="n">PyJNIusBackend</span><span class="p">(),</span> <span class="s">"XGBSentiment.pmml"</span><span class="p">)</span> \
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">make_evaluator</span><span class="p">(</span><span class="s">"XGBSentiment.pmml"</span><span class="p">)</span> \
   <span class="p">.</span><span class="n">verify</span><span class="p">()</span>
 
 <span class="n">arguments</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">"sentiment.csv"</span><span class="p">)</span>
@@ -190,7 +187,7 @@ In contrast, XGBoost estimators treat <code class="language-plaintext highlighte
 <p>When comparing XGBoost estimators between the first and the second pipeline, then they are structurally different (overall vocabulary, the time and location of individual term invocations, etc.).
 The former incorrectly believes that it was dealing with massive amounts of missing values during training, and all its internals are thus systematically off.</p>
 
-<p>A data scientist may evaluate such a biased TF(-IDF) plus XGBoost pipeline with a validation dataset, and decide that its raw numeric performance is still good enough for productionization.
+<p>A data scientist may evaluate such a biased TF(-IDF) plus XGBoost pipeline with a validation dataset, and decide that its raw numeric performance is still good enough for deployment.
 It would be okay. The Pipeline API provides adequate guarantees that all biases survive and are consistently applied throughout the pipeline life-cycle.</p>
 
 <h2 id="doing-it-right">Doing it right</h2>

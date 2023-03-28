@@ -92,7 +92,7 @@
 The training is currently possible via the low-level <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#module-xgboost.training">Python Learning API</a>, but not via the high-level <a href="https://xgboost.readthedocs.io/en/stable/python/python_api.html#module-xgboost.sklearn">Scikit-Learn API</a>.
 This limitation can be tracked as <a href="https://github.com/dmlc/xgboost/issues/7292">XGBoost-7292</a>.</p>
 
-<p>The solution is to train XGBoost survival models using the Python Learning API, and then migrate them to the Scikit-Learn API for the eventual productionization.</p>
+<p>The solution is to train XGBoost survival models using the Python Learning API, and then migrate them to the Scikit-Learn API for deployment.</p>
 
 <h2 id="data-canonicalization">Data canonicalization</h2>
 
@@ -220,7 +220,7 @@ There is no longer any technical reason for imputing missing values or encoding 
 <span class="n">df</span><span class="p">[</span><span class="s">"sex"</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s">"sex"</span><span class="p">].</span><span class="n">astype</span><span class="p">(</span><span class="s">"category"</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>However, the above code is not suitable for productionization!</p>
+<p>However, the above code is not suitable for deployment!</p>
 
 <p>A quick cast using the <code class="language-plaintext highlighter-rouge">category</code> data type alias creates a new <code class="language-plaintext highlighter-rouge">CategoricalDtype</code> object on each and every call.
 Its “business state” is a mapping from category levels to category indices.

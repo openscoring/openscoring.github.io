@@ -107,7 +107,7 @@
 
 <p>This declaraton states that the <code class="language-plaintext highlighter-rouge">ruleFeature</code> attribute was added in PMML schema version 4.0 and deprecated in PMML schema version 4.2. In other words, it is a first-class concept in PMML schema version 4.0 and 4.1 documents. It can be used in PMML schema version 4.2 documents, but doing so is discouraged, because it has been superseded by another set of attributes. In any way, the <code class="language-plaintext highlighter-rouge">ruleFeature</code> attribute cannot be used in PMML schema version 3.2 and earlier documents. A validating PMML parser would report that as an error.</p>
 
-<p>The JPMML-Model library provides a <code class="language-plaintext highlighter-rouge">org.jpmml.model.SchemaInspector</code> Visitor class that traverses a class model object and computes its supported version range. The upper and lower boundaries can be queried using <code class="language-plaintext highlighter-rouge">#getMinimum()</code> and <code class="language-plaintext highlighter-rouge">#getMaximum()</code> methods, respectively. The following Java source code checks if a class model object is compatible with the specified PMML schema version:</p>
+<p>The JPMML-Model library provides the <code class="language-plaintext highlighter-rouge">org.jpmml.model.SchemaInspector</code> Visitor class that traverses a class model object and computes its supported version range. The upper and lower boundaries can be queried using <code class="language-plaintext highlighter-rouge">#getMinimum()</code> and <code class="language-plaintext highlighter-rouge">#getMaximum()</code> methods, respectively. The following Java source code checks if a class model object is compatible with the specified PMML schema version:</p>
 
 <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">isCompatible</span><span class="o">(</span><span class="nc">PMMLObject</span> <span class="n">object</span><span class="o">,</span> <span class="nc">Version</span> <span class="n">version</span><span class="o">){</span>
   <span class="nc">SchemaInspector</span> <span class="n">inspector</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SchemaInspector</span><span class="o">();</span>
@@ -139,7 +139,7 @@
   <li>Updating the name of renamed elements and attributes.</li>
 </ul>
 
-<p>These activities can be implemented using XML filtering. More complicated activities (e.g. replacing a deprecated feature with an up-to-date feature) should be handled in Java application code. The JPMML-Model library is expected to provide a collection of such programmatic converters in the future.</p>
+<p>These activities can be implemented using XML filtering. More complicated activities (e.g. replacing a deprecated feature with an up-to-date feature) should be handled in Java code. The JPMML-Model library is expected to provide a collection of such programmatic converters in the future.</p>
 
 <p>The XML filtering allows for direct conversion between arbitrary PMML schema versions. However, it is recommended to employ an intermediated conversion approach, where the input PMML document is first parsed to an in-memory PMML schema version 4.2 class model object, which is validated (“trust, but verify”) and only then formatted to the output PMML document.</p>
 

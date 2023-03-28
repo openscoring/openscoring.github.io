@@ -101,7 +101,7 @@ This puts AutoML algorithms into a league above conventional hyperparameter tuni
 Such machine-generated pipelines are identical to human-generated pipelines in all technical and functional aspects. They can be converted to the PMML representation using the <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package.</p>
 
 <p>TPOT is made available for data scientists as a Scikit-Learn estimator, which can be fitted and used for prediction using <code class="language-plaintext highlighter-rouge">fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">predict(X)</code> methods as usual.
-For more sophisticated application scenarios, the fitted pipeline can be accessed directly as the <code class="language-plaintext highlighter-rouge">fitted_pipeline_</code> attribute, or converted to Python application code using the <code class="language-plaintext highlighter-rouge">export(path)</code> method.</p>
+For more sophisticated application scenarios, the fitted pipeline can be accessed directly as the <code class="language-plaintext highlighter-rouge">fitted_pipeline_</code> attribute, or converted to Python code using the <code class="language-plaintext highlighter-rouge">export(path)</code> method.</p>
 
 <p>Fitted <a href="https://github.com/EpistasisLab/tpot/issues/520">TPOT estimators cannot be pickled</a> by design.
 This poses a serious problem for the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package, which operates on pickle files rather than on in-memory Python objects.</p>

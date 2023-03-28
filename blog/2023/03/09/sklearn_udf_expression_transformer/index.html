@@ -97,7 +97,7 @@
 Typically, they start close to the modeling stage, and stop right after it.
 One reason why it happens is the lack of adequate feature engineering and decision engineering tools.</p>
 
-<h2 id="feature-engineering-vs-feature-transformation">Feature engineering vs feature transformation</h2>
+<h2 id="feature-engineering-vs-feature-transformation">Feature engineering vs. feature transformation</h2>
 
 <p>Inside the data pre-processing stage, there are two sub-stages:</p>
 <ol>
@@ -245,7 +245,7 @@ If the application has custom data pre-processing needs, then it should get star
 <p>As of Scikit-Learn 1.2(.0), there are no formalized tools or guidelines for packaging supporting UDFs.
 In principle, persistence issues could be fixed by subclassing the <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> class, and overriding its shallow “function name”-based pickling behaviour with a deep “full function source code”-based one.</p>
 
-<p>Unfortunately, the <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> class suffers from a major conceptual issue that makes it unappealing as a feature engineering platform.
+<p>Unfortunately, the <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> transformer suffers from a major conceptual issue that makes it unappealing as a feature engineering platform.
 Namely, this transformer (just like any other Scikit-Learn transformer or model) uses a 2-D matrix-oriented programming model, which promotes computational efficiency over flexibility.</p>
 
 <p>Feature engineerings deals with individual data samples.
@@ -262,8 +262,8 @@ A few extra loops cannot shift this balance much.</p>
 
 <h2 id="sklearn2pmml-expression-transformer">SkLearn2PMML expression transformer</h2>
 
-<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.ExpressionTransformer</code> class since its early days.
-Starting from the SkLearn2PMML version 0.91, it has gained full UDF support, which makes it a viable replacement for the <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> class in all Scikit-Learn pipelines.</p>
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.ExpressionTransformer</code> transformer since its early days.
+Starting from the SkLearn2PMML version 0.91, it has gained full UDF support, which makes it a viable replacement for the <code class="language-plaintext highlighter-rouge">FunctionTransformer</code> transformer in all Scikit-Learn pipelines.</p>
 
 <p>Main advantages:</p>
 <ol>
@@ -461,7 +461,7 @@ The <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library p
 
 <h3 id="python">Python</h3>
 
-<p>The <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> class takes inspiration both from Python and PMML worlds.</p>
+<p>The <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> transformer draws inspiration both from Python and PMML.</p>
 
 <p>Specifically, in addition to Python-style <code class="language-plaintext highlighter-rouge">expr</code> and <code class="language-plaintext highlighter-rouge">dtype</code> attributes, it supports PMML-style <code class="language-plaintext highlighter-rouge">map_missing_to</code>, <code class="language-plaintext highlighter-rouge">default_value</code> and <code class="language-plaintext highlighter-rouge">invalid_value_treatment</code> attributes for extra controls over expression evaluation.
 Their role and effect follows the <a href="https://dmg.org/pmml/v4-4-1/Functions.html#xsdElement_Apply"><code class="language-plaintext highlighter-rouge">Apply</code></a> element specification.</p>
@@ -490,7 +490,7 @@ This eliminates boilerplate code, bringing the focus back on the actual business
 <span class="k">print</span><span class="p">(</span><span class="n">Xt</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>The <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> class does not have API for dumping its contents in the PMML representation.</p>
+<p>The <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> transformer does not have API for dumping its contents in the PMML representation.</p>
 
 <p>The workaround is to construct and fit a single-step <code class="language-plaintext highlighter-rouge">sklearn2pmml.pipeline.PMMLPipeline</code> object, and convert it using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml</code> utility function as usual:</p>
 

@@ -375,7 +375,7 @@ The resulting sparse matrix contains only <code class="language-plaintext highli
 The prevailing workaround is filling in missing values via imputation.
 However, while appropriate with Scikit-Learn estimators, it should be generally avoided with XGBoost estimators, which can handle missing values natively, and in fact can learn and reveal interesting relationships around them.</p>
 
-<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides a <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.PMMLLabelBinarizer</code> transformer that can produce both two-state dense arrays (<code class="language-plaintext highlighter-rouge">sparse_output = False</code>) or tri-state sparse matrices (<code class="language-plaintext highlighter-rouge">sparse_output = True</code>).</p>
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.PMMLLabelBinarizer</code> transformer that can produce both two-state dense arrays (<code class="language-plaintext highlighter-rouge">sparse_output = False</code>) or tri-state sparse matrices (<code class="language-plaintext highlighter-rouge">sparse_output = True</code>).</p>
 
 <p>Suggested transformer:</p>
 

@@ -132,10 +132,10 @@ During splitting, they can form a standalone branch, or be aggregated with other
 <p>Decision tree algorithms do not care if the training dataset contains multiple collinear features, so there is no practical reason to withhold from experimenting with multiple competing feature transformations.
 If two or more features appear collinear for some subset (ie. not collinear for the training dataset as a whole, but collinear for some segment of it), then the winner is picked randomly.</p>
 
-<p>The <a href="https://github.com/Rambatino/CHAID"><code class="language-plaintext highlighter-rouge">CHAID</code></a> package provides a <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class, which codifies a complete and highly parameterizable CHAID algorithm implementation.
+<p>The <a href="https://github.com/Rambatino/CHAID"><code class="language-plaintext highlighter-rouge">CHAID</code></a> package provides the <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class, which codifies a complete and highly parameterizable CHAID algorithm implementation.
 However, its API is rather uncommon and is lacking some key interactions points.</p>
 
-<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.84 provides <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDClassifier</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDRegressor</code> estimators, which make the <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class embeddable into Scikit-Learn pipelines, and commandable via familiar <code class="language-plaintext highlighter-rouge">fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">predict(X)</code> methods.</p>
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.84 provides <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDClassifier</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDRegressor</code> models, which make the <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class embeddable into Scikit-Learn pipelines, and commandable via familiar <code class="language-plaintext highlighter-rouge">fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">predict(X)</code> methods.</p>
 
 <h2 id="training">Training</h2>
 
@@ -317,17 +317,11 @@ The deployment environment only needs to declare a <code class="language-plainte
 <p>Loading and evaluating a model:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">jpmml_evaluator</span> <span class="kn">import</span> <span class="n">make_evaluator</span>
-<span class="kn">from</span> <span class="nn">jpmml_evaluator.pyjnius</span> <span class="kn">import</span> <span class="n">jnius_configure_classpath</span><span class="p">,</span> <span class="n">PyJNIusBackend</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span>
 
-<span class="c1"># Initialize Python-to-Java connectivity
-</span><span class="n">jnius_configure_classpath</span><span class="p">()</span>
-
-<span class="n">backend</span> <span class="o">=</span> <span class="n">PyJNIusBackend</span><span class="p">()</span>
-
 <span class="c1"># Load model
-</span><span class="n">evaluator</span> <span class="o">=</span> <span class="n">make_evaluator</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s">"CHAID.pmml"</span><span class="p">)</span> \
+</span><span class="n">evaluator</span> <span class="o">=</span> <span class="n">make_evaluator</span><span class="p">(</span><span class="s">"CHAID.pmml"</span><span class="p">)</span> \
   <span class="p">.</span><span class="n">verify</span><span class="p">()</span>
 
 <span class="c1"># Load and canonicalize arguments

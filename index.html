@@ -366,11 +366,9 @@
           Establish Python-to-Java connectivity by launching a JPype, PyJNIus or Py4J backend.
           Load, verify and score. The Python API is designed after the Java API.</p>
 
-<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">jpmml_evaluator</span> <span class="kn">import</span> <span class="n">LoadingModelEvaluatorBuilder</span>
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">jpmml_evaluator</span> <span class="kn">import</span> <span class="n">make_evaluator</span>
 
-<span class="n">evaluator</span> <span class="o">=</span> <span class="n">LoadingModelEvaluatorBuilder</span><span class="p">(</span><span class="n">backend</span> <span class="o">=</span> <span class="p">...)</span> \
-  <span class="p">.</span><span class="n">loadFile</span><span class="p">(</span><span class="s">"MyPipeline.pmml.xml"</span><span class="p">)</span> \
-  <span class="p">.</span><span class="n">build</span><span class="p">()</span>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">make_evaluator</span><span class="p">(</span><span class="s">"MyPipeline.pmml.xml"</span><span class="p">)</span>
 
 <span class="c1"># Perform automated QA
 </span><span class="n">evaluator</span><span class="p">.</span><span class="n">verify</span><span class="p">()</span>
@@ -645,6 +643,14 @@ $ curl -X DELETE http://localhost:8080/openscoring/model/MyPipeline</code></pre>
   <div class="items">
     
     <div class="item">
+      <div class="title"><a href="/blog/2023/03/28/sklearn_statsmodels_pipeline/" class="semibold">Training Scikit-Learn StatsModels pipelines</a></div>
+      <div class="date">2023-03-28</div>
+      <!--
+      <div class="description"></div>
+      -->
+    </div>
+    
+    <div class="item">
       <div class="title"><a href="/blog/2023/03/09/sklearn_udf_expression_transformer/" class="semibold">Extending Scikit-Learn with UDF expression transformer</a></div>
       <div class="date">2023-03-09</div>
       <!--
@@ -655,14 +661,6 @@ $ curl -X DELETE http://localhost:8080/openscoring/model/MyPipeline</code></pre>
     <div class="item">
       <div class="title"><a href="/blog/2023/02/06/upgrading_sklearn_xgboost_pipeline_pmml/" class="semibold">Upgrading Scikit-Learn XGBoost pipelines</a></div>
       <div class="date">2023-02-06</div>
-      <!--
-      <div class="description"></div>
-      -->
-    </div>
-    
-    <div class="item">
-      <div class="title"><a href="/blog/2023/01/28/python_xgboost_aft_pmml/" class="semibold">Training Python-based XGBoost accelerated failure time models</a></div>
-      <div class="date">2023-01-28</div>
       <!--
       <div class="description"></div>
       -->

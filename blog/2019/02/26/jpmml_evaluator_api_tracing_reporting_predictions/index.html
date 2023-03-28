@@ -259,19 +259,13 @@
 <p>According to the PMML specification, the results provided from the model chain are the results of the last active segment. The results from earlier active segments must be explicitly propagated.
 For example, the value of the “report(xgbValue)” output field stays in “booster” scope by default. It needs to be imported from “booster” scope into “sigmoid function” scope using a <code class="language-plaintext highlighter-rouge">MiningField</code> element, and then re-exported as “ref(report(xgbValue))” using an <code class="language-plaintext highlighter-rouge">OutputField</code> element.</p>
 
-<p>The <a href="https://github.com/jpmml/jpmml-evaluator-python"><code class="language-plaintext highlighter-rouge">jpmml_evaluator</code></a> package provides a Python wrapper for the JPMML-Evaluator library. It enables quick PMML validation and evaluation work, without writing a single line of Java application code.</p>
+<p>The <a href="https://github.com/jpmml/jpmml-evaluator-python"><code class="language-plaintext highlighter-rouge">jpmml_evaluator</code></a> package provides a Python wrapper for the JPMML-Evaluator library. It enables quick PMML validation and evaluation work, without writing a single line of Java code.</p>
 
 <p>Creating a verified PMML engine, and evaluating the first row of the “audit” dataset:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">jpmml_evaluator</span> <span class="kn">import</span> <span class="n">make_evaluator</span>
-<span class="kn">from</span> <span class="nn">jpmml_evaluator.py4j</span> <span class="kn">import</span> <span class="n">launch_gateway</span><span class="p">,</span> <span class="n">Py4JBackend</span>
 
-<span class="c1"># Launch Py4J server
-</span><span class="n">gateway</span> <span class="o">=</span> <span class="n">launch_gateway</span><span class="p">()</span>
-
-<span class="n">backend</span> <span class="o">=</span> <span class="n">Py4JBackend</span><span class="p">(</span><span class="n">gateway</span><span class="p">)</span>
-
-<span class="n">evaluator</span> <span class="o">=</span> <span class="n">make_evaluator</span><span class="p">(</span><span class="n">backend</span><span class="p">,</span> <span class="s">"XGBoostAudit-reporting.pmml"</span><span class="p">,</span> <span class="n">reporting</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span> \
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">make_evaluator</span><span class="p">(</span><span class="s">"XGBoostAudit-reporting.pmml"</span><span class="p">,</span> <span class="n">reporting</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span> \
   <span class="p">.</span><span class="n">verify</span><span class="p">()</span>
 
 <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span>
@@ -289,9 +283,6 @@ For example, the value of the “report(xgbValue)” output field stays in “bo
 
 <span class="n">results</span> <span class="o">=</span> <span class="n">evaluator</span><span class="p">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
-
-<span class="c1"># Shut down Py4J server
-</span><span class="n">gateway</span><span class="p">.</span><span class="n">shutdown</span><span class="p">()</span>
 </code></pre></div></div>
 
 <p>The result is a <code class="language-plaintext highlighter-rouge">dict</code> object with six items:</p>

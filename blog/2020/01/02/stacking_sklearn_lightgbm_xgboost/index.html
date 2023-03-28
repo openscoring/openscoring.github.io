@@ -88,11 +88,11 @@
 <div class="post">
   <p>Latest Scikit-Learn releases have made significant advances in the area of ensemble methods.</p>
 
-<p><a href="https://scikit-learn.org/stable/whats_new/v0.21.html">Scikit-Learn version 0.21</a> introduced <code class="language-plaintext highlighter-rouge">HistGradientBoostingClassifier</code> and <code class="language-plaintext highlighter-rouge">HistGradientBoostingRegressor</code> classes, which implement histogram-based decision tree ensembles.
+<p><a href="https://scikit-learn.org/stable/whats_new/v0.21.html">Scikit-Learn version 0.21</a> introduced <code class="language-plaintext highlighter-rouge">HistGradientBoostingClassifier</code> and <code class="language-plaintext highlighter-rouge">HistGradientBoostingRegressor</code> models, which implement histogram-based decision tree ensembles.
 They are based on a completely new <code class="language-plaintext highlighter-rouge">TreePredictor</code> decision tree representation.
 The claimed benefits over the traditional <code class="language-plaintext highlighter-rouge">Tree</code> decision tree representation include support for missing values and the ability to process bigger datasets faster.</p>
 
-<p><a href="https://scikit-learn.org/stable/whats_new/v0.22.html">Scikit-Learn version 0.22</a> introduced <code class="language-plaintext highlighter-rouge">StackingClassifier</code> and <code class="language-plaintext highlighter-rouge">StackingRegressor</code> classes, which aggregate multiple child estimators into an integral whole using a parent (aka final) estimator.
+<p><a href="https://scikit-learn.org/stable/whats_new/v0.22.html">Scikit-Learn version 0.22</a> introduced <code class="language-plaintext highlighter-rouge">StackingClassifier</code> and <code class="language-plaintext highlighter-rouge">StackingRegressor</code> models, which aggregate multiple child estimators into an integral whole using a parent (aka final) estimator.
 Stacking is closely related to voting.
 The main difference is about how the weights for individual child estimators are obtained.
 Namely, stacking estimators are “active” as they learn optimal weights autonomously during training, whereas voting estimators are “passive” as they expect optimal weights to be supplied.</p>
@@ -263,7 +263,7 @@ In future Scikit-Learn releases, when the fit methods of <code class="language-p
 <span class="p">])</span>
 </code></pre></div></div>
 
-<p>Stacking provides an interesting opportunity to rank LightGBM, XGBoost and Scikit-Learn estimators based on their predictive performance.
+<p>Stacking offers an interesting opportunity to rank LightGBM, XGBoost and Scikit-Learn estimators based on their predictive performance.
 The idea is to grow all child decision tree ensemble models under similar structural constraints, and use a linear model as the parent estimator (<code class="language-plaintext highlighter-rouge">LogisticRegression</code> for classifiers and <code class="language-plaintext highlighter-rouge">LinearRegression</code> for regressors).
 The importance of child estimators is then proportional to their estimated coefficient values.</p>
 

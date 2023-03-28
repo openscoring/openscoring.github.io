@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://www.googletagmanager.com/gtag/js?id=G-1XC1KCZX17" async></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'G-1XC1KCZX17');
+</script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn sklearn2pmml patsy sklego statsmodels">
+  <meta name="author" content="vruusmann">
+
+  <title>Training Scikit-Learn StatsModels pipelines - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
+  <link rel="canonical" href="https://openscoring.io/blog/2023/03/28/sklearn_statsmodels_pipeline/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Training Scikit-Learn StatsModels pipelines - Openscoring">
+  <meta property="og:url" content="/blog/2023/03/28/sklearn_statsmodels_pipeline/">
+  <meta property="og:site_name" content="Openscoring">
+  <meta property="og:updated_time" content="2023-03-28 00:00:00 +0300">
+  <meta property="article:published_time" content="2023-03-28 00:00:00 +0300">
+  <meta property="article:modified_time" content="2023-03-28 00:00:00 +0300">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Training Scikit-Learn StatsModels pipelines - Openscoring">
+  <meta name="twitter:label1" content="Written by">
+  <meta name="twitter:data1" content="Villu Ruusmann">
+  <meta name="twitter:label2" content="Time to read">
+  <meta name="twitter:data2" content="Less than a minute">
+
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32">
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/assets/images/fa.png">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png">
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog/" class="btn btn--small">Blog</a>
+    </nav>
+  </div>
+</header>
+
+  <main class="container mt-26">
+    <h1>Training Scikit-Learn StatsModels pipelines</h1>
+  
+<div class="post">
+  <p><a href="https://www.statsmodels.org">StatsModels</a> is a Python library that specializes in statistical and time-series analyses.</p>
+
+<p>StatsModels and Scikit-Learn communities have co-existed since early 2010s.
+Yet, there is virtually no co-operation between the two, even though the potential for synergy is high.</p>
+
+<p>In essence, StatsModels provides low-level tools for formulating and testing statistical hypotheses, whereas Scikit-Learn provides a high-level framework for organizing those tools into coherent and transparent workflows.</p>
+
+<p><a href="https://www.statsmodels.org/stable/user-guide.html#regression-and-linear-models">StatsModels’ linear models</a> and <a href="https://scikit-learn.org/stable/modules/classes.html#module-sklearn.linear_model">Scikit-Learn’s linear models</a> are compatible in their fit and predict behaviour, but address different application scenarios:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th>StatsModels</th>
+      <th>Scikit-Learn</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Audience</td>
+      <td>expert</td>
+      <td>non-expert</td>
+    </tr>
+    <tr>
+      <td>Methodology</td>
+      <td>analytical, statistics</td>
+      <td>brute-force ML</td>
+    </tr>
+    <tr>
+      <td>Objective</td>
+      <td>configurability</td>
+      <td>scalability and speed</td>
+    </tr>
+    <tr>
+      <td>Inspectability</td>
+      <td>“white box”</td>
+      <td>“black box”</td>
+    </tr>
+    <tr>
+      <td>Feedback</td>
+      <td>yes</td>
+      <td>no</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>The biggest differentiator is model introspection capabilities.</p>
+
+<p>StatsModels’ linear models are metadata rich and lend themselves to scrutinization.
+In contrast, Scikit-Learn’s linear models can only be judged after their live predictive performance.
+For example, all <a href="https://scikit-learn.org/stable/model_selection.html">model selection and evaluation</a> takes place under the assumption that the quality of model configurations is directly proportional to the quality of its predictions.
+There is no consideration of other aspects such as conformity or complexity.</p>
+
+<h2 id="statsmodels-workflow">StatsModels workflow</h2>
+
+<p>A sample Scikit-Learn linear regression workflow:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
+
+<span class="n">lr_params</span> <span class="o">=</span> <span class="p">{...}</span>
+
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="o">**</span><span class="n">lr_params</span><span class="p">)</span>
+
+<span class="n">estimator</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># Basic details
+</span><span class="k">print</span><span class="p">(</span><span class="n">estimator</span><span class="p">.</span><span class="n">coef_</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">estimator</span><span class="p">.</span><span class="n">intercept_</span><span class="p">)</span>
+
+<span class="n">yt</span> <span class="o">=</span> <span class="n">estimator</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The same, after porting from Scikit-Learn to StatsModels:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">statsmodels.api</span> <span class="kn">import</span> <span class="n">OLS</span>
+
+<span class="n">lr_params</span> <span class="o">=</span> <span class="p">{...}</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">OLS</span><span class="p">(</span><span class="n">endog</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">exog</span> <span class="o">=</span> <span class="n">X</span><span class="p">)</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="o">**</span><span class="n">lr_params</span><span class="p">)</span>
+
+<span class="c1"># Basic details
+</span><span class="k">print</span><span class="p">(</span><span class="n">results</span><span class="p">.</span><span class="n">params</span><span class="p">)</span>
+<span class="c1"># Advanced details
+</span><span class="k">print</span><span class="p">(</span><span class="n">results</span><span class="p">.</span><span class="n">summary</span><span class="p">())</span>
+
+<span class="n">results</span><span class="p">.</span><span class="n">remove_data</span><span class="p">()</span>
+
+<span class="n">yt</span> <span class="o">=</span> <span class="n">results</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">exog</span> <span class="o">=</span> <span class="n">X</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>A modeling task can be split into <strong>task specification</strong> and <strong>task outcome</strong> parts.</p>
+
+<p>Scikit-Learn keeps these two parts together in a singular estimator object.
+Calling the <code class="language-plaintext highlighter-rouge">fit(X, y)</code> method with the training dataset updates the object from the initial state to the fitted state, and enables the use of <code class="language-plaintext highlighter-rouge">predict(X)</code> and <code class="language-plaintext highlighter-rouge">score(X, y_expected)</code> methods.
+The fitted state is very lean, and does not include any trace of the training dataset.</p>
+
+<p>In contrast, StatsModels keeps these two parts separate between <code class="language-plaintext highlighter-rouge">statsmodels.base.model.Model</code> and <code class="language-plaintext highlighter-rouge">statsmodels.base.model.Results</code> objects, respectively.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Model</code> object is instantiated directly. It holds the base configuration and the training dataset.
+According to StatsModels conventions, the label data (aka dependent variable aka response) is passed as the <code class="language-plaintext highlighter-rouge">endog</code> argument, and the feature data (aka independent variables aka observations) is passed as the <code class="language-plaintext highlighter-rouge">exog</code> argument.</p>
+
+<p>A model class can declare one or more fit methods:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">fit(method, ...)</code> - Full fit.</li>
+  <li><code class="language-plaintext highlighter-rouge">fit_regularized(method, ...)</code> - Regularized fit.</li>
+  <li><code class="language-plaintext highlighter-rouge">fit_constrained(constraints, ...)</code> - Constrained fit.</li>
+</ul>
+
+<p>Each fit method is backed by one or more modeling algorithms.
+When calling a fit method, then it will be necessary to pass a rather long and detailed supplementary configuration there (on top of the base configuration) in order to achieve the best performance.</p>
+
+<p>The fit produces a <code class="language-plaintext highlighter-rouge">Results</code> object, which holds a (back-)reference to the parent <code class="language-plaintext highlighter-rouge">Model</code> object, and a bunch of estimated parameters.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Model</code> object loses its relevance from this point forward.
+All the analysis, testing and prediction functionality is commandable using the <code class="language-plaintext highlighter-rouge">Results</code> object’s methods.</p>
+
+<h2 id="scikit-learn-statsmodels-wrappers">Scikit-Learn StatsModels wrappers</h2>
+
+<p>The working principle of a StatsModels wrapper class:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span>
+
+<span class="k">class</span> <span class="nc">StatsModelsEstimator</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
+
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_class</span><span class="p">,</span> <span class="o">**</span><span class="n">init_params</span><span class="p">):</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">model_class</span> <span class="o">=</span> <span class="n">model_class</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">init_params</span> <span class="o">=</span> <span class="n">init_params</span>
+
+  <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">):</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">model_</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">model_class</span><span class="p">(</span><span class="n">endog</span> <span class="o">=</span> <span class="n">y</span><span class="p">,</span> <span class="n">exog</span> <span class="o">=</span> <span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="p">.</span><span class="n">init_params</span><span class="p">)</span>
+    <span class="n">fit_method</span> <span class="o">=</span> <span class="n">fit_params</span><span class="p">.</span><span class="n">pop</span><span class="p">(</span><span class="s">"fit_method"</span><span class="p">,</span> <span class="s">"fit"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="p">.</span><span class="n">results_</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">.</span><span class="n">model_</span><span class="p">,</span> <span class="n">fit_method</span><span class="p">)(</span><span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">self</span>
+
+  <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">predict_params</span><span class="p">):</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="p">.</span><span class="n">results_</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">exog</span> <span class="o">=</span> <span class="n">X</span><span class="p">,</span> <span class="o">**</span><span class="n">predict_params</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">StatsModelsEstimator</code> constructor requests to know the model’s class and its base configuration.
+This information is stored as-is.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">model_class</code> argument must be some <code class="language-plaintext highlighter-rouge">Model</code> class reference.
+It does not matter if this reference is based on the fully qualified name (eg. <code class="language-plaintext highlighter-rouge">statsmodels.regression.linear_model.OLS</code>) or some alias (eg. <code class="language-plaintext highlighter-rouge">statsmodels.api.OLS</code>).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">init_params</code> argument is a list of keyword arguments to be passed to the <code class="language-plaintext highlighter-rouge">Model</code> constructor at a later time.
+This list must not include the <code class="language-plaintext highlighter-rouge">endog</code> or <code class="language-plaintext highlighter-rouge">exog</code> arguments, or any formula interface-related arguments.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">fit(X, y)</code> method performs all the heavy-lifting.
+First, it constructs the <code class="language-plaintext highlighter-rouge">Model</code> object by complementing the base configuration with the newly available training dataset.
+After that, it determines the fit method by popping a special-purpose <code class="language-plaintext highlighter-rouge">fit_method</code> fit param, and then calls it using the remainder of fit params.</p>
+
+<p>The fitted state consists of <code class="language-plaintext highlighter-rouge">model_</code> and <code class="language-plaintext highlighter-rouge">results_</code> attributes.</p>
+
+<p>Sample workflow:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">statsmodels.api</span> <span class="kn">import</span> <span class="n">OLS</span>
+
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">StatsModelsEstimator</span><span class="p">(</span><span class="n">OLS</span><span class="p">)</span>
+<span class="n">estimator</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">fit_method</span> <span class="o">=</span> <span class="s">"fit_regularized"</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">estimator</span><span class="p">.</span><span class="n">results_</span><span class="p">.</span><span class="n">summary</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>It takes around ten lines of Python code to achieve basic interoperability.
+However, it will take many times that to reduce the entry barrier from the expert level to the beginner-to-intermediate level, and achieve advanced interoperability so that third-party libraries can accept StatsModels’ linear models as drop-in replacements for Scikit-Learn’s linear models.</p>
+
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides <code class="language-plaintext highlighter-rouge">sklearn2pmml.statsmodels.StatsModelsClassifier</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.statsmodels.StatsModelsRegressor</code> models that strive towards maximal Scikit-Learn API compliance.</p>
+
+<p>Selected highlights:</p>
+
+<ul>
+  <li>The <code class="language-plaintext highlighter-rouge">StatsModelsEstimator.fit_intercept</code> attribute.</li>
+  <li><code class="language-plaintext highlighter-rouge">StatsModelsEstimator.coef_</code> and <code class="language-plaintext highlighter-rouge">StatsModelsEstimator.intercept_</code> attributes.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">StatsModelsEstimator.remove_data()</code> method. Reduces the size of the model by evicting the training dataset.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">StatsModelsClassifier.classes_</code> attribute.</li>
+  <li><code class="language-plaintext highlighter-rouge">StatsModelsClassifier.predict(X)</code> and <code class="language-plaintext highlighter-rouge">StatsModelsClassifier.predict_proba(X)</code> methods.</li>
+</ul>
+
+<p>Both <code class="language-plaintext highlighter-rouge">StatsModelsClassifier</code> and <code class="language-plaintext highlighter-rouge">StatsModelsRegressor</code> classes are registered with the JPMML-SkLearn library.
+However, the conversion to the PMML representation is only possible if the fitted state operates with <code class="language-plaintext highlighter-rouge">Model</code> and <code class="language-plaintext highlighter-rouge">Results</code> subclasses that are supported by the underlying JPMML-StatsModels library.</p>
+
+<h2 id="scikit-learn-pipeline-templates">Scikit-Learn pipeline templates</h2>
+
+<h3 id="model-formula-interface">Model formula interface</h3>
+
+<p>StatsModels is heavily influenced by the R language.
+One clear telltale is the habit of specifying modeling tasks in compact symbolic form.</p>
+
+<p>StatsModels relies on the <a href="https://github.com/pydata/patsy"><code class="language-plaintext highlighter-rouge">patsy</code></a> package for its R-compatible re-implementation of <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html">model formulae</a> and <a href="https://stat.ethz.ch/R-manual/R-devel/library/stats/html/model.matrix.html">model design matrices</a>.</p>
+
+<p>The parsing and interpretation of model formulae is tailored for linear models’ needs.
+For example, the model formula string is assumed to include an implicit intercept term, and the <code class="language-plaintext highlighter-rouge">C()</code> categorical encoding operator drops the first category level.</p>
+
+<p>A sample Patsy linear regression workflow:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.statsmodels</span> <span class="kn">import</span> <span class="n">StatsModelsRegressor</span>
+<span class="kn">from</span> <span class="nn">statsmodels.api</span> <span class="kn">import</span> <span class="n">OLS</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">import</span> <span class="nn">patsy</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(...)</span>
+
+<span class="c1"># Model formula sides
+</span><span class="n">lhs</span> <span class="o">=</span> <span class="p">...</span>
+<span class="n">rhs</span> <span class="o">=</span> <span class="p">...</span>
+
+<span class="n">y</span><span class="p">,</span> <span class="n">X</span> <span class="o">=</span> <span class="n">patsy</span><span class="p">.</span><span class="n">dmatrices</span><span class="p">(</span><span class="n">lhs</span> <span class="o">+</span> <span class="s">" ~ "</span> <span class="o">+</span> <span class="n">rhs</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">return_type</span> <span class="o">=</span> <span class="s">"dataframe"</span><span class="p">)</span>
+
+<span class="n">regressor</span> <span class="o">=</span> <span class="n">StatsModelsRegressor</span><span class="p">(</span><span class="n">OLS</span><span class="p">,</span> <span class="n">fit_intercept</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+<span class="n">regressor</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">regressor</span><span class="p">.</span><span class="n">results_</span><span class="p">.</span><span class="n">summary</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>The same, in Scikit-Learn pipeline form:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.statsmodels</span> <span class="kn">import</span> <span class="n">StatsModelsRegressor</span>
+<span class="kn">from</span> <span class="nn">sklego.preprocessing</span> <span class="kn">import</span> <span class="n">PatsyTransformer</span>
+<span class="kn">from</span> <span class="nn">statsmodels.api</span> <span class="kn">import</span> <span class="n">OLS</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pandas</span><span class="p">.</span><span class="n">read_csv</span><span class="p">(...)</span>
+
+<span class="n">rhs</span> <span class="o">=</span> <span class="p">...</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"patsy_transformer"</span><span class="p">,</span> <span class="n">PatsyTransformer</span><span class="p">(</span><span class="n">rhs</span><span class="p">,</span> <span class="n">return_type</span> <span class="o">=</span> <span class="s">"dataframe"</span><span class="p">)),</span>
+  <span class="p">(</span><span class="s">"regressor"</span><span class="p">,</span> <span class="n">StatsModelsRegressor</span><span class="p">(</span><span class="n">OLS</span><span class="p">,</span> <span class="n">fit_intercept</span> <span class="o">=</span> <span class="bp">False</span><span class="p">))</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[...])</span>
+
+<span class="n">regressor</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">_final_estimator</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">regressor</span><span class="p">.</span><span class="n">results_</span><span class="p">.</span><span class="n">summary</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>The <a href="https://github.com/koaning/scikit-lego"><code class="language-plaintext highlighter-rouge">sklego</code></a> package provides the <code class="language-plaintext highlighter-rouge">sklego.preprocessing.PatsyTransformer</code> transformer, which learns the model design matrix configuration (<code class="language-plaintext highlighter-rouge">patsy.DesignInfo</code> class) during fitting, and then applies it during subsequent transforms.
+The transformation behaviour is perfectly repeatable across time and space, including in situations where the testing dataset is a subset of the training dataset (eg. a single data sample).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">PatsyTransformer</code> transformer only deals with the right-hand side of the formula.
+Its output is explicitly converted from <code class="language-plaintext highlighter-rouge">patsy.DesignMatrix</code> to <code class="language-plaintext highlighter-rouge">pandas.DataFrame</code> in order to ensure smooth passage between Patsy and Scikit-Learn realms.</p>
+
+<p>The first column of the pre-processed dataset is labelled “Intercept” and is filled with constant <code class="language-plaintext highlighter-rouge">1.0</code> values.
+The <code class="language-plaintext highlighter-rouge">StatsModelsRegressor</code> model is expressly prohibited from introducing an extra constant column by settings its <code class="language-plaintext highlighter-rouge">fit_intercept</code> attribute to <code class="language-plaintext highlighter-rouge">False</code>.</p>
+
+<h3 id="data-matrix-interface">Data matrix interface</h3>
+
+<p>The data matrix interface is about retrofitting existing Scikit-Learn pipelines.</p>
+
+<p>Model substitution is straightforward.
+The only pitfall relates to regularized fit methods, where StatsModels’ linear models expect direct commanding via fit params:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">#from sklearn.linear_model import ElasticNet
+</span><span class="kn">from</span> <span class="nn">sklearn2pmml.statsmodels</span> <span class="kn">import</span> <span class="n">StatsModelsRegressor</span>
+<span class="kn">from</span> <span class="nn">statsmodels.api</span> <span class="kn">import</span> <span class="n">OLS</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="p">...),</span>
+  <span class="c1">#("regressor", ElasticNet()),
+</span>  <span class="p">(</span><span class="s">"regressor"</span><span class="p">,</span> <span class="n">StatsModelsRegressor</span><span class="p">(</span><span class="n">OLS</span><span class="p">,</span> <span class="n">fit_intercept</span> <span class="o">=</span> <span class="bp">True</span><span class="p">))</span>
+<span class="p">])</span>
+
+<span class="n">fit_params</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s">"regressor__fit_method"</span> <span class="p">:</span> <span class="s">"fit_regularized"</span><span class="p">,</span>
+  <span class="s">"regressor__method"</span> <span class="p">:</span> <span class="s">"elastic_net"</span>
+<span class="p">}</span>
+
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>StatsModels summaries are readily available.
+However, the default print-out is quite meaningless, because it displays a <code class="language-plaintext highlighter-rouge">const</code> term followed by a long list of <code class="language-plaintext highlighter-rouge">x1</code>, <code class="language-plaintext highlighter-rouge">x2</code>, etc. terms.</p>
+
+<p>The situation can be fixed by proper feature identification.</p>
+
+<p>Scikit-Learn transformers offer rudimentary feature naming support using the <code class="language-plaintext highlighter-rouge">get_feature_names_out()</code> method.
+Calling this method on the last transformer step of a fitted pipeline yields a list of strings that should align perfectly against the above list of anonymized terms.</p>
+
+<p>This process can be fully automated in Scikit-Learn version 1.2.0 and newer using the <a href="https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html">set_output API</a>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.statsmodels</span> <span class="kn">import</span> <span class="n">StatsModelsRegressor</span>
+<span class="kn">from</span> <span class="nn">statsmodels.api</span> <span class="kn">import</span> <span class="n">OLS</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"mapper"</span><span class="p">,</span> <span class="p">...),</span>
+  <span class="p">(</span><span class="s">"regressor"</span><span class="p">,</span> <span class="n">StatsModelsRegressor</span><span class="p">(</span><span class="n">OLS</span><span class="p">,</span> <span class="n">fit_intercept</span> <span class="o">=</span> <span class="bp">True</span><span class="p">))</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">set_output</span><span class="p">(</span><span class="n">transform</span> <span class="o">=</span> <span class="s">"pandas"</span><span class="p">)</span>
+
+<span class="n">fit_params</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s">"regressor__fit_method"</span> <span class="p">:</span> <span class="s">"fit_regularized"</span><span class="p">,</span>
+  <span class="s">"regressor__method"</span> <span class="p">:</span> <span class="s">"elastic_net"</span>
+<span class="p">}</span>
+
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">**</span><span class="n">fit_params</span><span class="p">)</span>
+
+<span class="n">regressor</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">_final_estimator</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">regressor</span><span class="p">.</span><span class="n">results_</span><span class="p">.</span><span class="n">summary</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">Pipeline.set_output()</code> method propagates the same configuration to all steps.
+It should be called right after construction.</p>
+
+<p>Scikit-Learn generates less intuitive feature names than Patsy.</p>
+
+<p>The results of some transformer step can be highlighted by prepending a unique feature name prefix to them.
+This can be implemented by wrapping the transformer into a <code class="language-plaintext highlighter-rouge">sklearn.compose.ColumnTransformer</code> object:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">PolynomialFeatures</span>
+
+<span class="k">def</span> <span class="nf">make_prefixer</span><span class="p">(</span><span class="n">transformer</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+  <span class="k">return</span> <span class="n">ColumnTransformer</span><span class="p">([</span>
+    <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">transformer</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">X</span><span class="p">:</span> <span class="n">X</span><span class="p">.</span><span class="n">columns</span><span class="p">.</span><span class="n">values</span><span class="p">)</span>
+  <span class="p">])</span>
+
+<span class="n">interactor</span> <span class="o">=</span> <span class="n">make_prefixer</span><span class="p">(</span><span class="n">PolynomialFeatures</span><span class="p">(</span><span class="n">degree</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">interaction_only</span> <span class="o">=</span> <span class="bp">True</span><span class="p">),</span> <span class="s">"ix1"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The interaction features of the <code class="language-plaintext highlighter-rouge">interactor</code> object will now be easily identifiable in StatsModels summaries by their <code class="language-plaintext highlighter-rouge">"ix1__"</code> prefix.</p>
+
+</div>
+
+
+
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+  <script>
+  var sc_project=11704106;
+  var sc_security="a7d1bf16"; 
+  var sc_invisible=1; 
+  var sc_remove_link=1; 
+</script>
+
+<script src="https://www.statcounter.com/counter/counter.js" async></script>
+
+<noscript>
+  <div class="statcounter">
+    <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="Web Analytics Made Easy - Statcounter" referrerPolicy="no-referrer-when-downgrade">
+  </div>
+</noscript>
+</body>
+
+</html>
