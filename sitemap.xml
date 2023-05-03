@@ -2,15 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://openscoring.io/blog/</loc>
-    <lastmod>2023-03-28T13:21:42+03:00</lastmod>
+    <lastmod>2023-05-03T23:19:31+03:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://openscoring.io/</loc>
-    <lastmod>2023-03-28T13:21:42+03:00</lastmod>
+    <lastmod>2023-05-03T23:19:31+03:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>
+    https://openscoring.io/blog/2023/05/03/converting_sklearn_subclass_pmml/</loc>
+    <lastmod>2023-05-03T00:00:00+03:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
   </url>
   <url>
     <loc>

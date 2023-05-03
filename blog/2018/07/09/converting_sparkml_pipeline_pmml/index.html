@@ -165,7 +165,7 @@ Due to the tight coupling to the Apache Spark environment, they are not suitable
   </tbody>
 </table>
 
-<p>JPMML-SparkML checks the version of Apache Spark runtime environment before doing any conversion work.
+<p>JPMML-SparkML checks the version of the Apache Spark runtime environment before doing any conversion work.
 For example, the following exception is thrown when JPMML-SparkML version 1.4(.14) discovers that it has been improperly paired with Apache Spark version 2.2:</p>
 
 <div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>java.lang.IllegalArgumentException: Expected Apache Spark ML version 2.3, got version 2.2 (2.2.0)
@@ -242,7 +242,7 @@ $ $SPARK_HOME/bin/pyspark --jars /path/to/jpmml-sparkml-executable-${version}.ja
 <ul>
   <li><code class="language-plaintext highlighter-rouge">#build()</code> - Returns the PMML document as a live <code class="language-plaintext highlighter-rouge">org.dmg.pmml.PMML</code> object.</li>
   <li><code class="language-plaintext highlighter-rouge">#buildByteArray()</code> - Returns the PMML document as a byte array.</li>
-  <li><code class="language-plaintext highlighter-rouge">#buildFile(java.io.File)</code> - Writes the PMML document to the specified file in local filesystem. Upon success, returns the argument <code class="language-plaintext highlighter-rouge">java.io.File</code> object unchanged.</li>
+  <li><code class="language-plaintext highlighter-rouge">#buildFile(java.io.File)</code> - Writes the PMML document into the specified file in the local filesystem. Upon success, returns the argument <code class="language-plaintext highlighter-rouge">java.io.File</code> object unchanged.</li>
 </ul>
 
 <p>The first option is aimed at PMML-savvy applications that wish to perform extra processing on the PMML document (eg. adding or removing feature transformations).

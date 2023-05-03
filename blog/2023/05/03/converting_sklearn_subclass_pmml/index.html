@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://www.googletagmanager.com/gtag/js?id=G-1XC1KCZX17" async></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'G-1XC1KCZX17');
+</script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn sklearn2pmml jpmml-sklearn">
+  <meta name="author" content="vruusmann">
+
+  <title>Converting customized Scikit-Learn estimators to PMML - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
+  <link rel="canonical" href="https://openscoring.io/blog/2023/05/03/converting_sklearn_subclass_pmml/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Converting customized Scikit-Learn estimators to PMML - Openscoring">
+  <meta property="og:url" content="/blog/2023/05/03/converting_sklearn_subclass_pmml/">
+  <meta property="og:site_name" content="Openscoring">
+  <meta property="og:updated_time" content="2023-05-03 00:00:00 +0300">
+  <meta property="article:published_time" content="2023-05-03 00:00:00 +0300">
+  <meta property="article:modified_time" content="2023-05-03 00:00:00 +0300">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Converting customized Scikit-Learn estimators to PMML - Openscoring">
+  <meta name="twitter:label1" content="Written by">
+  <meta name="twitter:data1" content="Villu Ruusmann">
+  <meta name="twitter:label2" content="Time to read">
+  <meta name="twitter:data2" content="Less than a minute">
+
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32">
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/assets/images/fa.png">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png">
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog/" class="btn btn--small">Blog</a>
+    </nav>
+  </div>
+</header>
+
+  <main class="container mt-26">
+    <h1>Converting customized Scikit-Learn estimators to PMML</h1>
+  
+<div class="post">
+  <p>Scikit-Learn transformers and models are easily customizable via subclassing.</p>
+
+<p>The simplest use case is “freezing” parameterizations.
+For example, defining a <code class="language-plaintext highlighter-rouge">MultinomialClassifier</code> class based on the <code class="language-plaintext highlighter-rouge">sklearn.linear_model.LogisticRegression</code> class:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LogisticRegression</span>
+
+<span class="k">class</span> <span class="nc">MultinomialClassifier</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">):</span>
+
+  <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">MultinomialClassifier</span><span class="p">,</span> <span class="bp">self</span><span class="p">).</span><span class="n">__init__</span><span class="p">(</span><span class="n">penalty</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">multi_class</span> <span class="o">=</span> <span class="s">"multinomial"</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Scikit-Learn is not concerned with class identities.
+A newly defined class can be plugged into existing workflows without changing or configuring anything extra:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="n">iris_X</span><span class="p">,</span> <span class="n">iris_y</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">return_X_y</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span> <span class="n">as_frame</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">MultinomialClassifier</span><span class="p">(</span><span class="n">solver</span> <span class="o">=</span> <span class="s">"lbfgs"</span><span class="p">)</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">classifier</span><span class="p">)</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">iris_X</span><span class="p">,</span> <span class="n">iris_y</span><span class="p">)</span>
+
+<span class="c1"># Raises RuntimeError
+</span><span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"MultinomialIris.pmml"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>However, any attempt to convert the fitted pipeline object to the PMML representation using the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package shall fail with a runtime error stating that the <code class="language-plaintext highlighter-rouge">__main__.MultinomialClassifier</code> class is not a supported.</p>
+
+<h2 id="sklearn2pmml">SkLearn2PMML</h2>
+
+<p>The <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml</code> utility function dumps the pipeline object in Pickle data format into a temporary file in the local filesystem, and then executes the JPMML-SkLearn command-line application to perform the actual conversion work.</p>
+
+<h3 id="the-registry-of-estimator-to-converter-class-mappings">The registry of estimator-to-converter class mappings</h3>
+
+<p>The JPMML-SkLearn library operates in the Java environment.
+When it loads a Pickle file, then it gets presented with Python class instances in their low-level serialized form that consists of a fully-qualified name (FQN) and a map of attributes.</p>
+
+<p>The JPMML-SkLearn library does not have a mechanism for resolving Python class names to full-blown class definitions, which would allow (re)constructing Python class hierarchies, and checking if and how different Python classes relate to one another.
+As a workaround, it maintains a registry of supported Python classes.</p>
+
+<p>This registry can be loaded using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.load_class_mapping</code> utility function.
+It is returned in <code class="language-plaintext highlighter-rouge">dict</code> representation, where the keys are Scikit-Learn transformer or model class names, and the values are the corresponding JPMMl-SkLearn converter class names:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">load_class_mapping</span>
+
+<span class="n">mapping</span> <span class="o">=</span> <span class="n">load_class_mapping</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mapping</span><span class="p">))</span>
+</code></pre></div></div>
+
+<h4 id="entry-keys">Entry keys</h4>
+
+<p>At the time of writing this (May 2023), the registry contains approximately 400 entries, which can be categorized into 250 “main” entries (top-level estimator classes) and 150 “helper” entries (aliases of estimator classes, nested and helper classes).</p>
+
+<p>For example, the <code class="language-plaintext highlighter-rouge">sklearn.linear_model.LogisticRegression</code> model has two registrations, because its Python class has been moved from one module to another over the years.
+The <code class="language-plaintext highlighter-rouge">sklearn.linear_model.logistic.LogisticRegression</code> key targets Scikit-Learn versions <a href="https://github.com/scikit-learn/scikit-learn/blob/0.16.0/sklearn/linear_model/logistic.py">0.16</a> through <a href="https://github.com/scikit-learn/scikit-learn/blob/0.21.0/sklearn/linear_model/logistic.py">0.21</a>.
+The <code class="language-plaintext highlighter-rouge">sklearn.linear_model._logistic.LogisticRegression</code> key (note the added underscore prefix!) targets Scikit-Learn versions <a href="https://github.com/scikit-learn/scikit-learn/blob/0.22/sklearn/linear_model/_logistic.py">0.22</a> and newer.</p>
+
+<p><strong>Important</strong>: All Python classes must be referenced by their fully-qualified names.
+When unsure, consider formatting the Python class using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.util.fqn</code> utility function.</p>
+
+<p>Querying the key set of the registry to see if some Scikit-Learn estimator class is currently supported or not:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.util</span> <span class="kn">import</span> <span class="n">fqn</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">fqn</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">fqn</span><span class="p">(</span><span class="n">MultinomialClassifier</span><span class="p">))</span>
+
+<span class="k">assert</span> <span class="s">"sklearn.linear_model.LogisticRegression"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">,</span> <span class="s">"Has no mapping for LR public name"</span>
+<span class="k">assert</span> <span class="n">fqn</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">)</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">,</span> <span class="s">"Has mapping for LR fully-qualified name"</span>
+<span class="k">assert</span> <span class="n">fqn</span><span class="p">(</span><span class="n">MultinomialClassifier</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">,</span> <span class="s">"Has no mapping for MC fully-qualified name"</span>
+</code></pre></div></div>
+
+<h4 id="entry-values">Entry values</h4>
+
+<p>An estimator class is supported if there is a JPMML-SkLearn converter class mapped to it.</p>
+
+<p>The package structure of JPMML-SkLearn draws inspiration from Scikit-Learn, but there are no clear rules for translating class names between the two libraries.</p>
+
+<p>It can be found that multiple Scikit-Learn models are often mapped to the same JPMML-SkLearn converter.
+For example, over 20 linear regressor classes are mapped to the <code class="language-plaintext highlighter-rouge">sklearn.linear_model.LinearRegressor</code> class.
+This is possible, because these classes have differing <code class="language-plaintext highlighter-rouge">fit(X, y)</code> methods, but identical fitted state as captured by <code class="language-plaintext highlighter-rouge">coef_</code> and <code class="language-plaintext highlighter-rouge">intercept_</code> attributes.</p>
+
+<p>Looking up and mapping JPMML-SkLearn converter classes:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">inspect</span>
+
+<span class="k">def</span> <span class="nf">make_class_mapping</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">templateCls</span> <span class="o">=</span> <span class="bp">None</span><span class="p">):</span>
+
+  <span class="k">if</span> <span class="ow">not</span> <span class="n">templateCls</span><span class="p">:</span>
+    <span class="n">templateCls</span> <span class="o">=</span> <span class="n">inspect</span><span class="p">.</span><span class="n">getmro</span><span class="p">(</span><span class="n">cls</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+  <span class="n">pyClazzName</span> <span class="o">=</span> <span class="n">fqn</span><span class="p">(</span><span class="n">cls</span><span class="p">)</span>
+  <span class="n">javaConverterClazzName</span> <span class="o">=</span> <span class="n">mapping</span><span class="p">[</span><span class="n">fqn</span><span class="p">(</span><span class="n">templateCls</span><span class="p">)]</span>
+
+  <span class="k">return</span> <span class="p">{</span>
+    <span class="n">pyClazzName</span> <span class="p">:</span> <span class="n">javaConverterClazzName</span>
+  <span class="p">}</span>
+
+<span class="n">mapping_cust</span> <span class="o">=</span> <span class="n">make_class_mapping</span><span class="p">(</span><span class="n">MultinomialClassifier</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">mapping_cust</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>For newly defined classes, the lookup should iterate over parent classes in the Python method resolution order (MRO) in order to find the most specific “template” possible.
+However, nothing stops the data scientist from experimenting with alternative JPMML-SkLearn converter classes.</p>
+
+<p>There are a number of classes that are useful way beyond their original scope.
+For example, if the pipeline contains some (pseudo-)transformer for which there is no PMML representation, then it is possible to make the JPMML-SkLearn library skip over it by mapping it to the identity transformer:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklego.preprocessing</span> <span class="kn">import</span> <span class="n">IdentityTransformer</span>
+
+<span class="n">mapping_skipover</span> <span class="o">=</span> <span class="n">make_class_mapping</span><span class="p">(</span><span class="n">SomeTroublemakerTransformer</span><span class="p">,</span> <span class="n">IdentityTransformer</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="registry-expansion">Registry expansion</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">load_class_mapping</code> utility function is provided only for information purposes.
+Any changes to the returned <code class="language-plaintext highlighter-rouge">dict</code> object will be ignored.</p>
+
+<h4 id="classpath">Classpath</h4>
+
+<p>The JPMML-SkLearn library loads this registry independently from the Java Archive (JAR) files on its classpath.</p>
+
+<p>The classpath has two parts.
+First, the “package classpath” part is a list of JPMML-SkLearn library JAR files that are included in the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package as Python package data.
+Second, the “user classpath” part is a list of JAR files in the local filesystem that the end user wants to append to it.</p>
+
+<p>Inspecting the classpath:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">_classpath</span>
+
+<span class="n">classpath</span> <span class="o">=</span> <span class="n">_classpath</span><span class="p">(</span><span class="n">user_classpath</span> <span class="o">=</span> <span class="p">[])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">classpath</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The order of classpath elements is not significant.</p>
+
+<h4 id="class-mapping-jar">Class mapping JAR</h4>
+
+<p>The registry can be expanded with new entries by adding new class mapping JAR files to the user classpath.</p>
+
+<p>Technically, a so-called class mapping JAR file is a JAR file that contains a <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Properties.html">Java properties</a>-style <code class="language-plaintext highlighter-rouge">META-INF/sklearn2pmml.properties</code> class mapping file.</p>
+
+<p>The first version of a class mapping JAR file can be created using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.make_class_mapping_jar</code> utility function.
+If need be, then it can then be manipulated further using Python’s built-in <code class="language-plaintext highlighter-rouge">zipfile</code> module, because JAR files are nothing but decorated ZIP files.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">make_class_mapping_jar</span>
+
+<span class="n">make_class_mapping_jar</span><span class="p">(</span><span class="s">"multinomial.jar"</span><span class="p">,</span> <span class="n">mapping_cust</span><span class="p">)</span>
+
+<span class="n">mapping</span> <span class="o">=</span> <span class="n">load_class_mapping</span><span class="p">(</span><span class="n">user_classpath</span> <span class="o">=</span> <span class="p">[</span><span class="s">"multinomial.jar"</span><span class="p">])</span>
+
+<span class="k">assert</span> <span class="n">fqn</span><span class="p">(</span><span class="n">MultinomialClassifier</span><span class="p">)</span> <span class="ow">in</span> <span class="n">mapping</span><span class="p">,</span> <span class="s">"Has mapping for MC fully-qualified name"</span>
+</code></pre></div></div>
+
+<p>Re-attempting the PMML conversion with the user classpath:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"MultinomialIris.pmml"</span><span class="p">,</span> <span class="n">user_classpath</span> <span class="o">=</span> <span class="p">[</span><span class="s">"multinomial.jar"</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>The operation completes successfully this time.</p>
+
+<h4 id="classpath-maintenance">Classpath maintenance</h4>
+
+<p>The life-cycle of a class mapping JAR file depends on the application scenario.</p>
+
+<p>For as long as the <code class="language-plaintext highlighter-rouge">MultinomialClassifier</code> class remains nothing but a local experiment, it is perfectly fine to create and destroy the supporting class mapping JAR file on demand.
+However, when the <code class="language-plaintext highlighter-rouge">MultinomialClassifier</code> class graduates from the incubator, then the same must happen to its supporting resources.</p>
+
+<p>Third-party libraries are recommended to adopt the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> package resource loading conventions.
+In brief, all user JAR files should be included in the package as Python package data, and they should be listable using an utility function such as <code class="language-plaintext highlighter-rouge">&lt;mypackage&gt;.resources._package_classpath</code>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">mypackage.resources</span> <span class="kn">import</span> <span class="n">_package_classpath</span>
+
+<span class="n">sklearn2pmml</span><span class="p">(...,</span> <span class="n">user_classpath</span> <span class="o">=</span> <span class="n">_package_classpath</span><span class="p">())</span>
+</code></pre></div></div>
+
+<h2 id="resources">Resources</h2>
+
+<ul>
+  <li>Python script: <a href="https://openscoring.io/resources/2023-05-03/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>
+</ul>
+
+</div>
+
+
+
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+  <script>
+  var sc_project=11704106;
+  var sc_security="a7d1bf16"; 
+  var sc_invisible=1; 
+  var sc_remove_link=1; 
+</script>
+
+<script src="https://www.statcounter.com/counter/counter.js" async></script>
+
+<noscript>
+  <div class="statcounter">
+    <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="Web Analytics Made Easy - Statcounter" referrerPolicy="no-referrer-when-downgrade">
+  </div>
+</noscript>
+</body>
+
+</html>
