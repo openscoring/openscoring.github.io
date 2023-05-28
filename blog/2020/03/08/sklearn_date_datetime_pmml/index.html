@@ -86,7 +86,7 @@
     <h1>Extending Scikit-Learn with date and datetime features</h1>
   
 <div class="post">
-  <p>Scikit-Learn algorithms operate on numerical data.
+  <p>Scikit-Learn operates on numerical data.
 If the dataset contains complex features, then they need to be explicitly encoded and/or transformed from their native high-level representation to a suitable low-level representation.
 For example, a string column must be expanded into a list of binary indicator features using <code class="language-plaintext highlighter-rouge">LabelBinarizer</code> or <code class="language-plaintext highlighter-rouge">OneHotEncoder</code> transformers.</p>
 
@@ -254,7 +254,7 @@ The main assumption is that the temporal feature(s) is likely to take previously
 <p>In contrast, the <code class="language-plaintext highlighter-rouge">OrdinalDomain</code> decorator can only be applied to one column at once, but is fully configurable.
 It may come in handy when a temporal feature must be restricted in a certain way.</p>
 
-<p>A datetime is a complex data structure which needs to be “flattened” to a scalar before it can be fed to Scikit-Learn algorithms.
+<p>A datetime is a complex data structure which needs to be “flattened” to a scalar before it can be fed to Scikit-Learn.
 The <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing</code> module provides three transformers, which correspond to previously discussed PMML built-in functions:</p>
 
 <ul>

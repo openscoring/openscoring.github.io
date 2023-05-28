@@ -262,7 +262,7 @@ SEVERE: [severity=ERROR,message=unexpected element (uri:"http://www.dmg.org/PMML
 
 <p>Let us consider field definition, scoping and referencing.</p>
 
-<p>Structural validation ensures that all field definition elements are complete. However, a field definition may still be unusable due to PMML type system violations. For example, a <code class="language-plaintext highlighter-rouge">DataField</code> element, which contains unparseable and duplicate category values:</p>
+<p>Structural validation ensures that all field definition elements are complete. However, a field definition may still be unusable due to PMML type system violations. For example, a <code class="language-plaintext highlighter-rouge">DataField</code> element, which contains unparseable and duplicate category levels:</p>
 
 <div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;DataField</span> <span class="na">name=</span><span class="s">"x1"</span> <span class="na">optype=</span><span class="s">"categorical"</span> <span class="na">dataType=</span><span class="s">"integer"</span><span class="nt">&gt;</span>
   <span class="nt">&lt;Value</span> <span class="na">value=</span><span class="s">"0.0"</span><span class="nt">/&gt;</span>

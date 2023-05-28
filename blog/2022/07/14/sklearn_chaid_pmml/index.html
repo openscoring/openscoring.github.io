@@ -133,7 +133,7 @@ During splitting, they can form a standalone branch, or be aggregated with other
 If two or more features appear collinear for some subset (ie. not collinear for the training dataset as a whole, but collinear for some segment of it), then the winner is picked randomly.</p>
 
 <p>The <a href="https://github.com/Rambatino/CHAID"><code class="language-plaintext highlighter-rouge">CHAID</code></a> package provides the <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class, which codifies a complete and highly parameterizable CHAID algorithm implementation.
-However, its API is rather uncommon and is lacking some key interactions points.</p>
+However, its API is rather uncommon and lacks some key interactions points.</p>
 
 <p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package version 0.84 provides <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDClassifier</code> and <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDRegressor</code> models, which make the <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class embeddable into Scikit-Learn pipelines, and commandable via familiar <code class="language-plaintext highlighter-rouge">fit(X, y)</code> and <code class="language-plaintext highlighter-rouge">predict(X)</code> methods.</p>
 
@@ -142,7 +142,7 @@ However, its API is rather uncommon and is lacking some key interactions points.
 <p>The <code class="language-plaintext highlighter-rouge">CHAIDEstimator.fit(X, y)</code> method assumes that all columns of the <code class="language-plaintext highlighter-rouge">X</code> dataset are categorical features.
 If the <code class="language-plaintext highlighter-rouge">X</code> dataset contains continuous features (eg. a <code class="language-plaintext highlighter-rouge">float</code> or <code class="language-plaintext highlighter-rouge">double</code> column, with many distinct values) then they shall be automatically casted to categorical features.</p>
 
-<p>However, it is recommended to make this conversion explicit by passing all features through the <code class="language-plaintext highlighter-rouge">sklearn2pmml.decoration.CategoricalDomain</code> decorator:</p>
+<p>However, it is advisable to make this conversion explicit by passing all features through the <code class="language-plaintext highlighter-rouge">sklearn2pmml.decoration.CategoricalDomain</code> decorator:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn_pandas</span> <span class="kn">import</span> <span class="n">DataFrameMapper</span>
 <span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span>

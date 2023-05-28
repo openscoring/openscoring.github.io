@@ -295,7 +295,7 @@ The <code class="language-plaintext highlighter-rouge">ExpressionTransformer.tra
 <p>The use of the <code class="language-plaintext highlighter-rouge">eval()</code> function is considered a major security risk.
 This should not be the case here, because these three module imports are assumed to be safe, and there is no way to access other namespaces.</p>
 
-<p>When facing an unknown or untrusted <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> object, then it is recommended to print out its <code class="language-plaintext highlighter-rouge">expr</code> attribute, and take note of any high-risk activity such as importing system modules.</p>
+<p>When facing an unknown or untrusted <code class="language-plaintext highlighter-rouge">ExpressionTransformer</code> object, then it is advisable to print out its <code class="language-plaintext highlighter-rouge">expr</code> attribute, and take note of any high-risk activity such as importing system modules.</p>
 
 <p>However, the best security guarantee can be obtained fully automatically, by attempting conversion into a Predictive Model Markup Language (PMML) document (see below).
 The PMML representation of models and transformers is absolutely safe and secure, because the language is Turing-incomplete, and relies on a small standard library for complex calculations.</p>

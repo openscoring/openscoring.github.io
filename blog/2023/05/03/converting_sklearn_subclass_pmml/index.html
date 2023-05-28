@@ -240,7 +240,7 @@ If need be, then it can then be manipulated further using Python’s built-in <c
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">make_class_mapping_jar</span>
 
-<span class="n">make_class_mapping_jar</span><span class="p">(</span><span class="s">"multinomial.jar"</span><span class="p">,</span> <span class="n">mapping_cust</span><span class="p">)</span>
+<span class="n">make_class_mapping_jar</span><span class="p">(</span><span class="n">mapping_cust</span><span class="p">,</span> <span class="s">"multinomial.jar"</span><span class="p">)</span>
 
 <span class="n">mapping</span> <span class="o">=</span> <span class="n">load_class_mapping</span><span class="p">(</span><span class="n">user_classpath</span> <span class="o">=</span> <span class="p">[</span><span class="s">"multinomial.jar"</span><span class="p">])</span>
 
