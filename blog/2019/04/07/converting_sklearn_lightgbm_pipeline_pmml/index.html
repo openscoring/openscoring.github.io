@@ -227,8 +227,8 @@ However, the PMML document is much conciser now, because earlier continuous spli
 <span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">"Adjusted"</span><span class="p">],</span> <span class="n">classifier__categorical_feature</span> <span class="o">=</span> <span class="n">cat_indices</span><span class="p">)</span>
 </code></pre></div></div>
 
-<p>A binary-style categorical split discriminates one category level against all others (“send category level A to the left, and all other category levels to the right”).
-A multinomial-style categorical split examines every category level, and proposes two distinct subsets based on their discriminatory effect (“send category levels A, C, D and F to the left, and category levels B, and E to the right”).
+<p>A binary indicator-style categorical split discriminates one category level against all others (“send category level A to the left, and all other category levels to the right”).
+A set-style categorical split examines every category level, and proposes two distinct subsets based on their discriminatory effect (“send category levels A, C, D and F to the left, and category levels B, and E to the right”).
 LightGBM does not appear to limit the cardinality of categorical features. There is no need to change anything about the Python script when scaling from two to twenty thousand category levels.</p>
 
 <p>Multinomial-style categorical splits are encoded using the <code class="language-plaintext highlighter-rouge">SimpleSetPredicate</code> element:</p>
@@ -330,8 +330,7 @@ A LightGBM estimator has no problem accepting and interpreting such data matrix 
 <h2 id="resources">Resources</h2>
 
 <ul>
-  <li>“Audit” dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>
-  <li>“Audit-NA” dataset: <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>
+  <li>Datasets: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a> and <a href="https://openscoring.io/resources/data/audit-NA.csv"><code class="language-plaintext highlighter-rouge">audit-NA.csv</code></a></li>
   <li>Python script: <a href="https://openscoring.io/resources/2019-04-07/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>
 </ul>
 

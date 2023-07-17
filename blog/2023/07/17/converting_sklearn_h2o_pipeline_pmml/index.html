@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://www.googletagmanager.com/gtag/js?id=G-1XC1KCZX17" async></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'G-1XC1KCZX17');
+</script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="h2o scikit-learn sklearn2pmml data-categorical">
+  <meta name="author" content="vruusmann">
+
+  <title>Converting Scikit-Learn H2O.ai pipelines to PMML - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
+  <link rel="canonical" href="https://openscoring.io/blog/2023/07/17/converting_sklearn_h2o_pipeline_pmml/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Converting Scikit-Learn H2O.ai pipelines to PMML - Openscoring">
+  <meta property="og:url" content="/blog/2023/07/17/converting_sklearn_h2o_pipeline_pmml/">
+  <meta property="og:site_name" content="Openscoring">
+  <meta property="og:updated_time" content="2023-07-17 00:00:00 +0300">
+  <meta property="article:published_time" content="2023-07-17 00:00:00 +0300">
+  <meta property="article:modified_time" content="2023-07-17 00:00:00 +0300">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Converting Scikit-Learn H2O.ai pipelines to PMML - Openscoring">
+  <meta name="twitter:label1" content="Written by">
+  <meta name="twitter:data1" content="Villu Ruusmann">
+  <meta name="twitter:label2" content="Time to read">
+  <meta name="twitter:data2" content="Less than a minute">
+
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32">
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/assets/images/fa.png">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png">
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog/" class="btn btn--small">Blog</a>
+    </nav>
+  </div>
+</header>
+
+  <main class="container mt-26">
+    <h1>Converting Scikit-Learn H2O.ai pipelines to PMML</h1>
+  
+<div class="post">
+  <p>The <a href="https://github.com/h2oai/h2o-3/tree/master/h2o-py"><code class="language-plaintext highlighter-rouge">h2o</code></a> package provides Python language wrappers for H2O.ai estimators.
+One and the same class can be used in standalone mode (ie. the train-predict API) as well as in Scikit-Learn pipeline mode (ie. the fit-predict API).</p>
+
+<p>A Scikit-Learn H2O.ai pipeline must address two extra challenges, which relate to bridging the gap between the “local” Scikit-Learn/Python environment and the “remote” H2O.ai/Java environment:</p>
+
+<ol>
+  <li>Uploading training and testing datasets from local to remote.</li>
+  <li>Downloading models from remote to local.</li>
+</ol>
+
+<h2 id="training">Training</h2>
+
+<p>A Scikit-Learn H2O.ai pipeline template:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">h2o</span> <span class="kn">import</span> <span class="n">H2OFrame</span>
+<span class="kn">from</span> <span class="nn">h2o.estimators.random_forest</span> <span class="kn">import</span> <span class="n">H2ORandomForestEstimator</span>
+<span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.decoration</span> <span class="kn">import</span> <span class="n">CategoricalDomain</span><span class="p">,</span> <span class="n">ContinuousDomain</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.preprocessing.h2o</span> <span class="kn">import</span> <span class="n">H2OFrameConstructor</span>
+
+<span class="kn">import</span> <span class="nn">h2o</span>
+
+<span class="n">h2o</span><span class="p">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"initializer"</span><span class="p">,</span> <span class="n">ColumnTransformer</span><span class="p">(</span>
+    <span class="p">[(</span><span class="n">cat_col</span><span class="p">,</span> <span class="n">CategoricalDomain</span><span class="p">(),</span> <span class="p">[</span><span class="n">cat_col</span><span class="p">])</span> <span class="k">for</span> <span class="n">cat_col</span> <span class="ow">in</span> <span class="n">cat_cols</span><span class="p">]</span> <span class="o">+</span>
+    <span class="p">[(</span><span class="n">cont_col</span><span class="p">,</span> <span class="n">ContinuousDomain</span><span class="p">(),</span> <span class="p">[</span><span class="n">cont_col</span><span class="p">])</span> <span class="k">for</span> <span class="n">cont_col</span> <span class="ow">in</span> <span class="n">cont_cols</span><span class="p">]</span>
+  <span class="p">)),</span>
+  <span class="p">(</span><span class="s">"uploader"</span><span class="p">,</span> <span class="n">H2OFrameConstructor</span><span class="p">()),</span>
+  <span class="p">(</span><span class="s">"classifier"</span><span class="p">,</span> <span class="n">H2ORandomForestEstimator</span><span class="p">())</span>
+<span class="p">])</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">H2OFrame</span><span class="p">(</span><span class="n">y</span><span class="p">.</span><span class="n">to_frame</span><span class="p">(),</span> <span class="n">column_types</span> <span class="o">=</span> <span class="p">[</span><span class="s">"categorical"</span><span class="p">]))</span>
+
+<span class="n">h2o</span><span class="p">.</span><span class="n">shutdown</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>The initializer step is a column mapper (meta-)transformer that captures the detailed description of the training dataset using SkLearn2PMML decorators.</p>
+
+<p>The pipeline does not perform any data pre-processing transformations.
+Unlike Scikit-Learn modeling algorithms, the majority of H2O.ai modeling algorithms can accept non-numeric columns as-is.</p>
+
+<p>In fact, uncalled-for helper transformations may harm the predictive performance of a pipeline.
+For example, H2O.ai decision tree algorithms can generate set-style categorical splits (“<value> in <set of="" ref="" values="">") for string columns. However, they fall back to binary indicator-style categorical splits ("<value> is <ref value="">") when the string column has been one-hot encoded into multiple integer columns.</ref></value></set></value></p>
+
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.preprocessing.h2o.H2OFrameConstructor</code> (meta-)transformer for uploading datasets from within Scikit-Learn pipelines.</p>
+
+<p><strong>Important</strong>: The data uploader step can be inserted only into one specific location in the pipeline - right between the last Scikit-Learn transformer step and the first H2O.ai transformer (eg. PCA, TF-IDF, Word2Vec) or model step.
+This stems from the fact that data upload changes the type of the <code class="language-plaintext highlighter-rouge">X</code> dataset from Pandas’ data frame or Numpy array to H2O.ai data frame (ie. the <code class="language-plaintext highlighter-rouge">h2o.H2OFrame</code> type), thereby making it unacceptable to Scikit-Learn estimators (other than passthrough transformers).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">(PMML)Pipeline.fit(X, y)</code> method call runs the data pre-processing part on the local computer and the model training part on the remote H2O.ai cluster - all as a single transaction.</p>
+
+<p>The model is a Java object that is tightly coupled to its parent H2O.ai/Java environment.
+It can be downloaded for backup/archival purposes into the local computer in Java serialization (short-term storage) or MOJO data formats (long-term storage, custom Java applications).</p>
+
+<p>Downloading the model in MOJO data format:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">classifier</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">_final_estimator</span>
+
+<span class="n">mojo_path</span> <span class="o">=</span> <span class="s">"/path/to/rf.mojo.zip"</span>
+
+<span class="n">classifier</span><span class="p">.</span><span class="n">download_mojo</span><span class="p">(</span><span class="n">path</span> <span class="o">=</span> <span class="n">mojo_path</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="persistence">Persistence</h2>
+
+<p>Any attempt to pickle a fitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> object shall fail with the following pickling error:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Traceback (most recent call last):
+  File "train.py", line 50, in &lt;module&gt;
+    joblib.dump(pipeline, pkl_file)
+  ...
+_pickle.PicklingError: Can't pickle &lt;class 'h2o.estimators.random_forest.H2ORandomForestEstimator'&gt;: it's not the same object as h2o.estimators.random_forest.H2ORandomForestEstimator
+</code></pre></div></div>
+
+<p>The technical explanation is that the Python class definition of an H2O.ai estimator gets modified during the <code class="language-plaintext highlighter-rouge">H2OEstimator.fit(X, y)</code> method call, by making it a subclass of various model extension classes.
+For example, the <code class="language-plaintext highlighter-rouge">H2ORandomForestEstimator</code> class gets added to <code class="language-plaintext highlighter-rouge">h2o.model.extensions.VariableImportance</code>, <code class="language-plaintext highlighter-rouge">h2o.model.extensions.Contributions</code> and <code class="language-plaintext highlighter-rouge">h2o.model.extensions.Fairness</code> class hierarchies:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">h2o.estimators.random_forest</span> <span class="kn">import</span> <span class="n">H2ORandomForestEstimator</span>
+<span class="kn">from</span> <span class="nn">h2o.model.extensions</span> <span class="kn">import</span> <span class="n">VariableImportance</span>
+
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">H2ORandomForestEstimator</span><span class="p">()</span>
+
+<span class="c1"># False before fit
+</span><span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">VariableImportance</span><span class="p">)</span>
+
+<span class="n">classifier</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># True after fit
+</span><span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">VariableImportance</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The workaround is to switch from pure Pickle to dill-flavoured Pickle data format:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">dill</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">"H2ORandomForestAudit.pkl"</span><span class="p">,</span> <span class="s">"wb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">pkl_file</span><span class="p">:</span>
+  <span class="n">dill</span><span class="p">.</span><span class="n">dump</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">pkl_file</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The longevity and pervasive nature of the above pickling error suggests that this might be a deliberate restriction rather than a bug.</p>
+
+<p>For reference, the H2O.ai documentation does not place a direct veto on pickling.
+It advises that the only supported way of persisting fitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> objects is via a pair of <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/h2o.html#h2o.download_model"><code class="language-plaintext highlighter-rouge">h2o.download_model</code></a> and <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/h2o.html#h2o.upload_model"><code class="language-plaintext highlighter-rouge">h2o.upload_model</code></a> utility methods:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">h2o</span>
+
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">_final_estimator</span>
+
+<span class="n">h2o_backup_file</span> <span class="o">=</span> <span class="n">h2o</span><span class="p">.</span><span class="n">download_model</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="n">path</span> <span class="o">=</span> <span class="s">"/path/to/h2o_backup_dir"</span><span class="p">)</span>
+
+<span class="n">classifier_clone</span> <span class="o">=</span> <span class="n">h2o</span><span class="p">.</span><span class="n">upload_model</span><span class="p">(</span><span class="n">h2o_backup_file</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Unfortunately, this advice falls short in the current case, as the <code class="language-plaintext highlighter-rouge">H2OEstimator</code> object is not a standalone entity, but is embedded into a much bigger, different language/application environment object.</p>
+
+<h2 id="conversion">Conversion</h2>
+
+<p>The <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library integrates seamlessly with other JPMML-family conversion libraries such as <a href="https://github.com/jpmml/jpmml-h2o">JPMML-H2O</a>, <a href="https://github.com/jpmml/jpmml-lightgbm">JPMML-LightGBM</a>, <a href="https://github.com/jpmml/jpmml-statsmodels">JPMML-StatsModels</a> and <a href="https://github.com/jpmml/jpmml-xgboost">JPMML-XGBoost</a>.</p>
+
+<p>The conversion of Scikit-Learn H2O.ai pipelines is a bit more complicated than other cross-ML framework pipelines because of H2O.ai’s inherent “local” vs. “remote” dichotomy.</p>
+
+<p>The JPMML-SkLearn converter assumes that the input Pickle file contains a pipeline object in its most complete state.
+This assumption is violated in the case of H2O.ai estimators, because their fitted state holds a reference to a model in a remote H2O.ai cluster, rather than a fully-functional model itself.</p>
+
+<p>The fix is to enhance the H2O.ai estimator with MOJO information.</p>
+
+<p>The JPMML-SkLearn library supports two H2O.ai estimator enhancement styles.
+First, smaller MOJO files can be read into an in-memory byte array, and assigned to the <code class="language-plaintext highlighter-rouge">_mojo_bytes</code> extension attribute:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">classifier</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">_final_estimator</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">"/path/to/rf.mojo.zip"</span><span class="p">,</span> <span class="s">"rb"</span><span class="p">)</span> <span class="k">as</span> <span class="n">mojo_file</span><span class="p">:</span>
+  <span class="n">classifier</span><span class="p">.</span><span class="n">_mojo_bytes</span> <span class="o">=</span> <span class="n">mojo_file</span><span class="p">.</span><span class="n">read</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Second, bigger MOJO files should be left where they are.
+The path to a backing MOJO file can be assigned to the <code class="language-plaintext highlighter-rouge">_mojo_path</code> extension attribute:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">classifier</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">_final_estimator</span>
+
+<span class="n">classifier</span><span class="p">.</span><span class="n">_mojo_path</span> <span class="o">=</span> <span class="s">"/path/to/rf.mojo.zip"</span>
+</code></pre></div></div>
+
+<p>The good news is that starting from SkLearn2PMML version 0.95.0, the <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml</code> utility function takes full care of all the above H2O.ai estimator enhancement and flavoured pickling details.</p>
+
+<p>After a package update, the workflow simplifies back to the canonical one:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml</span> <span class="kn">import</span> <span class="n">sklearn2pmml</span>
+<span class="kn">from</span> <span class="nn">sklearn2pmml.pipeline</span> <span class="kn">import</span> <span class="n">PMMLPipeline</span>
+
+<span class="kn">import</span> <span class="nn">h2o</span>
+
+<span class="n">h2o</span><span class="p">.</span><span class="n">init</span><span class="p">()</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">PMMLPipeline</span><span class="p">(...)</span>
+<span class="n">pipeline</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># The call must happen while connected to a remote H2O.ai cluster
+</span><span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"H2ORandomForestAudit.pmml"</span><span class="p">)</span>
+
+<span class="n">h2o</span><span class="p">.</span><span class="n">shutdown</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h2 id="resources">Resources</h2>
+
+<ul>
+  <li>Dataset: <a href="https://openscoring.io/resources/data/audit.csv"><code class="language-plaintext highlighter-rouge">audit.csv</code></a></li>
+  <li>Python script: <a href="https://openscoring.io/resources/2023-07-17/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>
+</ul>
+
+</div>
+
+
+
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+  <script>
+  var sc_project=11704106;
+  var sc_security="a7d1bf16"; 
+  var sc_invisible=1; 
+  var sc_remove_link=1; 
+</script>
+
+<script src="https://www.statcounter.com/counter/counter.js" async></script>
+
+<noscript>
+  <div class="statcounter">
+    <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="Web Analytics Made Easy - Statcounter" referrerPolicy="no-referrer-when-downgrade">
+  </div>
+</noscript>
+</body>
+
+</html>
