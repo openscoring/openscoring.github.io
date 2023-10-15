@@ -134,7 +134,7 @@ Continuous features are mapped all together, simply by capturing their domain us
 <span class="n">sklearn2pmml</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="s">"LightGBMAudit.pmml"</span><span class="p">)</span> 
 </code></pre></div></div>
 
-<p>LightGBM models can be converted to the standardized Predictive Model Markup Language (PMML) representation using the <a href="https://github.com/jpmml/jpmml-lightgbm">JPMML-LightGBM</a> library.
+<p>The <a href="https://github.com/jpmml/jpmml-lightgbm">JPMML-LightGBM</a> library converts LightGBM models to the Predictive Model Markup Language (PMML) representation.
 Just like LightGBM itself, this library can be used as a standalone tool or as a plugin to other JPMML family conversion tools and libraries.
 The main difference between these two usage modes is related to the sourcing of feature definitions.
 In standalone mode, they are extracted from the LightGBM model object.

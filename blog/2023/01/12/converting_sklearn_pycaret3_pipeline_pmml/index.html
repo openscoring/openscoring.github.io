@@ -428,10 +428,10 @@ The first two (<code class="language-plaintext highlighter-rouge">catboost</code
 
 <p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.sklearn2pmml</code> utility function for converting Scikit-Learn pipelines to the Predictive Model Markup Language (PMML) representation.</p>
 
-<p>However, the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> utility method refuses to accept Python classes other than the <code class="language-plaintext highlighter-rouge">sklearn2pmml.pipeline.PMMLPipeline</code> class.</p>
+<p>However, the <code class="language-plaintext highlighter-rouge">sklearn2pmml</code> utility function refuses to accept Python classes other than the <code class="language-plaintext highlighter-rouge">sklearn2pmml.pipeline.PMMLPipeline</code> class.</p>
 
-<p>The solution is to wrap the PyCaret pipeline object into a <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.pycaret.make_pmml_pipeline</code> utility method.
-This utility method differs from the generic <code class="language-plaintext highlighter-rouge">sklearn2pmml.make_pmml_pipeline</code> utility method by the fact that it knows about the <code class="language-plaintext highlighter-rouge">TransformerWrapper</code> meta-transformer class, and can perform proper escaping of its contents.</p>
+<p>The solution is to wrap the PyCaret pipeline object into a <code class="language-plaintext highlighter-rouge">PMMLPipeline</code> object using the <code class="language-plaintext highlighter-rouge">sklearn2pmml.pycaret.make_pmml_pipeline</code> utility function.
+This utility function differs from the generic <code class="language-plaintext highlighter-rouge">sklearn2pmml.make_pmml_pipeline</code> utility function by the fact that it knows about the <code class="language-plaintext highlighter-rouge">TransformerWrapper</code> meta-transformer class, and can perform proper escaping of its contents.</p>
 
 <p>The escaping is needed to ensure that the “business state” of all transformers and estimators is complete when dumped in pickle data format.
 The list of known troublemakers contains mostly Scikit-Learn selector classes (caused by the dynamic implementation of the <code class="language-plaintext highlighter-rouge">_get_support_mask()</code> method).

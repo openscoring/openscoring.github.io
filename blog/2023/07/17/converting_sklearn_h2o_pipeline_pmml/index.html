@@ -190,7 +190,7 @@ For example, the <code class="language-plaintext highlighter-rouge">H2ORandomFor
 <p>The longevity and pervasive nature of the above pickling error suggests that this might be a deliberate restriction rather than a bug.</p>
 
 <p>For reference, the H2O.ai documentation does not place a direct veto on pickling.
-It advises that the only supported way of persisting fitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> objects is via a pair of <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/h2o.html#h2o.download_model"><code class="language-plaintext highlighter-rouge">h2o.download_model</code></a> and <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/h2o.html#h2o.upload_model"><code class="language-plaintext highlighter-rouge">h2o.upload_model</code></a> utility methods:</p>
+It advises that the only supported way of persisting fitted <code class="language-plaintext highlighter-rouge">H2OEstimator</code> objects is via a pair of <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/h2o.html#h2o.download_model"><code class="language-plaintext highlighter-rouge">h2o.download_model</code></a> and <a href="https://docs.h2o.ai/h2o/latest-stable/h2o-py/docs/h2o.html#h2o.upload_model"><code class="language-plaintext highlighter-rouge">h2o.upload_model</code></a> utility functions:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">h2o</span>
 

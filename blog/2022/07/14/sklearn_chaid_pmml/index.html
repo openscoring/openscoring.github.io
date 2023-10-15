@@ -246,7 +246,7 @@ The suggested workaround is to emulate its statistical procedure(s) in a missing
 
 <p>The <code class="language-plaintext highlighter-rouge">CHAID.Tree</code> class is a data exploration and mining tool. It does not provide any Python API for making predictions on new datasets (see <a href="https://github.com/Rambatino/CHAID/issues/128">Issue 128</a>).</p>
 
-<p>Instead of extending the <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDEstimator</code> base class with custom prediction methods, it is much easier to export the core decision tree data structure in Predictive Model Markup Language (PMML) data format, and make predictions using a PMML engine instead.</p>
+<p>Instead of extending the <code class="language-plaintext highlighter-rouge">sklearn2pmml.tree.chaid.CHAIDEstimator</code> base class with custom prediction methods, it is much easier to export the core decision tree data structure in Predictive Model Markup Language (PMML) representation, and make predictions using a PMML engine instead.</p>
 
 <p>Conversion to PMML:</p>
 

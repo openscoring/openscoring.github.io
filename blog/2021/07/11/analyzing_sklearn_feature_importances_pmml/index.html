@@ -105,7 +105,7 @@ This calculation is applicable to all data records, irrespective of their origin
 
 <p>Some model types have built-in feature importance estimation capabilities.
 For example, decision tree and decision tree ensemble models declare a <code class="language-plaintext highlighter-rouge">feature_importances_</code> property that yields Gini Impurities.
-Similarly, it is not formalized as a linear model property, but all seasoned data scientists know that the beta coefficients of a linear model act as surrogate feature importances (assuming standardized data).</p>
+Similarly, it is not formalized as a linear model property, but all seasoned data scientists know that the beta coefficients of a linear model act as surrogate feature importances (assuming scaled data).</p>
 
 <p>Scikit-Learn version 0.24 and newer provide the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.inspection.permutation_importance.html"><code class="language-plaintext highlighter-rouge">sklearn.inspection.permutation_importance</code></a> utility function for calculating permutation-based importances for all model types.</p>
 
