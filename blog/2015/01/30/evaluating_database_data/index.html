@@ -218,9 +218,8 @@ rm /tmp/iris_response.csv
 <div class="language-sql highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">SELECT</span> <span class="n">iris</span><span class="p">.</span><span class="n">Id</span><span class="p">,</span> <span class="n">iris</span><span class="p">.</span><span class="n">Species</span><span class="p">,</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Predicted_Species</span><span class="p">,</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Probability_setosa</span><span class="p">,</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Probability_versicolor</span><span class="p">,</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Probability_virginica</span> <span class="k">FROM</span> <span class="n">iris</span> <span class="k">LEFT</span> <span class="k">JOIN</span> <span class="n">iris_decisiontree</span> <span class="k">ON</span> <span class="n">iris</span><span class="p">.</span><span class="n">Id</span> <span class="o">=</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Id</span> <span class="k">WHERE</span> <span class="n">iris</span><span class="p">.</span><span class="n">Species</span> <span class="o">!=</span> <span class="n">iris_decisiontree</span><span class="p">.</span><span class="n">Predicted_Species</span><span class="p">;</span>
 </code></pre></div></div>
 
+
 </div>
-
-
 
   </main>
 

@@ -248,7 +248,7 @@ If the latter is a mix of constructor and fit method params, then it must be par
 <p>No worries, because the <a href="https://github.com/jpmml">Java PMML API</a> software project provides a full stack of Java tools and libraries for untangling and converting arbitrary complexity Python ML artifacts to the Predictive Model Markup Language (PMML) representation.
 Dealing with the <code class="language-plaintext highlighter-rouge">best_pipeline</code> object in a fully automated fashion does not pose any substantial challenge.</p>
 
-<p>There is one minor configuration issue related to the fact that the <a href="https://github.com/jpmml-sklearn">JPMML-SkLearn</a> library recognizes and supports wrapper classes, but not their ad hoc subclasses.</p>
+<p>There is one minor configuration issue related to the fact that the <a href="https://github.com/jpmml/jpmml-sklearn">JPMML-SkLearn</a> library recognizes and supports wrapper classes, but not their ad hoc subclasses.</p>
 
 <p>It is possible to avoid tedious model class conversion operation by declaring model class equivalence (ie. “treat <code class="language-plaintext highlighter-rouge">TunableStatsModelsRegressor</code> objects the same as <code class="language-plaintext highlighter-rouge">StatsModelsRegressor</code> objects”) using a custom class mapping:</p>
 
@@ -276,9 +276,41 @@ Dealing with the <code class="language-plaintext highlighter-rouge">best_pipelin
   <li>Python script: <a href="https://openscoring.io/resources/2023-10-15/train.py"><code class="language-plaintext highlighter-rouge">train.py</code></a></li>
 </ul>
 
+
+  <h2 id="related_posts">Related blog posts</h2>
+
+  <ul class="posts">
+  
+    
+    
+      <li class="post__item">
+        <div class="post__date">2023-03-28</div>
+        <a class="post__title" href="/blog/2023/03/28/sklearn_statsmodels_pipeline/">Training Scikit-Learn StatsModels pipelines</a>
+        <div class="post__description"></div>
+      </li>
+    
+  
+    
+    
+      <li class="post__item">
+        <div class="post__date">2023-05-03</div>
+        <a class="post__title" href="/blog/2023/05/03/converting_sklearn_subclass_pmml/">Converting customized Scikit-Learn estimators to PMML</a>
+        <div class="post__description"></div>
+      </li>
+    
+  
+    
+    
+      <li class="post__item">
+        <div class="post__date">2019-12-25</div>
+        <a class="post__title" href="/blog/2019/12/25/converting_sklearn_gridsearchcv_pipeline_pmml/">Converting Scikit-Learn GridSearchCV pipelines to PMML</a>
+        <div class="post__description"></div>
+      </li>
+    
+  
+  </ul>
+
 </div>
-
-
 
   </main>
 
