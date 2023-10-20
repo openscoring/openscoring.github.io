@@ -196,12 +196,12 @@ All other update operations are treated as Python item assignment operations aga
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pipeline</span> <span class="o">=</span> <span class="n">make_statsmodels_pipeline</span><span class="p">(</span><span class="n">TunableStatsModelsRegressor</span><span class="p">(</span><span class="n">OLS</span><span class="p">))</span>
 
 <span class="n">ctor_params_grid</span> <span class="o">=</span> <span class="p">{</span>
-	<span class="s">"regressor__fit_intercept"</span> <span class="p">:</span> <span class="p">[</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">]</span>
+  <span class="s">"regressor__fit_intercept"</span> <span class="p">:</span> <span class="p">[</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">]</span>
 <span class="p">}</span>
 
 <span class="n">regfit_params_grid</span> <span class="o">=</span> <span class="p">{</span>
-	<span class="s">"regressor__alpha"</span> <span class="p">:</span> <span class="n">loguniform</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">rvs</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span>
-	<span class="s">"regressor__L1_wt"</span> <span class="p">:</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">rvs</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+  <span class="s">"regressor__alpha"</span> <span class="p">:</span> <span class="n">loguniform</span><span class="p">(</span><span class="mf">1e-2</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">rvs</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span>
+  <span class="s">"regressor__L1_wt"</span> <span class="p">:</span> <span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="n">rvs</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
 <span class="p">}</span>
 
 <span class="n">tuner</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span><span class="o">**</span><span class="n">ctor_params_grid</span><span class="p">,</span> <span class="o">**</span><span class="n">regfit_params_grid</span><span class="p">},</span> <span class="n">verbose</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span>
@@ -259,7 +259,7 @@ Dealing with the <code class="language-plaintext highlighter-rouge">best_pipelin
 
 <span class="c1"># Map the ad hoc subclass to the same JPMML-SkLearn converter class as the parent class
 </span><span class="n">statsmodels_mapping</span> <span class="o">=</span> <span class="p">{</span>
-	<span class="n">fqn</span><span class="p">(</span><span class="n">TunableStatsModelsRegressor</span><span class="p">)</span> <span class="p">:</span> <span class="n">default_mapping</span><span class="p">[</span><span class="n">fqn</span><span class="p">(</span><span class="n">StatsModelsRegressor</span><span class="p">)]</span>
+  <span class="n">fqn</span><span class="p">(</span><span class="n">TunableStatsModelsRegressor</span><span class="p">)</span> <span class="p">:</span> <span class="n">default_mapping</span><span class="p">[</span><span class="n">fqn</span><span class="p">(</span><span class="n">StatsModelsRegressor</span><span class="p">)]</span>
 <span class="p">}</span>
 
 <span class="n">extension_jar</span> <span class="o">=</span> <span class="s">"TunableStatsModelsRegressor.jar"</span>
@@ -309,6 +309,25 @@ Dealing with the <code class="language-plaintext highlighter-rouge">best_pipelin
     
   
   </ul>
+
+<h2>Feedback</h2>
+
+<script src="https://giscus.app/client.js"
+  data-repo="vruusmann/openscoring.io"
+  data-repo-id="R_kgDOH23Yfg"
+  data-category="Blog"
+  data-category-id="DIC_kwDOH23Yfs4CaTiG"
+  data-mapping="url"
+  data-strict="0"
+  data-reactions-enabled="0"
+  data-emit-metadata="0"
+  data-input-position="bottom"
+  data-theme="light"
+  data-lang="en"
+  data-loading="lazy"
+  crossorigin="anonymous"
+  async>
+</script>
 
 </div>
 
