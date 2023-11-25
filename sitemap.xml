@@ -2,15 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://openscoring.io/blog/</loc>
-    <lastmod>2023-10-20T19:40:02+03:00</lastmod>
+    <lastmod>2023-11-25T23:06:27+02:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://openscoring.io/</loc>
-    <lastmod>2023-10-20T19:40:02+03:00</lastmod>
+    <lastmod>2023-11-25T23:06:27+02:00</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>
+    https://openscoring.io/blog/2023/11/25/sklearn_feature_cross_references/</loc>
+    <lastmod>2023-11-25T00:00:00+02:00</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
   </url>
   <url>
     <loc>

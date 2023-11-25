@@ -146,7 +146,7 @@ However, there are no technical restrictions to varying them using grid search m
 
 <h3 id="task-specific-subclassing">Task-specific subclassing</h3>
 
-<p>The canonical approach to enabling tunable params is by declaring them one-by-one as constructor params, and assigning them to Python class attributes (with exactly the same name) in the constructor body.</p>
+<p>The canonical approach to enabling tunable params is by declaring them one by one as constructor params, and assigning them to Python class attributes (with exactly the same name) in the constructor body.</p>
 
 <p>For example, defining a wrapper subclass for tuning the <code class="language-plaintext highlighter-rouge">alpha</code> and <code class="language-plaintext highlighter-rouge">L1_wt</code> params of the <a href="https://www.statsmodels.org/stable/generated/statsmodels.regression.linear_model.OLS.fit_regularized.html"><code class="language-plaintext highlighter-rouge">OLS.fit_regularized</code></a> method:</p>
 

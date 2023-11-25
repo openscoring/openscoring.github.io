@@ -369,7 +369,7 @@ However, the default print-out is quite meaningless, because it displays a <code
 <p>Scikit-Learn transformers offer rudimentary feature naming support using the <code class="language-plaintext highlighter-rouge">get_feature_names_out()</code> method.
 Calling this method on the last transformer step of a fitted pipeline yields a list of strings that should align perfectly against the above list of anonymized terms.</p>
 
-<p>This process can be fully automated in Scikit-Learn version 1.2.0 and newer using the <a href="https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html">set_output API</a>:</p>
+<p>This process can be fully automated in Scikit-Learn version 1.2.0 and newer using the <a href="https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html"><code class="language-plaintext highlighter-rouge">set_output</code> API</a>:</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.statsmodels</span> <span class="kn">import</span> <span class="n">StatsModelsRegressor</span>
 <span class="kn">from</span> <span class="nn">statsmodels.api</span> <span class="kn">import</span> <span class="n">OLS</span>

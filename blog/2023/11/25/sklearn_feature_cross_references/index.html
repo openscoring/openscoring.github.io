@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://www.googletagmanager.com/gtag/js?id=G-1XC1KCZX17" async></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'G-1XC1KCZX17');
+</script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn sklearn2pmml">
+  <meta name="author" content="vruusmann">
+
+  <title>Extending Scikit-Learn with feature cross-references - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
+  <link rel="canonical" href="https://openscoring.io/blog/2023/11/25/sklearn_feature_cross_references/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Extending Scikit-Learn with feature cross-references - Openscoring">
+  <meta property="og:url" content="/blog/2023/11/25/sklearn_feature_cross_references/">
+  <meta property="og:site_name" content="Openscoring">
+  <meta property="og:updated_time" content="2023-11-25 00:00:00 +0200">
+  <meta property="article:published_time" content="2023-11-25 00:00:00 +0200">
+  <meta property="article:modified_time" content="2023-11-25 00:00:00 +0200">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Extending Scikit-Learn with feature cross-references - Openscoring">
+  <meta name="twitter:label1" content="Written by">
+  <meta name="twitter:data1" content="Villu Ruusmann">
+  <meta name="twitter:label2" content="Time to read">
+  <meta name="twitter:data2" content="Less than a minute">
+
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32">
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/assets/images/fa.png">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png">
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog/" class="btn btn--small">Blog</a>
+    </nav>
+  </div>
+</header>
+
+  <main class="container mt-26">
+    <h1>Extending Scikit-Learn with feature cross-references</h1>
+  
+<div class="post">
+  <p>Scikit-Learn provides the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html"><code class="language-plaintext highlighter-rouge">Pipeline</code></a> meta-estimator for aggregating a number of transformers and a final model into an easily manageable unit.</p>
+
+<p>As the name suggests, member estimators are laid out and executed sequentially.
+The output of some step is routed to the input of the subsequent step. All data flows are shielded from outside access.</p>
+
+<p>The “pipeline” approach adapts well to strictly linear workflows.
+However, as soon as there are non-linearities involved, its structural and computational complexity explodes.</p>
+
+<p>One of the simplest, yet most versatile, non-linear operations is feature cross-references (aka feature Xrefs).
+Their value proposition is about eliminating repeated work. A feature value shall be computed once, and then made referentiable to any interested party anywhere, anytime.</p>
+
+<p>The savings in computation time alone should be significant.
+However, the real savings shall result from simplified and optimized data flows, as the need for maintaining multiple identical argument datasets to feature value computation disappears.
+For example, compare referencing PCA results versus hauling around PCA inputs and re-running the same PCA computation over and over again.</p>
+
+<p>Feature cross-references can be implemented in two ways.</p>
+
+<p>First, replacing <code class="language-plaintext highlighter-rouge">Pipeline</code> meta-estimator with a custom meta-estimator, which supports <a href="https://en.wikipedia.org/wiki/Directed_acyclic_graph">directed acyclic graph</a> (DAG)-like layout and execution modes.</p>
+
+<p>The DAG approach is virtually unknown in Scikit-Learn.
+There are only a few third-party implementations available, such as <a href="https://github.com/scikit-learn-contrib/skdag"><code class="language-plaintext highlighter-rouge">skdag</code></a> and <a href="https://github.com/mcasl/PipeGraph"><code class="language-plaintext highlighter-rouge">pipegraph</code></a> packages.</p>
+
+<p>Second, keeping the <code class="language-plaintext highlighter-rouge">Pipeline</code> meta-estimator, but re-arranging its data flows using (custom-) meta-transformer steps.</p>
+
+<p>So far, the best candidate for the job would be the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html"><code class="language-plaintext highlighter-rouge">FeatureUnion</code></a> meta-transformer, which can carry columns along the transformer-part of a pipeline using dataset splitting and joining operations.
+However, its pipeline embedding patterns are highly complicated and fragile.</p>
+
+<h2 id="api">API</h2>
+
+<p>The <a href="https://github.com/jpmml/sklearn2pmml"><code class="language-plaintext highlighter-rouge">sklearn2pmml</code></a> package provides the <code class="language-plaintext highlighter-rouge">sklearn2pmml.cross_reference</code> module, which allows pipeline steps to communicate with each other and/or with the outside world using the “feature Xrefs” approach.</p>
+
+<p>Main components:</p>
+<ul>
+  <li><code class="language-plaintext highlighter-rouge">Memory</code>. Shared mutable memory space.</li>
+  <li><code class="language-plaintext highlighter-rouge">Memorizer</code>. Transformer for “exporting” columns into memory.</li>
+  <li><code class="language-plaintext highlighter-rouge">Recaller</code>. Transformer for “importing” columns from memory.</li>
+</ul>
+
+<p>A sample workflow:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.cross_reference</span> <span class="kn">import</span> <span class="n">Memory</span><span class="p">,</span> <span class="n">Memorizer</span><span class="p">,</span> <span class="n">Recaller</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">X</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">asarray</span><span class="p">([[</span><span class="s">"green"</span><span class="p">],</span> <span class="p">[</span><span class="s">"red"</span><span class="p">],</span> <span class="p">[</span><span class="s">"yellow"</span><span class="p">]])</span>
+
+<span class="n">memory</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">()</span>
+
+<span class="n">memorizer</span> <span class="o">=</span> <span class="n">Memorizer</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">])</span>
+<span class="n">memorizer</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="c1">#print(memory["color"])
+</span>
+<span class="n">recaller</span> <span class="o">=</span> <span class="n">Recaller</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">],</span> <span class="n">clear_after</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">recaller</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="bp">None</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="p">(</span><span class="n">Xt</span> <span class="o">==</span> <span class="n">X</span><span class="p">).</span><span class="nb">all</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>The same, in Scikit-Learn pipeline form:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+
+<span class="n">memory</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">()</span>
+
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"memorizer"</span><span class="p">,</span> <span class="n">Memorizer</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">])),</span>
+  <span class="p">(</span><span class="s">"recaller"</span><span class="p">,</span> <span class="n">Recaller</span><span class="p">(</span><span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">],</span> <span class="n">clear_after</span> <span class="o">=</span> <span class="bp">True</span><span class="p">))</span>
+<span class="p">])</span>
+<span class="n">Xt</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="p">(</span><span class="n">Xt</span> <span class="o">==</span> <span class="n">X</span><span class="p">).</span><span class="nb">all</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>A “feature Xrefs”-enhanced pipeline is API-wise indistinguishable from ordinary pipelines.</p>
+
+<p>All code changes take place in the training Python script.
+They are about inserting a few memorizer and recaller steps between existing transformer steps.
+There is no need for re-structuring or re-parameterizing anything major.</p>
+
+<p>The pipeline should be balanced in terms of column memorization and recall operations, so that the memory object is returned to its original state when the pipeline execution completes.
+A column that is left uncleared can be regarded as a memory leak.</p>
+
+<p>The “feature Xrefs” approach relies on its own column naming mechanism, which is completely independent of Scikit-Learn column/feature naming mechanisms (eg. the <a href="https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html"><code class="language-plaintext highlighter-rouge">set_output</code> API</a>) and their activation statuses.</p>
+
+<p>The names of memorized columns should be short and concise, similar to Python’s variable names.
+Their purpose is to inform the data scientist about the business intent rather than <a href="https://scikit-learn-enhancement-proposals.readthedocs.io/en/latest/slep007/proposal.html">SLEP007</a>-style derivation path.
+For example, <code class="language-plaintext highlighter-rouge">red_light_on</code> is preferable to <code class="language-plaintext highlighter-rouge">ohe_light_red</code>.</p>
+
+<h3 id="memory">Memory</h3>
+
+<p>Memorizer and recaller objects can communicate over any <a href="https://docs.python.org/3/reference/datamodel.html#emulating-container-types">item assignment</a>-capable object such as dictionaries or Pandas’ data frames.
+However, when wrapped into a pipeline, several extra functional requirements come into play that can only be satisfied by designing and implementing a special-purpose memory class.</p>
+
+<p>The primary requirement is object identity preservation during copy operations.</p>
+
+<p>Scikit-Learn habitually duplicates estimators using the <a href="https://scikit-learn.org/stable/modules/generated/sklearn.base.clone.html"><code class="language-plaintext highlighter-rouge">sklearn.base.clone</code></a> utility function, which defaults to “deep copy” semantics (ie. the copy operation is propagated to each object in the object graph).
+This behaviour is a deal-breaker for the “feature Xrefs” approach, which requires that all memorizer and recaller objects stay associated with exactly the same memory object that they were parameterized with during construction.</p>
+
+<p>Avoiding or suppressing the use of the <code class="language-plaintext highlighter-rouge">clone</code> utility function is not possible.
+The problem of keeping memory-type attributes constant can be addressed either by teaching estimator classes to defend their memory-type attributes or by teaching the memory class to defend itself.
+The latter option seems more appropriate in every way.</p>
+
+<p>The secondary requirement is object state minimization during persistence operations.</p>
+
+<p>The memory object should not reference any objects (whether directly or indirectly) besides the ones that have been explicitly assigned to it.
+Moreover, any objects that can be classified as “data” should be completely excluded from the persistent state, because they vary from one pipeline execution to another.</p>
+
+<p>These two requirements can be met by wrapping the elementary memory object into an <code class="language-plaintext highlighter-rouge">Memory</code> object:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn2pmml.cross_reference</span> <span class="kn">import</span> <span class="n">Memory</span>
+
+<span class="n">memory</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">(</span><span class="nb">dict</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>Both <code class="language-plaintext highlighter-rouge">Memory.__copy__()</code> and <code class="language-plaintext highlighter-rouge">Memory.__deepcopy__(memo)</code> methods return a reference to the current instance (ie. <code class="language-plaintext highlighter-rouge">self</code>), thereby preventing Python’s <code class="language-plaintext highlighter-rouge">copy</code> module from replacing it during “shallow copy” or “deep copy” operations.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">clone</span>
+
+<span class="c1"># Wrap the elementary memory object
+</span><span class="n">memory</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">(</span><span class="nb">dict</span><span class="p">())</span>
+
+<span class="n">memorizer</span> <span class="o">=</span> <span class="n">Memorizer</span><span class="p">(</span><span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">])</span>
+
+<span class="n">memorizer_clone</span> <span class="o">=</span> <span class="n">clone</span><span class="p">(</span><span class="n">memorizer</span><span class="p">)</span>
+
+<span class="c1"># Assert memory reference stayed the same
+</span><span class="k">assert</span> <span class="n">memorizer_clone</span><span class="p">.</span><span class="n">memory</span> <span class="ow">is</span> <span class="n">memory</span><span class="p">,</span> <span class="s">"Not the same as memory"</span>
+<span class="k">assert</span> <span class="n">memorizer_clone</span><span class="p">.</span><span class="n">memory</span> <span class="ow">is</span> <span class="n">memorizer</span><span class="p">.</span><span class="n">memory</span><span class="p">,</span> <span class="s">"Not the same as memory.memory"</span>
+</code></pre></div></div>
+
+<p>On a side note, debugging object graphs might be tricky, because it requires the use of identity checks (ie. Python’s <code class="language-plaintext highlighter-rouge">is</code> keyword) rather than equality checks (ie. Python’s <code class="language-plaintext highlighter-rouge">==</code> operator) and/or print statements.</p>
+
+<p>There are no restrictions on the overall number of <code class="language-plaintext highlighter-rouge">Memory</code> objects.
+Most applications should be adequately served by a single one. But advanced applications may create and use several in order to serve specific controllability, observability, etc. goals.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Memory.__getstate__()</code> method returns a modified state, where the elementary memory object has been cleared of any data.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">pickle</span>
+
+<span class="c1"># Wrap the elementary memory object
+</span><span class="n">memory</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">(</span><span class="nb">dict</span><span class="p">())</span>
+
+<span class="n">memorizer</span> <span class="o">=</span> <span class="n">Memorizer</span><span class="p">(</span><span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">])</span>
+<span class="n">memorizer</span><span class="p">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+<span class="c1"># Assert data is present
+</span><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">memorizer</span><span class="p">.</span><span class="n">memory</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+<span class="k">assert</span> <span class="s">"color"</span> <span class="ow">in</span> <span class="n">memorizer</span><span class="p">.</span><span class="n">memory</span>
+
+<span class="c1"># Emulate migration between Python environments (eg. from dev to prod)
+</span><span class="n">memorizer</span> <span class="o">=</span> <span class="n">pickle</span><span class="p">.</span><span class="n">loads</span><span class="p">(</span><span class="n">pickle</span><span class="p">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">memorizer</span><span class="p">))</span>
+
+<span class="c1"># Assert data has been cleared
+</span><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">memorizer</span><span class="p">.</span><span class="n">memory</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+<span class="k">assert</span> <span class="s">"color"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">memorizer</span><span class="p">.</span><span class="n">memory</span>
+</code></pre></div></div>
+
+<p>Memorized columns are guarded against tampering by proxying all read and write operations through extra copying.</p>
+
+<h3 id="memorizer">Memorizer</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">Memorizer</code> (pseudo-)transformer exports the dataset into named variables in memory.</p>
+
+<p>The biggest API gotcha is that the <code class="language-plaintext highlighter-rouge">Memorizer.transform(X)</code> method returns an empty Numpy array (to be exact, a Numpy array with dimensions <code class="language-plaintext highlighter-rouge">(n_samples, 0)</code>).
+This is so to enable simpler and shorter pipeline embedding patterns.</p>
+
+<p>The number of memorizable columns is typically small compared to the total number of columns that come into existence during pipeline execution (a few vs. hundreds or thousands).
+Furthermore, their lifecycles should be planned individually (when to grab, when to release) in order to minimize memory footprint.</p>
+
+<p>The difficulty relates to pinpointing and extracting the right columns.</p>
+
+<p>The canonical pattern is to split the dataset into two using a <code class="language-plaintext highlighter-rouge">FeatureUnion</code> meta-transformer.
+In one branch, the input dataset is filtered down to the desired composition and memorized.
+In the other branch, it will be passed through as-is.</p>
+
+<p>A “passthrough” memorizer step:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">FeatureUnion</span>
+
+<span class="n">memorizer_union</span> <span class="o">=</span> <span class="n">FeatureUnion</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"memorizer"</span><span class="p">,</span> <span class="n">Memorizer</span><span class="p">(</span><span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">])),</span> <span class="c1"># Yields an empty array
+</span>  <span class="p">(</span><span class="s">"passthrough"</span><span class="p">,</span> <span class="s">"passthrough"</span><span class="p">)</span> <span class="c1"># Yields the input array unchanged
+</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>The same, with an additional column filtering sub-step:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">make_pipeline</span>
+
+<span class="n">memorizer_union</span> <span class="o">=</span> <span class="n">FeatureUnion</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"selector_memorizer"</span><span class="p">,</span> <span class="n">make_pipeline</span><span class="p">(</span>
+    <span class="c1"># Keep the first column, drop all the other columns
+</span>    <span class="n">ColumnTransformer</span><span class="p">([</span>
+      <span class="p">(</span><span class="s">"selector"</span><span class="p">,</span> <span class="s">"passthrough"</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="p">],</span> <span class="n">remainder</span> <span class="o">=</span> <span class="s">"drop"</span><span class="p">),</span>
+    <span class="c1"># Memorize the column
+</span>    <span class="n">Memorizer</span><span class="p">(</span><span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">])</span>
+  <span class="p">)),</span>
+  <span class="p">(</span><span class="s">"passthrough"</span><span class="p">,</span> <span class="s">"passthrough"</span><span class="p">)</span>
+<span class="p">])</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">Memorizer</code> transformer has two operating modes, which can be toggled using the <code class="language-plaintext highlighter-rouge">Memorizer.transform_only</code> attribute.
+The first and the default mode is to perform memorization only during the “transform” pass. The second mode is to perform memorization twice, during both “fit” and “transform” passes.</p>
+
+<h3 id="recaller">Recaller</h3>
+
+<p>The <code class="language-plaintext highlighter-rouge">Recaller</code> (pseudo-)transformer imports named variables from memory into a new dataset.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Recaller.transform(X)</code> method ignores any arguments passed to it.
+The ideal behaviour for this method - to achieve symmetry with its counterpart, the <code class="language-plaintext highlighter-rouge">Memorizer.transform(X)</code> method - would be to raise an error if the <code class="language-plaintext highlighter-rouge">X</code> argument is not an empty dataset.
+Again, the symmetry is broken for the sake of improved embeddability.</p>
+
+<p>The canonical pattern is to join two (or more) datasets into one using the <code class="language-plaintext highlighter-rouge">FeatureUnion</code> meta-transformer.
+In one branch, the input dataset gets replaced with the recalled dataset.
+In the other branch, it will be passed through as-is.</p>
+
+<p>A “passthrough” recaller step:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">FeatureUnion</span>
+
+<span class="n">recaller_union</span> <span class="o">=</span> <span class="n">FeatureUnion</span><span class="p">([</span>
+  <span class="p">(</span><span class="s">"recaller"</span><span class="p">,</span> <span class="n">Recaller</span><span class="p">(</span><span class="n">memory</span> <span class="o">=</span> <span class="n">memory</span><span class="p">,</span> <span class="n">names</span> <span class="o">=</span> <span class="p">[</span><span class="s">"color"</span><span class="p">])),</span> <span class="c1"># Yields a new array
+</span>  <span class="p">(</span><span class="s">"passthrough"</span><span class="p">,</span> <span class="s">"passthrough"</span><span class="p">)</span> <span class="c1"># Yields the input array unchanged
+</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p>The ordering of feature union branches is free.
+If the columns need to be addressed positionally afterwards, then it makes sense to insert the <code class="language-plaintext highlighter-rouge">Recaller</code> transformer to the first position.
+The dimensions of its sub-dataset are fixed (ie. <code class="language-plaintext highlighter-rouge">(n_samples, len(Recaller.names))</code>), and it will be straightforward to adjust the column offsets of subsequent sub-datasets accordingly.</p>
+
+<p>A column can be recalled from memory any number of times.
+However, the final <code class="language-plaintext highlighter-rouge">Recaller</code> object using it should have its <code class="language-plaintext highlighter-rouge">Recaller.clear_after</code> attribute set to <code class="language-plaintext highlighter-rouge">True</code> in order to remove the now-unnecessary variable(s) from memory.</p>
+
+
+<h2>Feedback</h2>
+
+<script src="https://giscus.app/client.js"
+  data-repo="vruusmann/openscoring.io"
+  data-repo-id="R_kgDOH23Yfg"
+  data-category="Blog"
+  data-category-id="DIC_kwDOH23Yfs4CaTiG"
+  data-mapping="url"
+  data-strict="0"
+  data-reactions-enabled="0"
+  data-emit-metadata="0"
+  data-input-position="bottom"
+  data-theme="light"
+  data-lang="en"
+  data-loading="lazy"
+  crossorigin="anonymous"
+  async>
+</script>
+
+</div>
+
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+  <script>
+  var sc_project=11704106;
+  var sc_security="a7d1bf16"; 
+  var sc_invisible=1; 
+  var sc_remove_link=1; 
+</script>
+
+<script src="https://www.statcounter.com/counter/counter.js" async></script>
+
+<noscript>
+  <div class="statcounter">
+    <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="Web Analytics Made Easy - Statcounter" referrerPolicy="no-referrer-when-downgrade">
+  </div>
+</noscript>
+</body>
+
+</html>
