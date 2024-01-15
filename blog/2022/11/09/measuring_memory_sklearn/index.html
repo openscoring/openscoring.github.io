@@ -335,7 +335,7 @@ However, such code snippet can be written for Scikit-Learn estimators, because t
 
 <p>First, nested estimator objects (<code class="language-plaintext highlighter-rouge">base_estimator</code> and <code class="language-plaintext highlighter-rouge">base_estimator_</code> attributes) still contribute a constant value of 24 or 32 bytes.
 Second, built-in iterable types such as <code class="language-plaintext highlighter-rouge">list</code> and <code class="language-plaintext highlighter-rouge">tuple</code> appear to mis-represent their in-memory size. The situation is understandable for a list of estimator objects (the <code class="language-plaintext highlighter-rouge">estimators_</code> attribute) but defies all expectations for a list of Python strings (the <code class="language-plaintext highlighter-rouge">_required_parameters</code> attribute) or a tuple of Python strings (the <code class="language-plaintext highlighter-rouge">estimator_params</code> attribute).
-Third, non-Python objects (eg. CPython and NumPy types) contribute constant values of around one hundred bytes.</p>
+Third, non-Python objects (eg. Cython and NumPy types) contribute constant values of around one hundred bytes.</p>
 
 <p>The solution is to define a custom “sizeof” function, and apply it (recursively-) to all objects in the object graph.</p>
 

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="https://www.googletagmanager.com/gtag/js?id=G-1XC1KCZX17" async></script>
+
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+
+  gtag('js', new Date());
+  gtag('config', 'G-1XC1KCZX17');
+</script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#ffffff">
+  <meta name="msapplication-navbutton-color" content="#ffffff">
+  <meta name="apple-mobile-web-app-status-bar-style" content="#ffffff">
+
+  <meta name="description" content="">
+  <meta name="keywords" content="scikit-learn">
+  <meta name="author" content="vruusmann">
+
+  <title>Upgrading Scikit-Learn decision tree models - Openscoring</title>
+
+  <meta name="robots" content="index, follow, max-snippet:-1, max-video-preview:-1, max-image-preview:large">
+  <link rel="canonical" href="https://openscoring.io/blog/2023/12/29/upgrading_sklearn_decision_tree/">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Upgrading Scikit-Learn decision tree models - Openscoring">
+  <meta property="og:url" content="/blog/2023/12/29/upgrading_sklearn_decision_tree/">
+  <meta property="og:site_name" content="Openscoring">
+  <meta property="og:updated_time" content="2023-12-29 00:00:00 +0200">
+  <meta property="article:published_time" content="2023-12-29 00:00:00 +0200">
+  <meta property="article:modified_time" content="2023-12-29 00:00:00 +0200">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Upgrading Scikit-Learn decision tree models - Openscoring">
+  <meta name="twitter:label1" content="Written by">
+  <meta name="twitter:data1" content="Villu Ruusmann">
+  <meta name="twitter:label2" content="Time to read">
+  <meta name="twitter:data2" content="Less than a minute">
+
+  <link rel="icon" href="/assets/images/fa-150x150.png" sizes="32x32">
+  <link rel="icon" href="/assets/images/fa.png" sizes="192x192">
+  <link rel="apple-touch-icon" href="/assets/images/fa.png">
+  <link rel="stylesheet" href="/assets/css/main.css">
+  <meta name="msapplication-TileImage" content="h/assets/images/fa.png">
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+  <header class="header">
+  <div class="container">
+    <nav class="nav--main">
+      <a class="logo" href="/" aria-label="home">
+        <img src="/assets/images/logo.svg" alt="" width="35" height="32" loading="lazy">
+        <span>Openscoring</span>
+      </a>
+
+      <input type="checkbox" id="nav__toggle--main" class="nav__toggle">
+      <label for="nav__toggle--main">Menu<span></span></label>
+
+      <div class="menu">
+        <ul id="menu--main">
+          <li><a href="/#overview" aria-current="page">Overview</a></li>
+          <li><a href="/#products" aria-current="page">Products</a></li>
+          <li><a href="/#licensing" aria-current="page">Licensing</a></li>
+          <li><a href="/#consulting" aria-current="page">Consulting</a></li>
+        </ul>
+      </div>
+
+      <label for="nav__toggle--main" class="overlay"></label>
+
+      <a href="/blog/" class="btn btn--small">Blog</a>
+    </nav>
+  </div>
+</header>
+
+  <main class="container mt-26">
+    <h1>Upgrading Scikit-Learn decision tree models</h1>
+  
+<div class="post">
+  <h2 id="overview">Overview</h2>
+
+<p><a href="https://scikit-learn.org/stable/modules/tree.html">Decision trees</a> and <a href="https://scikit-learn.org/stable/modules/linear_model.html">logistic regression</a> are some of the most popular model types for ML applications.
+Their strengths include simplicity, versatility and interpretability, and getting to know their ins and outs is a prerequisite to a successful career in data science.</p>
+
+<p>Decision trees are suited for solving both classification- and regression-type problems.
+The classical example is multinomial classification using the <a href="https://en.wikipedia.org/wiki/Iris_flower_data_set">“iris” dataset</a>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="kn">import</span> <span class="n">DecisionTreeClassifier</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">return_X_y</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">DecisionTreeClassifier</span><span class="p">()</span>
+<span class="n">classifier</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This Python code snippet executes fine with all <a href="https://scikit-learn.org">Scikit-Learn</a> versions published within the last 10 years.</p>
+
+<p>A typical Scikit-Learn model lifecycle:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># Development environment, using a then-current Scikit-Learn version
+</span><span class="n">_pkl_dump</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="s">"classifier.pkl"</span><span class="p">)</span>
+
+<span class="c1">#
+# The classifier.pkl file is carried across space and time
+# from the development environment to many production environments
+#
+</span>
+<span class="c1"># Production environment, using the now-current Scikit-Learn version
+</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">_pkl_load</span><span class="p">(</span><span class="s">"classifier.pkl"</span><span class="p">)</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">return_X_y</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">yt</span> <span class="o">=</span> <span class="n">classifier</span><span class="p">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In practice, a model is trained once, and is used for prediction many times over the years.</p>
+
+<p>Until very recently, the above model serialization and deserialization workflow was extremely reliable.
+For example, one could restore a Scikit-Learn 0.17 model trained 10 years ago, and use it for predictions in Scikit-Learn 1.2.2.
+However, this is no longer possible with Scikit-Learn 1.3.0 and newer.</p>
+
+<p>A “model breakdown” following a routine software upgrade is definitely a very unpleasant surprise.
+For major enterprises, the cost of losing access to their business-critical intellectual property can quickly amount to millions of US dollars.</p>
+
+<p>Scikit-Learn developers see this “model breakdown” as inevitable and provide no straightforward solutions, instead suggesting that data scientists should retrain their models from scratch using the latest library version.
+Unfortunately, this is not always feasible, especially with more complex models where the original training dataset and documentation has been lost.</p>
+
+<p>In such a situation, the least painful option is often to remain infinitely stuck with one particular legacy Scikit-Learn version.</p>
+
+<h2 id="problem-description">Problem description</h2>
+
+<p>Any attempt to load a legacy decision tree model shall fail with the following value error:</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Traceback (most recent call last):
+  File "sklearn/tree/_tree.pyx", line 728, in sklearn.tree._tree.Tree.__setstate__
+  File "sklearn/tree/_tree.pyx", line 1434, in sklearn.tree._tree._check_node_ndarray
+ValueError: node array from the pickle has an incompatible dtype:
+- expected: {'names': ['left_child', 'right_child', 'feature', 'threshold', 'impurity', 'n_node_samples', 'weighted_n_node_samples', 'missing_go_to_left'], 'formats': ['&lt;i8', '&lt;i8', '&lt;i8', '&lt;f8', '&lt;f8', '&lt;i8', '&lt;f8', 'u1'], 'offsets': [0, 8, 16, 24, 32, 40, 48, 56], 'itemsize': 64}
+- got     : [('left_child', '&lt;i8'), ('right_child', '&lt;i8'), ('feature', '&lt;i8'), ('threshold', '&lt;f8'), ('impurity', '&lt;f8'), ('n_node_samples', '&lt;i8'), ('weighted_n_node_samples', '&lt;f8')]
+</code></pre></div></div>
+
+<p>This is a sanity check by the <code class="language-plaintext highlighter-rouge">Tree.__setstate__()</code> method to ensure that the unpickled data is structurally complete and valid decision tree data.</p>
+
+<p>Specifically, the <code class="language-plaintext highlighter-rouge">Tree</code> class requires the value of its <code class="language-plaintext highlighter-rouge">nodes</code> attribute to be a 9-dimensional array (with the dimensions being <code class="language-plaintext highlighter-rouge">left_child</code>, <code class="language-plaintext highlighter-rouge">right_child</code>, .., <code class="language-plaintext highlighter-rouge">weighted_n_node_samples</code> and <code class="language-plaintext highlighter-rouge">missing_to_to_left</code>).
+Here, however, it finds an 8-dimensional array, where the ninth <code class="language-plaintext highlighter-rouge">missing_go_to_left</code> dimension is not present.</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">missing_go_to_left</code> dimension is a Scikit-Learn 1.3 addition to enhance <a href="https://scikit-learn.org/stable/modules/tree.html#missing-values-support">the decision tree algorithm with basic missing values support</a>.</p>
+
+<p>The Python language and runtime provide relatively simple means to modify class definitions on-the-fly.
+So, would it be possible to satisfy this new structural requirement using reflection tools?</p>
+
+<p>Unfortunately, the answer is “no”, due to two overwhelming technical complexities:</p>
+<ol>
+  <li>The <code class="language-plaintext highlighter-rouge">Tree</code> class is a <a href="https://cython.org/">Cython</a> class, rather than an ordinary Python class. Cython class definitions are effectively impervious to outside manipulation, especially using tools and techniques that are available to ordinary end users.</li>
+  <li>The <code class="language-plaintext highlighter-rouge">Tree.nodes</code> attribute holds a single n-dimensional <a href="https://numpy.org/doc/stable/user/basics.rec.html">Numpy structured array</a>, rather than an n-element collection of Numpy ndarrays. A Numpy structured array allows updating the values of each dimension, but not adding or removing the definitions of dimensions themselves.</li>
+</ol>
+
+<p>To make things worse, the attributes of Cython classes are not directly accessible via common reflection methods such as <code class="language-plaintext highlighter-rouge">hasattr</code>, <code class="language-plaintext highlighter-rouge">getattr</code> or <code class="language-plaintext highlighter-rouge">setattr</code>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tree</span> <span class="o">=</span> <span class="n">classifier</span><span class="p">.</span><span class="n">tree_</span>
+
+<span class="c1"># Do not exist here
+</span><span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s">"nodes"</span><span class="p">)</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">tree</span><span class="p">,</span> <span class="s">"values"</span><span class="p">)</span>
+
+<span class="n">state</span> <span class="o">=</span> <span class="n">tree</span><span class="p">.</span><span class="n">__getstate__</span><span class="p">()</span>
+
+<span class="c1"># Exist here
+</span><span class="k">assert</span> <span class="s">"nodes"</span> <span class="ow">in</span> <span class="n">state</span><span class="p">.</span><span class="n">keys</span><span class="p">()</span>
+<span class="k">assert</span> <span class="s">"values"</span> <span class="ow">in</span> <span class="n">state</span><span class="p">.</span><span class="n">keys</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>It appears to be the case that the state of a <code class="language-plaintext highlighter-rouge">Tree</code> object can only be reliably read and written using <code class="language-plaintext highlighter-rouge">Tree.__getstate__()</code> and <code class="language-plaintext highlighter-rouge">Tree.__setstate__(state)</code> methods, respectively.</p>
+
+<h2 id="workaround-idea-and-implementation">Workaround idea and implementation</h2>
+
+<p>The suggested workaround is to perform the manual modification of the problematic Numpy structured array outside of the pickle protocol layer.</p>
+
+<p>The input is a legacy decision tree model in a pickle file.</p>
+
+<p>Two Scikit-Learn environments will be used.
+The first is Scikit-Learn &lt;= 1.2.2 that can unpickle this file without any problems, and the second is Scikit-Learn &gt;= 1.3.0 that cannot do so.</p>
+
+<p>The goal is to turn the input pickle file into a completely new pickle file that could be unpickled in Scikit-Learn &gt;= 1.3.0.</p>
+
+<p>The workflow has tree steps:</p>
+
+<ol>
+  <li>Loading the pickle file in the legacy environment and splitting it into two parts - a <strong>version-<u>in</u>dependent</strong> Python part (ie. the <code class="language-plaintext highlighter-rouge">DecisionTreeClassifier</code> class) and a <strong>version-dependent</strong> Cython part (ie. the <code class="language-plaintext highlighter-rouge">Tree</code> class).</li>
+  <li>Manually adjusting the state of the Cython object. When Scikit-Learn framework-level security and sanity checks are not active, then it becomes possible to perform arbitrary data structure molding. The changed state is saved as a new Cython object.</li>
+  <li>Loading the two parts from pickle files in the new environment and recombining them back into a fully-functional decision tree object.</li>
+</ol>
+
+<h3 id="partitioning-a-functional-decison-tree-object-into-dt-shell-and-tree-objects">Partitioning a functional decison tree object into “DT-shell” and <code class="language-plaintext highlighter-rouge">Tree</code> objects</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">classifier</span> <span class="o">=</span> <span class="n">_pkl_load</span><span class="p">(</span><span class="s">"classifier.pkl"</span><span class="p">)</span>
+
+<span class="n">tree</span> <span class="o">=</span> <span class="n">classifier</span><span class="p">.</span><span class="n">tree_</span>
+
+<span class="c1"># Drop the tree attribute
+</span><span class="nb">delattr</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="s">"tree_"</span><span class="p">)</span>
+
+<span class="n">_pkl_dump</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="s">"classifier_shell.pkl"</span><span class="p">)</span>
+
+<span class="c1"># Print Python state
+</span><span class="k">print</span><span class="p">(</span><span class="s">"Tree(n_features = {}, n_classes = numpy.asarray({}), n_outputs = {})"</span><span class="p">.</span><span class="nb">format</span><span class="p">(</span><span class="n">tree</span><span class="p">.</span><span class="n">n_features</span><span class="p">,</span> <span class="n">tree</span><span class="p">.</span><span class="n">n_classes</span><span class="p">,</span> <span class="n">tree</span><span class="p">.</span><span class="n">n_outputs</span><span class="p">))</span>
+
+<span class="c1"># Extract and dump Cython state
+</span><span class="n">tree_state</span> <span class="o">=</span> <span class="n">tree</span><span class="p">.</span><span class="n">__getstate__</span><span class="p">()</span>
+
+<span class="n">_pkl_dump</span><span class="p">(</span><span class="n">tree_state</span><span class="p">,</span> <span class="s">"tree_state.pkl"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The value of the <code class="language-plaintext highlighter-rouge">tree_</code> attribute is extracted, after which the attribute is deleted.</p>
+
+<p>There is no point in trying to dump the <code class="language-plaintext highlighter-rouge">Tree</code> object in pickle data format, because it is a sealed “black box”-type object, whose unpickling behaviour in Scikit-Learn &gt;= 1.3.0 is to raise the above <code class="language-plaintext highlighter-rouge">ValueError</code>.</p>
+
+<p>It follows that the deconstruction of the <code class="language-plaintext highlighter-rouge">Tree</code> object should be continued until the problematic <code class="language-plaintext highlighter-rouge">dtype</code> sanity check gets excluded from executable code paths.</p>
+
+<p>Luckily enough, such a stable state is easily retrievable using the <code class="language-plaintext highlighter-rouge">Tree.__getstate__()</code> method. The returned value is a standard Python <code class="language-plaintext highlighter-rouge">dict</code> object that contains four items: <code class="language-plaintext highlighter-rouge">max_depth</code>, <code class="language-plaintext highlighter-rouge">node_count</code>, <code class="language-plaintext highlighter-rouge">nodes</code> and <code class="language-plaintext highlighter-rouge">values</code>.
+In order to upgrade/downgrade the tree, its <code class="language-plaintext highlighter-rouge">nodes</code> item must be brought up-to-date with the target Scikit-Learn version. The other three items will remain unchanged.</p>
+
+<p>Since the original <code class="language-plaintext highlighter-rouge">Tree</code> object was left behind, a new one will have to be constructed in the new place and time, by invoking the <code class="language-plaintext highlighter-rouge">Tree</code> constructor.</p>
+
+<p>Quick inspection of its source code reveals three constructor parameters: <code class="language-plaintext highlighter-rouge">n_features</code>, <code class="language-plaintext highlighter-rouge">n_classes</code> and <code class="language-plaintext highlighter-rouge">n_outputs</code>.
+Surprisingly enough, none of them is present in the stable state that is returned by the <code class="language-plaintext highlighter-rouge">Tree.__getstate__()</code> method, which means that they must be carried over using alternative means.
+In this exercise, they are simply sent to the console print-out.</p>
+
+<p>This step results in <code class="language-plaintext highlighter-rouge">classifier_shell.pkl</code> and <code class="language-plaintext highlighter-rouge">tree_state.pkl</code> pickle files that can be unpickled using an arbitrary Scikit-Learn version (in an arbitrary Python environment).</p>
+
+<details>
+  <summary>Why do Scikit-Learn pickle files get outdated, and how to fix them?</summary>
+  <p><br />
+If the original <code class="language-plaintext highlighter-rouge">DecisionTreeClassifier</code> object was trained using a very old Scikit-Learn version, then it is possible that unpickling may raise a <code class="language-plaintext highlighter-rouge">ModuleNotFoundError</code> stating <code class="language-plaintext highlighter-rouge">No module named 'sklearn.tree.tree'</code>.</p>
+
+  <p>This error is caused by the evergoing (re)organization of the Scikit-Learn module structure.
+More specifically, module hierarchies have been systematically flattened over the years - all public classes have been brought from the third or even fourth level to the second level.
+For example, the <code class="language-plaintext highlighter-rouge">sklearn.tree.tree.DecisionTreeClassifier</code> class has been truncated to <code class="language-plaintext highlighter-rouge">sklearn.tree.DecisionTreeClassifier</code>.</p>
+
+  <p>Such import errors can be resolved by re-mapping the old long/problematic module name to its new short/non-problematic form:</p>
+
+  <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">legacy_modulename</span> <span class="o">=</span> <span class="s">"sklearn.tree.tree"</span>
+<span class="n">modulename</span> <span class="o">=</span> <span class="s">"sklearn.tree"</span>
+
+<span class="c1"># Define a run-time alias
+</span><span class="n">sys</span><span class="p">.</span><span class="n">modules</span><span class="p">[</span><span class="n">legacy_modulename</span><span class="p">]</span> <span class="o">=</span> <span class="n">importlib</span><span class="p">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">modulename</span><span class="p">)</span>
+</code></pre></div>  </div>
+</details>
+
+<h3 id="extending-the-tree-object-with-a-missing_go_to_left-field">Extending the <code class="language-plaintext highlighter-rouge">Tree</code> object with a <code class="language-plaintext highlighter-rouge">missing_go_to_left</code> field</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">tree_state</span> <span class="o">=</span> <span class="n">_pkl_load</span><span class="p">(</span><span class="s">"tree_state.pkl"</span><span class="p">)</span>
+
+<span class="n">nodes</span> <span class="o">=</span> <span class="n">tree_state</span><span class="p">[</span><span class="s">"nodes"</span><span class="p">]</span>
+
+<span class="n">shape</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">.</span><span class="n">shape</span>
+<span class="n">dtype</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">.</span><span class="n">dtype</span>
+
+<span class="c1"># Create a Scikit-Learn &gt;= 1.3.0 compatible data type
+</span><span class="n">new_dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">dtype</span><span class="p">(</span><span class="n">dtype</span><span class="p">.</span><span class="n">descr</span> <span class="o">+</span> <span class="p">[(</span><span class="s">'missing_go_to_left'</span><span class="p">,</span> <span class="s">'|u1'</span><span class="p">)])</span>
+
+<span class="n">new_nodes</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">empty</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">new_dtype</span><span class="p">)</span>
+
+<span class="c1"># Copy existing dimensions
+</span><span class="k">for</span> <span class="n">field_name</span><span class="p">,</span> <span class="n">field_dtype</span> <span class="ow">in</span> <span class="n">dtype</span><span class="p">.</span><span class="n">fields</span><span class="p">.</span><span class="n">items</span><span class="p">():</span>
+  <span class="n">new_nodes</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">nodes</span><span class="p">[</span><span class="n">field_name</span><span class="p">]</span>
+
+<span class="c1"># Append a new dimension
+</span><span class="n">new_nodes</span><span class="p">[</span><span class="s">"missing_go_to_left"</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">uint8</span><span class="p">)</span>
+
+<span class="n">tree_state</span><span class="p">[</span><span class="s">"nodes"</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_nodes</span>
+
+<span class="n">_pkl_dump</span><span class="p">(</span><span class="n">tree_state</span><span class="p">,</span> <span class="s">"tree_state-upgraded.pkl"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The <code class="language-plaintext highlighter-rouge">tree_state</code> object is essentially a <code class="language-plaintext highlighter-rouge">dict</code> of two Numpy arrays - the <code class="language-plaintext highlighter-rouge">nodes</code> item holds a Numpy structured array, whereas the <code class="language-plaintext highlighter-rouge">values</code> item holds a plain Numpy ndarray. 
+The <code class="language-plaintext highlighter-rouge">tree_state</code> object therefore only has Numpy library dependency.
+It does not have any Scikit-Learn library dependency, and can therefore be loaded in any Python environment, with or without a Scikit-Learn library available.</p>
+
+<p>A recipe for upgrading Numpy structured arrays is given in this excellent StackOverflow answer: <a href="https://stackoverflow.com/a/25429497">https://stackoverflow.com/a/25429497</a></p>
+
+<p>In brief, the first operation is to define a new <code class="language-plaintext highlighter-rouge">dtype</code> object by appending a new dimension to an existing 8-dimensional <code class="language-plaintext highlighter-rouge">dtype</code> object.
+This extra dimension is called <code class="language-plaintext highlighter-rouge">missing_go_to_left</code>and its canonical element type is <code class="language-plaintext highlighter-rouge">bool</code>, which is conventionally mapped to an unsigned 1-byte integer.</p>
+
+<p>Once the new <code class="language-plaintext highlighter-rouge">dtype</code> has been defined, a new Numpy structured array can be allocated based on it, and the content of the old array can be copied field by field.</p>
+
+<p>The final operation is to fill the new <code class="language-plaintext highlighter-rouge">missing_go_to_left</code> field.
+According to the specification, the fill values should be <code class="language-plaintext highlighter-rouge">0</code> or <code class="language-plaintext highlighter-rouge">1</code>, indicating whether the missing values should be sent to the right branch or the left branch, respectively, at any given split point.</p>
+
+<p>The above Python code snippet fills all slots with the <code class="language-plaintext highlighter-rouge">0</code> value.
+This is justifiable, because the intended applicability domain of this model is restricted to dense datasets. In other words, the training dataset did not contain any missing values, and hence they should not be present in any testing datasets either.
+Given that absence of missing values there is no significance to the fill values of the <code class="language-plaintext highlighter-rouge">missing_go_to_left</code> field, because the respective business logic will never get triggered anyway.</p>
+
+<p>If the intended applicability domain includes sparse datasets, then realistic fill values must be used.
+They can be reconstructed after the fact, because they reflect the “majority’s way” at each split point (ie. “samples with a missing value should be sent to the left branch if the left branch saw more training dataset samples than the right branch, and to the right branch otherwise”).
+The <code class="language-plaintext highlighter-rouge">nodes</code> array provides all the necessary information for this evaluation in its <code class="language-plaintext highlighter-rouge">left_child</code>, <code class="language-plaintext highlighter-rouge">right_child</code> and <code class="language-plaintext highlighter-rouge">n_node_samples</code> fields.</p>
+
+<p>Finally, after creating and populating the new Numpy structured array, it is used to upgrade the <code class="language-plaintext highlighter-rouge">tree_state</code> object.
+The latter is dumped into a <code class="language-plaintext highlighter-rouge">tree_state-upgraded.pkl</code> file (the “upgraded” filename suffix indicates Scikit-Learn &gt;= 1.3.X compatibility).</p>
+
+<h3 id="recombining-dt-shell-and-tree-objects-back-into-a-functional-decision-tree-object">Recombining “DT-shell” and <code class="language-plaintext highlighter-rouge">Tree</code> objects back into a functional decision tree object</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.tree._tree</span> <span class="kn">import</span> <span class="n">Tree</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">classifier</span> <span class="o">=</span> <span class="n">_pkl_load</span><span class="p">(</span><span class="s">"classifier_shell.pkl"</span><span class="p">)</span>
+
+<span class="n">tree_state</span> <span class="o">=</span> <span class="n">_pkl_load</span><span class="p">(</span><span class="s">"tree_state-upgraded.pkl"</span><span class="p">)</span>
+
+<span class="n">tree</span> <span class="o">=</span> <span class="n">Tree</span><span class="p">(</span><span class="n">n_features</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="n">n_classes</span> <span class="o">=</span> <span class="n">numpy</span><span class="p">.</span><span class="n">asarray</span><span class="p">([</span><span class="mi">3</span><span class="p">]),</span> <span class="n">n_outputs</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">tree</span><span class="p">.</span><span class="n">__setstate__</span><span class="p">(</span><span class="n">tree_state</span><span class="p">)</span>
+
+<span class="c1"># Re-assign the tree attribute
+</span><span class="n">classifier</span><span class="p">.</span><span class="n">tree_</span> <span class="o">=</span> <span class="n">tree</span>
+
+<span class="n">_pkl_dump</span><span class="p">(</span><span class="n">classifier</span><span class="p">,</span> <span class="s">"classifier-upgraded.pkl"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This step requires a Python environment where a Scikit-Learn &gt;= 1.3.0 library is available.</p>
+
+<p>The low-level unpickler component attempts to resolve and load the fully-qualified class name <code class="language-plaintext highlighter-rouge">sklearn.tree._tree.Tree</code> into some kind of Python class definition.
+When doing so, it must first come across the upgraded Cython class that supports a 9-dimensional <code class="language-plaintext highlighter-rouge">nodes</code> attribute.</p>
+
+<p>There is not much room for error in this regard anyway.
+If the unpickler component first comes across the legacy Cython class, then unpickling shall soon raise a value error that is very similar to the original one.
+The main difference is in the error message, which now complains about the presence of an unnecessary/unsupported <code class="language-plaintext highlighter-rouge">missing_go_to_left</code> field (whereas originally it complained about its absence).</p>
+
+<p>The <code class="language-plaintext highlighter-rouge">Tree</code> constructor requires arguments for <code class="language-plaintext highlighter-rouge">n_features</code>, <code class="language-plaintext highlighter-rouge">n_classes</code> and <code class="language-plaintext highlighter-rouge">n_outputs</code> parameters.
+In general, these can be deduced from the dataset description (metadata).
+For example, the “iris” classification data table has four columns (ie. <code class="language-plaintext highlighter-rouge">n_features = X.shape[1]</code>) and it is a single-output (ie. <code class="language-plaintext highlighter-rouge">n_outputs = 1</code>) multinomial classification type target, where the number of classes is three (ie. <code class="language-plaintext highlighter-rouge">n_classes = 3</code>).
+The only gotcha is about the formatting the <code class="language-plaintext highlighter-rouge">n_outputs</code> value, which is expected to be a single-element Numpy array, not a Numpy scalar.</p>
+
+<p>Alternatively, if the nature of the dataset is not so well known (eg. a historical dataset), the values of the three parameters can be extracted from the original <code class="language-plaintext highlighter-rouge">Tree</code> object using reflection tools.</p>
+
+<p>After the <code class="language-plaintext highlighter-rouge">Tree</code> object is successfully created, it is assigned to the <code class="language-plaintext highlighter-rouge">DecisionTreeClassifier.tree_</code> attribute.
+With this, the decision tree model has been promoted from its non-functional “DT-shell” state back to a fully-functional state, and it is dumped into the <code class="language-plaintext highlighter-rouge">classifier-upgraded.pkl</code> file.</p>
+
+<h3 id="verification">Verification</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">load_iris</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="c1"># Use the first command-line argument as the name of the pickle file
+</span><span class="n">classifier</span> <span class="o">=</span> <span class="n">_pkl_load</span><span class="p">(</span><span class="n">sys</span><span class="p">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">load_iris</span><span class="p">(</span><span class="n">return_X_y</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">y_proba</span> <span class="o">=</span> <span class="n">classifier</span><span class="p">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">y_proba</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>The most straightforward and authoritative way of verifying the upgrade is to use models for prediction.
+The legacy model and the upgraded model should yield identical results when inputted with the same testing dataset(s).
+Here, the word “identical” should be construed as full numerical equivalence - all approximately 14 to 16 significant digits must match.</p>
+
+<p>It should be noted that the predictions need to be made separately.
+For example, first using the <code class="language-plaintext highlighter-rouge">classifier.pkl</code> file in Scikit-Learn &lt;= 1.2.2, and afterwards using the <code class="language-plaintext highlighter-rouge">classifier-upgraded.pkl</code> file in Scikit-Learn &gt;= 1.3.0.
+Any attempts to load these two pickle files into one and the same Python environment are guaranteed to fail.</p>
+
+<h2 id="conclusions">Conclusions</h2>
+
+<p>This blog post demonstrates how to upgrade a legacy decision tree model to the latest version.
+For all practical intents and purposes, the upgraded model is indistinguishable from any newly trained model.</p>
+
+<p>By reversing the process (ie. by deleting the <code class="language-plaintext highlighter-rouge">missing_go_to_left</code> field from the <code class="language-plaintext highlighter-rouge">Tree.nodes</code> attribute), it is possible to downgrade a latest decision tree model to the legacy representation.
+This is rarely needed, but it is good to know that the option is there.</p>
+
+<p>After minor tweaking, the same upgrade/downgrade workflow will also be applicable to decision tree ensemble models (eg. <code class="language-plaintext highlighter-rouge">RandomForestClassifier</code> and <code class="language-plaintext highlighter-rouge">GradientBoostingClassifier</code> classes).
+The idea is to extract and modify a list of <code class="language-plaintext highlighter-rouge">tree_state</code> objects instead of a single <code class="language-plaintext highlighter-rouge">tree_state</code> object.</p>
+
+
+<h2>Feedback</h2>
+
+<script src="https://giscus.app/client.js"
+  data-repo="vruusmann/openscoring.io"
+  data-repo-id="R_kgDOH23Yfg"
+  data-category="Blog"
+  data-category-id="DIC_kwDOH23Yfs4CaTiG"
+  data-mapping="url"
+  data-strict="0"
+  data-reactions-enabled="0"
+  data-emit-metadata="0"
+  data-input-position="bottom"
+  data-theme="light"
+  data-lang="en"
+  data-loading="lazy"
+  crossorigin="anonymous"
+  async>
+</script>
+
+</div>
+
+  </main>
+
+  <footer class="footer">
+  <div class="container">
+    <div class="mb-6">© 2022 - Openscoring</div>
+
+    <div class="mb-6">
+      <ul class="flex gap-4 list-none">
+        <li>
+          <a href="mailto:info@openscoring.io" aria-label="email">
+            <img src="/assets/images/email_round.svg" width="48" height="48" alt="Contact Openscoring">
+          </a>
+        </li>
+        <li>
+          <a href="https://twitter.com/openscoring" target="_blank" aria-label="twitter">
+            <img src="/assets/images/twitter_round.svg" width="48" height="48" alt="Follow Openscoring on Twitter">
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+  <script>
+  var sc_project=11704106;
+  var sc_security="a7d1bf16"; 
+  var sc_invisible=1; 
+  var sc_remove_link=1; 
+</script>
+
+<script src="https://www.statcounter.com/counter/counter.js" async></script>
+
+<noscript>
+  <div class="statcounter">
+    <img class="statcounter" src="https://c.statcounter.com/11704106/0/a7d1bf16/1/" alt="Web Analytics Made Easy - Statcounter" referrerPolicy="no-referrer-when-downgrade">
+  </div>
+</noscript>
+</body>
+
+</html>
